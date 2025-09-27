@@ -1,5 +1,7 @@
 // app/components/layout/Footer.js
 
+import {Sparkles} from "lucide-react";
+
 export default function Footer() {
     return (
         <footer className="bg-gray-900 text-white py-12">
@@ -10,12 +12,16 @@ export default function Footer() {
                     {/* Columna 1: Logo y descripción */}
                     <div className="md:col-span-2">
                         <div className="flex items-center space-x-2 mb-4">
-                            <span className="text-2xl">🧹</span>
+                            <Sparkles/>
                             <span className="text-2xl font-bold">CleanerClub</span>
                         </div>
                         <p className="text-gray-400 max-w-md">
-                            Servicios de limpieza profesional para tu hogar.
-                            Calidad, confianza y resultados garantizados.
+                            En Cleaner Club, nuestra misión es crear hogares impecables con servicios de limpieza
+                            eficientes, responsables y disciplinados. Nos esforzamos por aligerar tu carga diaria,
+                            brindándote un espacio fresco y acogedor para disfrutar sin preocupaciones.
+                        </p>
+                        <p className="text-gray-400 max-w-md">
+                            Los Mejores profesionales al alcance de tus dedos.
                         </p>
                     </div>
 
@@ -35,7 +41,7 @@ export default function Footer() {
                             </li>
                             <li>
                                 <a href="#" className="text-gray-400 hover:text-white transition-colors">
-                                    Testimonios
+                                    Reseñas
                                 </a>
                             </li>
                         </ul>
@@ -46,7 +52,7 @@ export default function Footer() {
                         <h3 className="text-lg font-semibold mb-4">Contacto</h3>
                         <div className="space-y-2 text-gray-400">
                             <p>📞 +1 (555) 123-4567</p>
-                            <p>✉️ info@cnealerclub.com</p>
+                            <p>✉️ info@cleanerclub.com</p>
                             <p>📍 123 Calle Principal</p>
                         </div>
                     </div>

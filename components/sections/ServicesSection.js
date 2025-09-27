@@ -20,11 +20,11 @@ export default function ServicesSection() {
                 </div>
 
                 {/* Grid de tarjetas de servicios */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-8 lg:gap-8">
                     {services.map((service, index) => (
                         <div
                             key={index}
-                            className="bg-gray-50 rounded-xl p-6 hover:shadow-lg transition-shadow border border-gray-200"
+                            className="bg-gray-50 rounded-xl p-3 md:p-6 lg:p-6 hover:shadow-lg transition-shadow border border-gray-200"
                         >
                             {/* Icono del servicio */}
                             <div className="text-blue-600 mb-4">
