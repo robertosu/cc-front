@@ -4,6 +4,7 @@ import HeroSection from '@/components/sections/HeroSection'
 import ServicesSection from '@/components/sections/ServicesSection'
 import Footer from '@/components/layout/Footer'
 import TestimonialsSection from "@/components/sections/TestimonialsSection";
+import StickyNavbar from "@/components/sections/StickyNavbar";
 
 export default function HomePage() {
     return (
@@ -11,6 +12,7 @@ export default function HomePage() {
             <Header />
             <main>
                 <HeroSection />
+                <StickyNavbar />
                 <ServicesSection />
                 <TestimonialsSection/>
             </main>
