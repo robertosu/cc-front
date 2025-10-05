@@ -1,13 +1,13 @@
 // app/components/sections/HeroSection.js
-
-import StickyNavbar from "@/components/sections/StickyNavbar";
+import LiquidEther from './LiquidEther';
 
 export default function HeroSection() {
     return (
         <section className="bg-gradient-to-br from-blue-600 to-blue-800 text-white py-20">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+
                 <h1 className="text-5xl font-bold mb-6">
-                    Limpieza Profesional a tu Alcance
+                    Limpieza Profesional a tu Alcance ASDAS ASDASDASDA
                 </h1>
                 <p className="text-xl mb-8 max-w-3xl mx-auto">
                     Servicios de limpieza de alta calidad para tu hogar o negocio.

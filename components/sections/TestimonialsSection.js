@@ -1,8 +1,6 @@
 // app/components/sections/ServicesSection.js
 import {CheckCircle, Star} from 'lucide-react'
-import { testimonials} from '@/data/Testimonials'
-
-
+import {testimonials} from "@/data/Testimonials";
 
 export default function TestimonialsSection() {
     return (

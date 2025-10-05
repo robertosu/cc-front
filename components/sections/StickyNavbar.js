@@ -21,12 +21,14 @@ export default function StickyNavbar() {
 
     return (
         <>
+
             {/* 🎯 ELEMENTO TRIGGER - Este es el que "observamos" */}
             <section
 
                 className="bg-blue-600 text-white py-16"
             >
                 <div className="max-w-7xl mx-auto px-4 text-center">
+
                     <h2 className="text-3xl font-bold mb-6">Limpieza Profesional a tu Alcance</h2>
                     <p className="text-lg mb-8">
                         Servicios de limpieza de alta calidad para tu hogar o negocio.

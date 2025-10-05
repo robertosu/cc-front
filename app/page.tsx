@@ -5,6 +5,8 @@ import Footer from '@/components/layout/Footer'
 import TestimonialsSection from "@/components/sections/TestimonialsSection";
 import StickyNavbar from "@/components/sections/StickyNavbar";
 
+import {testimonials} from "@/data/Testimonials";
+
 export default function HomePage() {
     return (
         <>
@@ -13,7 +15,7 @@ export default function HomePage() {
 
                 <StickyNavbar/>
                 <ServicesSection />
-                <TestimonialsSection/>
+                <TestimonialsSection />
             </main>
             <Footer />
         </>

@@ -4,6 +4,7 @@ import { Sparkles, Menu, X } from "lucide-react";
 import { useState } from "react";
 
 export default function Header() {
+
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     return (
