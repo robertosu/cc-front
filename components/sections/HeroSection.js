@@ -1,5 +1,4 @@
 // app/components/sections/HeroSection.js
-import LiquidEther from './LiquidEther';
 
 export default function HeroSection() {
     return (
