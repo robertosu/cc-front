@@ -143,10 +143,10 @@ export default function RegisterForm() {
             })
 
             // Opcional: Redirigir después de unos segundos
-            setTimeout(() => {
+          /*  setTimeout(() => {
                 router.push('/login')
             }, 3000)
-
+*/
         } catch (error) {
             console.error('Error en registro:', error)
             setErrors({
@@ -180,7 +180,7 @@ export default function RegisterForm() {
                         <CheckCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
                         <div>
                             <p className="text-sm font-medium">{successMessage}</p>
-                            <p className="text-xs mt-1">Serás redirigido al login en 3 segundos...</p>
+                            <p className="text-xs mt-1">Confirma tu correo electrónico con el correo que te enviamos.</p>
                         </div>
                     </div>
                 )}

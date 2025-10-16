@@ -56,14 +56,14 @@ export async function POST(request: Request) {
 
         return NextResponse.json({
             success: true,
-            message: 'Usuario creado exitosamente',
+            message: 'Confirma tu correo electrónico',
             user: data.user
         })
 
     } catch (error) {
-        console.error('Error en registro:', error)
+        //console.error('Error en registro:', error)
         return NextResponse.json(
-            { error: 'Error interno del servidor' },
+            { error: 'Error al intentar registrar, por favor intentelo nuevamente' },
             { status: 500 }
         )
     }
