@@ -1,22 +1,12 @@
+// components/auth/RegisterForm.tsx
 'use client'
 
 import { useState } from 'react'
-import { createClient } from '@/utils/supabase/client'
+import { useRouter } from 'next/navigation'
 import { Mail, Lock, User, Phone, AlertCircle, CheckCircle, Eye, EyeOff } from 'lucide-react'
 import CountrySelector from './CountrySelector'
 import PasswordStrength, { validatePassword } from './PasswordStrength'
 import { defaultCountry, type Country } from '@/data/Countries'
-
-// Mensajes de error traducidos
-const errorMessages: Record<string, string> = {
-    'User already registered': 'Este correo ya está registrado',
-    'email_address_invalid': 'El correo electrónico no es válido',
-    'Email rate limit exceeded': 'Demasiados intentos. Intenta más tarde',
-    'Password should be at least 6 characters': 'La contraseña debe tener al menos 6 caracteres',
-    'Signup requires a valid password': 'Se requiere una contraseña válida',
-    'Email address is invalid': 'El correo electrónico no es válido',
-    'Unable to validate email address: invalid format': 'Formato de correo inválido'
-}
 
 export default function RegisterForm() {
     const [formData, setFormData] = useState({
@@ -34,27 +24,9 @@ export default function RegisterForm() {
     const [showPassword, setShowPassword] = useState(false)
     const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
-    const supabase = createClient()
+    const router = useRouter()
 
-    // Traducir mensaje de error de Supabase
-    const translateError = (errorMessage: string): string => {
-        // Buscar coincidencia exacta
-        if (errorMessages[errorMessage]) {
-            return errorMessages[errorMessage]
-        }
-
-        // Buscar coincidencia parcial
-        for (const [key, value] of Object.entries(errorMessages)) {
-            if (errorMessage.includes(key)) {
-                return value
-            }
-        }
-
-        // Retornar mensaje por defecto si no hay traducción
-        return 'Ocurrió un error. Por favor intenta nuevamente.'
-    }
-
-    // Validación del formulario
+    // Validación del formulario en el cliente (UX inmediato)
     const validateForm = () => {
         const newErrors: Record<string, string> = {}
 
@@ -71,7 +43,7 @@ export default function RegisterForm() {
             newErrors.fullName = 'El nombre debe tener al menos 3 caracteres'
         }
 
-        // Validar teléfono (solo números, espacios y guiones)
+        // Validar teléfono
         const phoneRegex = /^[\d\s-]+$/
         if (!formData.phone) {
             newErrors.phone = 'El teléfono es requerido'
@@ -119,7 +91,9 @@ export default function RegisterForm() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         setSuccessMessage('')
+        setErrors({})
 
+        // Validación en el cliente primero
         if (!validateForm()) {
             return
         }
@@ -127,39 +101,37 @@ export default function RegisterForm() {
         setIsLoading(true)
 
         try {
-            // Formatear número completo con prefijo
-            const fullPhoneNumber = `${selectedCountry.dialCode}${formData.phone.replace(/[\s-]/g, '')}`
-
-            const { data, error } = await supabase.auth.signUp({
-                email: formData.email,
-                password: formData.password,
-                options: {
-                    data: {
-                        full_name: formData.fullName,
-                        phone: fullPhoneNumber
-                    },
-                    emailRedirectTo: `${window.location.origin}/auth/callback`
-                }
+            // ✅ Llamada a TU BACKEND (Route Handler)
+            const response = await fetch('/api/auth/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    email: formData.email,
+                    password: formData.password,
+                    fullName: formData.fullName,
+                    phone: formData.phone,
+                    countryCode: selectedCountry.dialCode
+                })
             })
 
-            if (error) {
-                const translatedError = translateError(error.message)
+            const data = await response.json()
 
-                // Determinar si es error de email
-                if (error.message.toLowerCase().includes('email') ||
-                    error.message.toLowerCase().includes('registered')) {
-                    setErrors({ email: translatedError })
-                } else if (error.message.toLowerCase().includes('password')) {
-                    setErrors({ password: translatedError })
+            // Manejar errores del backend
+            if (!response.ok) {
+                if (data.field) {
+                    // Error específico de un campo
+                    setErrors({ [data.field]: data.error })
                 } else {
-                    setErrors({ general: translatedError })
+                    // Error general
+                    setErrors({ general: data.error })
                 }
                 return
             }
 
-            setSuccessMessage(
-                '¡Registro exitoso! 🎉 Por favor revisa tu correo para confirmar tu cuenta.'
-            )
+            // ✅ Registro exitoso
+            setSuccessMessage(data.message)
 
             // Limpiar formulario
             setFormData({
@@ -170,8 +142,16 @@ export default function RegisterForm() {
                 confirmPassword: ''
             })
 
+            // Opcional: Redirigir después de unos segundos
+            setTimeout(() => {
+                router.push('/login')
+            }, 3000)
+
         } catch (error) {
-            setErrors({ general: 'Ocurrió un error inesperado. Intenta nuevamente.' })
+            console.error('Error en registro:', error)
+            setErrors({
+                general: 'Error de conexión. Por favor verifica tu internet e intenta nuevamente.'
+            })
         } finally {
             setIsLoading(false)
         }
@@ -198,7 +178,10 @@ export default function RegisterForm() {
                 {successMessage && (
                     <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg flex items-start gap-2">
                         <CheckCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
-                        <span className="text-sm">{successMessage}</span>
+                        <div>
+                            <p className="text-sm font-medium">{successMessage}</p>
+                            <p className="text-xs mt-1">Serás redirigido al login en 3 segundos...</p>
+                        </div>
                     </div>
                 )}
 
@@ -215,10 +198,12 @@ export default function RegisterForm() {
                             name="email"
                             value={formData.email}
                             onChange={handleChange}
-                            className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
+                            disabled={isLoading}
+                            className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors disabled:bg-gray-100 disabled:cursor-not-allowed ${
                                 errors.email ? 'border-red-500' : 'border-gray-300'
                             }`}
                             placeholder="tu@email.com"
+                            autoComplete="email"
                         />
                     </div>
                     {errors.email && (
@@ -239,10 +224,12 @@ export default function RegisterForm() {
                             name="fullName"
                             value={formData.fullName}
                             onChange={handleChange}
-                            className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
+                            disabled={isLoading}
+                            className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors disabled:bg-gray-100 disabled:cursor-not-allowed ${
                                 errors.fullName ? 'border-red-500' : 'border-gray-300'
                             }`}
                             placeholder="Juan Pérez"
+                            autoComplete="name"
                         />
                     </div>
                     {errors.fullName && (
@@ -268,10 +255,12 @@ export default function RegisterForm() {
                                 name="phone"
                                 value={formData.phone}
                                 onChange={handleChange}
-                                className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
+                                disabled={isLoading}
+                                className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors disabled:bg-gray-100 disabled:cursor-not-allowed ${
                                     errors.phone ? 'border-red-500' : 'border-gray-300'
                                 }`}
                                 placeholder="9 1234 5678"
+                                autoComplete="tel"
                             />
                         </div>
                     </div>
@@ -296,15 +285,18 @@ export default function RegisterForm() {
                             name="password"
                             value={formData.password}
                             onChange={handleChange}
-                            className={`w-full pl-10 pr-12 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
+                            disabled={isLoading}
+                            className={`w-full pl-10 pr-12 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors disabled:bg-gray-100 disabled:cursor-not-allowed ${
                                 errors.password ? 'border-red-500' : 'border-gray-300'
                             }`}
                             placeholder="••••••••"
+                            autoComplete="new-password"
                         />
                         <button
                             type="button"
                             onClick={() => setShowPassword(!showPassword)}
-                            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                            disabled={isLoading}
+                            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors disabled:cursor-not-allowed"
                         >
                             {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                         </button>
@@ -330,15 +322,18 @@ export default function RegisterForm() {
                             name="confirmPassword"
                             value={formData.confirmPassword}
                             onChange={handleChange}
-                            className={`w-full pl-10 pr-12 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
+                            disabled={isLoading}
+                            className={`w-full pl-10 pr-12 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors disabled:bg-gray-100 disabled:cursor-not-allowed ${
                                 errors.confirmPassword ? 'border-red-500' : 'border-gray-300'
                             }`}
                             placeholder="••••••••"
+                            autoComplete="new-password"
                         />
                         <button
                             type="button"
                             onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                            disabled={isLoading}
+                            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors disabled:cursor-not-allowed"
                         >
                             {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                         </button>
@@ -351,7 +346,7 @@ export default function RegisterForm() {
                 {/* Botón de registro */}
                 <button
                     type="submit"
-                    disabled={isLoading}
+                    disabled={isLoading || !!successMessage}
                     className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center"
                 >
                     {isLoading ? (
@@ -362,6 +357,8 @@ export default function RegisterForm() {
                             </svg>
                             Creando cuenta...
                         </>
+                    ) : successMessage ? (
+                        '✓ Cuenta creada'
                     ) : (
                         'Crear Cuenta'
                     )}
@@ -378,15 +375,3 @@ export default function RegisterForm() {
         </div>
     )
 }
-
-/*
-📝 MEJORAS IMPLEMENTADAS:
-✅ Selector de país con banderas y búsqueda
-✅ Validación de contraseña con requisitos visuales
-✅ Indicador de fortaleza en tiempo real
-✅ Botón para mostrar/ocultar contraseña
-✅ Todos los mensajes traducidos al español
-✅ Formato automático del teléfono con prefijo
-✅ Validación mejorada de todos los campos
-✅ UX optimizada con feedback visual
-*/
