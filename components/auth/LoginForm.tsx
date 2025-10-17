@@ -1,46 +1,28 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { createClient } from '@/utils/supabase/client'
+import { useState, useEffect } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Mail, Lock, AlertCircle, Eye, EyeOff } from 'lucide-react'
 
-// Mensajes de error traducidos para Login
-const errorMessages: Record<string, string> = {
-    'Invalid login credentials': 'Correo o contraseña incorrectos',
-    'Email not confirmed': 'Por favor confirma tu correo antes de iniciar sesión',
-    'Invalid email': 'El correo electrónico no es válido',
-    'User not found': 'Usuario no encontrado',
-    'Email address is invalid': 'El correo electrónico no es válido',
-}
-
 export default function LoginForm() {
-    const [formData, setFormData] = useState({
-        email: '',
-        password: ''
-    })
-
+    const [formData, setFormData] = useState({ email: '', password: '' })
     const [errors, setErrors] = useState<Record<string, string>>({})
     const [isLoading, setIsLoading] = useState(false)
     const [showPassword, setShowPassword] = useState(false)
     const router = useRouter()
-    const supabase = createClient()
+    const searchParams = useSearchParams()
 
-    // Traducir errores de Supabase
-    const translateError = (errorMessage: string): string => {
-        for (const [key, value] of Object.entries(errorMessages)) {
-            if (errorMessage.includes(key)) {
-                return value
-            }
+    useEffect(() => {
+        const error = searchParams.get('error')
+        if (error === 'verification_failed') {
+            setErrors({ general: 'Error al verificar tu cuenta. Intenta nuevamente.' })
         }
-        return 'Ocurrió un error. Por favor intenta nuevamente.'
-    }
+    }, [searchParams])
 
-    // Validación básica
     const validateForm = () => {
         const newErrors: Record<string, string> = {}
-
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
         if (!formData.email) {
             newErrors.email = 'El correo es requerido'
         } else if (!emailRegex.test(formData.email)) {
@@ -55,13 +37,9 @@ export default function LoginForm() {
         return Object.keys(newErrors).length === 0
     }
 
-    // Manejar cambios en inputs
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target
-        setFormData(prev => ({
-            ...prev,
-            [name]: value
-        }))
+        setFormData(prev => ({ ...prev, [name]: value }))
         if (errors[name]) {
             setErrors(prev => {
                 const newErrors = { ...prev }
@@ -71,29 +49,27 @@ export default function LoginForm() {
         }
     }
 
-    // Manejar envío del formulario
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
 
-        if (!validateForm()) {
-            return
-        }
+        if (!validateForm()) return
 
         setIsLoading(true)
 
         try {
-            const { data, error } = await supabase.auth.signInWithPassword({
-                email: formData.email,
-                password: formData.password
+            const response = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
             })
 
-            if (error) {
-                const translatedError = translateError(error.message)
-                setErrors({ general: translatedError })
+            const data = await response.json()
+
+            if (!response.ok) {
+                setErrors({ general: data.error })
                 return
             }
 
-            // Redirigir al dashboard o a la página desde donde vino
             const urlParams = new URLSearchParams(window.location.search)
             const redirectTo = urlParams.get('redirectedFrom') || '/dashboard'
 
@@ -110,13 +86,11 @@ export default function LoginForm() {
     return (
         <div className="w-full max-w-md mx-auto">
             <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-lg p-8 space-y-6">
-
                 <div className="text-center mb-6">
                     <h2 className="text-3xl font-bold text-gray-900">Iniciar Sesión</h2>
                     <p className="text-gray-600 mt-2">Accede a tu cuenta de CleanerClub</p>
                 </div>
 
-                {/* Mensaje de error general */}
                 {errors.general && (
                     <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg flex items-start gap-2">
                         <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
@@ -124,7 +98,6 @@ export default function LoginForm() {
                     </div>
                 )}
 
-                {/* Email */}
                 <div>
                     <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
                         Correo Electrónico
@@ -144,12 +117,9 @@ export default function LoginForm() {
                             autoComplete="email"
                         />
                     </div>
-                    {errors.email && (
-                        <p className="mt-1 text-sm text-red-600">{errors.email}</p>
-                    )}
+                    {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email}</p>}
                 </div>
 
-                {/* Contraseña */}
                 <div>
                     <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
                         Contraseña
@@ -176,22 +146,15 @@ export default function LoginForm() {
                             {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                         </button>
                     </div>
-                    {errors.password && (
-                        <p className="mt-1 text-sm text-red-600">{errors.password}</p>
-                    )}
+                    {errors.password && <p className="mt-1 text-sm text-red-600">{errors.password}</p>}
                 </div>
 
-                {/* Link de recuperación */}
                 <div className="text-right">
-                    <a
-                        href="/reset-password"
-                        className="text-sm text-blue-600 hover:text-blue-700 transition-colors"
-                    >
+                    <a href="/reset-password" className="text-sm text-blue-600 hover:text-blue-700 transition-colors">
                         ¿Olvidaste tu contraseña?
                     </a>
                 </div>
 
-                {/* Botón de login */}
                 <button
                     type="submit"
                     disabled={isLoading}
@@ -205,12 +168,9 @@ export default function LoginForm() {
                             </svg>
                             Iniciando sesión...
                         </>
-                    ) : (
-                        'Iniciar Sesión'
-                    )}
+                    ) : 'Iniciar Sesión'}
                 </button>
 
-                {/* Link a registro */}
                 <p className="text-center text-sm text-gray-600">
                     ¿No tienes cuenta?{' '}
                     <a href="/register" className="text-blue-600 hover:text-blue-700 font-semibold">
@@ -221,14 +181,3 @@ export default function LoginForm() {
         </div>
     )
 }
-
-/*
-📝 MEJORAS IMPLEMENTADAS:
-✅ Botón para mostrar/ocultar contraseña
-✅ Todos los mensajes traducidos al español
-✅ Validación mejorada de campos
-✅ Redirección inteligente (vuelve a donde venías)
-✅ Mejor manejo de errores específicos
-✅ UX consistente con el formulario de registro
-✅ Transiciones suaves
-*/

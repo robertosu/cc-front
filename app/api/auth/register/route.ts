@@ -1,4 +1,3 @@
-// app/api/auth/register/route.ts
 import { createClient } from '@/utils/supabase/server'
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
@@ -8,7 +7,6 @@ export async function POST(request: Request) {
         const body = await request.json()
         const { email, password, fullName, phone } = body
 
-        // ✅ Validaciones en el servidor
         if (!email || !password) {
             return NextResponse.json(
                 { error: 'Email y contraseña requeridos' },
@@ -16,7 +14,6 @@ export async function POST(request: Request) {
             )
         }
 
-        // Validación de contraseña segura
         if (password.length < 8) {
             return NextResponse.json(
                 { error: 'Contraseña debe tener al menos 8 caracteres' },
@@ -24,11 +21,12 @@ export async function POST(request: Request) {
             )
         }
 
-        // Crear cliente de Supabase en el servidor
         const cookieStore = cookies()
         const supabase = createClient(cookieStore)
 
-        // ✅ Crear usuario desde el BACKEND
+        // Obtener la URL base del request
+        const origin = request.headers.get('origin') || 'http://localhost:3000'
+
         const { data, error } = await supabase.auth.signUp({
             email,
             password,
@@ -37,7 +35,7 @@ export async function POST(request: Request) {
                     full_name: fullName,
                     phone: phone
                 },
-                emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`
+                emailRedirectTo: `${origin}/auth/callback`
             }
         })
 
@@ -48,23 +46,32 @@ export async function POST(request: Request) {
             )
         }
 
-        // ✅ Aquí puedes hacer cosas adicionales:
-        // - Enviar email de bienvenida
-        // - Crear registros en otras tablas
-        // - Log de auditoría
-        // - Integración con Stripe, etc.
-
         return NextResponse.json({
             success: true,
-            message: 'Confirma tu correo electrónico',
+            message: 'Revisa tu correo para confirmar tu cuenta',
             user: data.user
         })
 
     } catch (error) {
-        //console.error('Error en registro:', error)
         return NextResponse.json(
             { error: 'Error al intentar registrar, por favor intentelo nuevamente' },
             { status: 500 }
         )
     }
 }
+
+/*
+📝 FLUJO DE REGISTRO:
+1. Usuario completa el formulario
+2. Backend crea la cuenta en Supabase
+3. Supabase envía email con link de verificación
+4. Usuario hace click en el link del email
+5. Link redirige a /auth/callback con código
+6. /auth/callback valida el código y crea la sesión
+7. Usuario es redirigido a /dashboard ya autenticado
+
+⚠️ IMPORTANTE: Configurar en Supabase Dashboard:
+Authentication → Email Templates → Confirm signup
+Cambiar {{ .ConfirmationURL }} por: 
+{{ .SiteURL }}/auth/callback?code={{ .TokenHash }}
+*/

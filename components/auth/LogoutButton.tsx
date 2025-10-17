@@ -2,19 +2,17 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/utils/supabase/client'
 import { LogOut } from 'lucide-react'
 
 export default function LogoutButton() {
     const [isLoading, setIsLoading] = useState(false)
     const router = useRouter()
-    const supabase = createClient()
 
     const handleLogout = async () => {
         setIsLoading(true)
 
         try {
-            await supabase.auth.signOut()
+            await fetch('/api/auth/logout', { method: 'POST' })
             router.push('/')
             router.refresh()
         } catch (error) {
@@ -35,12 +33,3 @@ export default function LogoutButton() {
         </button>
     )
 }
-
-/*
-📝 FUNCIONALIDAD:
-✅ Cierra la sesión en Supabase
-✅ Redirige al home
-✅ Refresca el router para limpiar el estado
-✅ Loading state
-✅ Icono de Lucide React
-*/
