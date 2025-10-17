@@ -11,7 +11,7 @@ export const createClient = (cookieStore: ReturnType<typeof cookies>) => {
         supabaseKey!,
         {
             cookies: {
-                getAll() {
+                getAll(){
                     return cookieStore.getAll()
                 },
                 setAll(cookiesToSet) {
