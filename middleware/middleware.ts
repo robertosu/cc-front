@@ -1,4 +1,3 @@
-// middleware.ts
 import { createServerClient } from "@supabase/ssr"
 import { NextResponse, type NextRequest } from "next/server"
 
@@ -30,32 +29,92 @@ export async function middleware(request: NextRequest) {
         }
     )
 
-    // IMPORTANTE: Refrescar la sesión si existe
+    // Refrescar la sesión
     const {
         data: { user },
     } = await supabase.auth.getUser()
 
-    // Lista de rutas protegidas que requieren autenticación
-    const protectedRoutes = ['/dashboard', '/profile', '/bookings']
-    const isProtectedRoute = protectedRoutes.some(route =>
-        request.nextUrl.pathname.startsWith(route)
-    )
+    const path = request.nextUrl.pathname
 
-    // Si es ruta protegida y no hay usuario, redirigir a login
-    if (isProtectedRoute && !user) {
+    // ========================================
+    // 1. RUTAS PÚBLICAS (permitidas sin auth)
+    // ========================================
+    const publicRoutes = ['/', '/login', '/register', '/auth/callback']
+    const isPublicRoute = publicRoutes.includes(path)
+
+    // Si es ruta pública, permitir acceso
+    if (isPublicRoute) {
+        // Si está autenticado e intenta acceder a login/register, redirigir a dashboard
+        if (user && (path === '/login' || path === '/register')) {
+            return NextResponse.redirect(new URL('/dashboard', request.url))
+        }
+        return supabaseResponse
+    }
+
+    // ========================================
+    // 2. VALIDAR AUTENTICACIÓN
+    // ========================================
+    if (!user) {
         const redirectUrl = request.nextUrl.clone()
         redirectUrl.pathname = '/login'
-        redirectUrl.searchParams.set('redirectedFrom', request.nextUrl.pathname)
+        redirectUrl.searchParams.set('redirectedFrom', path)
         return NextResponse.redirect(redirectUrl)
     }
 
-    // Si el usuario está autenticado e intenta acceder a login/register,
-    // redirigir a dashboard
-    if (user && (
-        request.nextUrl.pathname === '/login' ||
-        request.nextUrl.pathname === '/register'
-    )) {
-        return NextResponse.redirect(new URL('/dashboard', request.url))
+    // ========================================
+    // 3. OBTENER ROL DEL USUARIO
+    // ========================================
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single()
+
+    const userRole = profile?.role
+
+    if (!userRole) {
+        // Si no tiene rol, redirigir a login
+        return NextResponse.redirect(new URL('/login', request.url))
+    }
+
+    // ========================================
+    // 4. PROTECCIÓN POR ROLES
+    // ========================================
+
+    // Dashboard principal - redirigir según rol
+    if (path === '/dashboard') {
+        // El componente page.js ya maneja la redirección
+        return supabaseResponse
+    }
+
+    // RUTAS SOLO PARA ADMIN
+    if (path.startsWith('/dashboard/admin')) {
+        if (userRole !== 'admin') {
+            return NextResponse.redirect(new URL('/dashboard', request.url))
+        }
+        return supabaseResponse
+    }
+
+    // RUTAS SOLO PARA CLEANER
+    if (path.startsWith('/dashboard/cleaner')) {
+        if (userRole !== 'cleaner') {
+            return NextResponse.redirect(new URL('/dashboard', request.url))
+        }
+        return supabaseResponse
+    }
+
+    // RUTAS SOLO PARA CLIENTE
+    if (path.startsWith('/dashboard/client')) {
+        if (userRole !== 'cliente') {
+            return NextResponse.redirect(new URL('/dashboard', request.url))
+        }
+        return supabaseResponse
+    }
+
+    // API Routes - validación adicional
+    if (path.startsWith('/api/')) {
+        // Las API routes manejan su propia autorización con checkAuth
+        return supabaseResponse
     }
 
     return supabaseResponse
@@ -73,12 +132,3 @@ export const config = {
         '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
     ],
 }
-
-/*
-📝 QUÉ HACE:
-✅ Refresca automáticamente las sesiones de usuario
-✅ Protege rutas privadas (dashboard, profile, bookings)
-✅ Redirige usuarios no autenticados a /login
-✅ Redirige usuarios autenticados fuera de login/register
-✅ Mantiene las cookies actualizadas
-*/

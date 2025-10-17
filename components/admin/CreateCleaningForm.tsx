@@ -9,7 +9,7 @@ interface House {
     address: string
     sectors_count: number
     client: {
-        full_name: string
+        full_name: any
     }
 }
 
