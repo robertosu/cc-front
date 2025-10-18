@@ -12,7 +12,7 @@ export const metadata = {
 }
 
 export default async function AdminUsersPage() {
-    const cookieStore  = await cookies()
+    const cookieStore = await cookies()
     const supabase = createClient(cookieStore)
 
     const { data: { user } } = await supabase.auth.getUser()
@@ -26,22 +26,45 @@ export default async function AdminUsersPage() {
         .single()
 
     if (!profile || profile.role !== 'admin') {
-        redirect('/login')
+        redirect('/dashboard')
     }
 
-    // Obtener todos los usuarios
-    const { data: users } = await supabase
+    // Obtener usuarios directamente de la BD
+    const { data: users, error } = await supabase
         .from('profiles')
-        .select(`
-            *,
-            houses_count:houses(count),
-            cleanings_as_cleaner:cleanings!cleanings_cleaner_id_fkey(count)
-        `)
+        .select('*')
         .order('created_at', { ascending: false })
 
-    const clients = users?.filter(u => u.role === 'cliente') || []
-    const cleaners = users?.filter(u => u.role === 'cleaner') || []
-    const admins = users?.filter(u => u.role === 'admin') || []
+    if (error) {
+        console.error('Error fetching users:', error)
+    }
+
+    // Obtener conteos por separado para cada usuario
+    const processedUsers = await Promise.all(
+        (users || []).map(async (user) => {
+            // Contar casas del cliente
+            const { count: housesCount } = await supabase
+                .from('houses')
+                .select('*', { count: 'exact', head: true })
+                .eq('client_id', user.id)
+
+            // Contar limpiezas del cleaner
+            const { count: cleaningsCount } = await supabase
+                .from('cleanings')
+                .select('*', { count: 'exact', head: true })
+                .eq('cleaner_id', user.id)
+
+            return {
+                ...user,
+                houses_count: [{ count: housesCount || 0 }],
+                cleanings_as_cleaner: [{ count: cleaningsCount || 0 }]
+            }
+        })
+    )
+
+    const clients = processedUsers.filter(u => u.role === 'cliente')
+    const cleaners = processedUsers.filter(u => u.role === 'cleaner')
+    const admins = processedUsers.filter(u => u.role === 'admin')
 
     return (
         <div className="min-h-screen bg-gray-50">
@@ -66,7 +89,6 @@ export default async function AdminUsersPage() {
             </header>
 
             <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-
                 {/* Estadísticas */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                     <div className="bg-blue-50 border border-blue-200 rounded-xl p-6">
@@ -95,11 +117,20 @@ export default async function AdminUsersPage() {
                 <div className="bg-white rounded-xl shadow">
                     <div className="p-6 border-b border-gray-200">
                         <h2 className="text-lg font-bold text-gray-900">
-                            Todos los Usuarios ({users?.length || 0})
+                            Todos los Usuarios ({processedUsers.length})
                         </h2>
                     </div>
 
-                    <UsersList users={users || []} />
+                    {processedUsers.length === 0 ? (
+                        <div className="p-12 text-center">
+                            <p className="text-gray-500 text-lg">No hay usuarios registrados</p>
+                            <p className="text-gray-400 text-sm mt-2">
+                                Los nuevos registros aparecerán aquí automáticamente
+                            </p>
+                        </div>
+                    ) : (
+                        <UsersList users={processedUsers} />
+                    )}
                 </div>
             </main>
         </div>
