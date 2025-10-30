@@ -13,7 +13,7 @@ export const metadata = {
 }
 
 export default async function AdminHousesPage() {
-    const cookieStore = await cookies()
+    const cookieStore = cookies()
     const supabase = createClient(cookieStore)
 
     const { data: { user } } = await supabase.auth.getUser()
