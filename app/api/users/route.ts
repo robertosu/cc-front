@@ -2,12 +2,12 @@
 import { createClient } from '@/utils/supabase/server'
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
-import { checkAuth, unauthorizedResponse } from '@/utils/auth/roleCheck'
+import { checkAuthSimple, unauthorizedResponse } from '@/utils/auth/roleCheck'
 
-// GET: Obtener lista de usuarios (solo admin)
 export async function GET(request: Request) {
     try {
-        const user = await checkAuth(['admin'])
+        // CAMBIO: Usar checkAuthSimple para evitar recursión
+        const user = await checkAuthSimple(['admin'])
 
         if (!user) {
             return unauthorizedResponse('Solo administradores pueden ver usuarios')
@@ -16,7 +16,6 @@ export async function GET(request: Request) {
         const cookieStore = await cookies()
         const supabase = createClient(cookieStore)
 
-        // Obtener todos los perfiles
         const { data: profiles, error: profilesError } = await supabase
             .from('profiles')
             .select('*')
@@ -27,16 +26,13 @@ export async function GET(request: Request) {
             throw profilesError
         }
 
-        // Obtener counts por cada usuario
         const usersWithCounts = await Promise.all(
             (profiles || []).map(async (profile) => {
-                // Contar casas si es cliente
                 const { count: housesCount } = await supabase
                     .from('houses')
                     .select('*', { count: 'exact', head: true })
                     .eq('client_id', profile.id)
 
-                // Contar limpiezas si es cleaner
                 const { count: cleaningsCount } = await supabase
                     .from('cleanings')
                     .select('*', { count: 'exact', head: true })
@@ -64,10 +60,10 @@ export async function GET(request: Request) {
     }
 }
 
-// PUT: Actualizar rol de usuario (solo admin)
 export async function PUT(request: Request) {
     try {
-        const user = await checkAuth(['admin'])
+        // CAMBIO: Usar checkAuthSimple
+        const user = await checkAuthSimple(['admin'])
 
         if (!user) {
             return unauthorizedResponse('Solo administradores pueden actualizar roles')
@@ -86,7 +82,6 @@ export async function PUT(request: Request) {
             )
         }
 
-        // Validar que el rol sea válido
         const validRoles = ['admin', 'cleaner', 'cliente']
         if (!validRoles.includes(role)) {
             return NextResponse.json(
@@ -95,7 +90,6 @@ export async function PUT(request: Request) {
             )
         }
 
-        // No permitir cambiar su propio rol
         if (user_id === user.id) {
             return NextResponse.json(
                 { error: 'No puedes cambiar tu propio rol' },
@@ -126,10 +120,10 @@ export async function PUT(request: Request) {
     }
 }
 
-// DELETE: Eliminar usuario (solo admin)
 export async function DELETE(request: Request) {
     try {
-        const user = await checkAuth(['admin'])
+        // CAMBIO: Usar checkAuthSimple
+        const user = await checkAuthSimple(['admin'])
 
         if (!user) {
             return unauthorizedResponse('Solo administradores pueden eliminar usuarios')
@@ -148,7 +142,6 @@ export async function DELETE(request: Request) {
             )
         }
 
-        // No permitir eliminar su propia cuenta
         if (id === user.id) {
             return NextResponse.json(
                 { error: 'No puedes eliminar tu propia cuenta' },
@@ -156,7 +149,6 @@ export async function DELETE(request: Request) {
             )
         }
 
-        // Eliminar perfil (CASCADE eliminará datos relacionados)
         const { error } = await supabase
             .from('profiles')
             .delete()
