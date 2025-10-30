@@ -12,7 +12,7 @@ export const metadata = {
 }
 
 export default async function CleanerDashboard() {
-    const cookieStore = cookies()
+    const cookieStore = await cookies()
     const supabase = createClient(cookieStore)
 
     const { data: { user } } = await supabase.auth.getUser()
@@ -29,17 +29,19 @@ export default async function CleanerDashboard() {
         redirect('/login')
     }
 
-    // Obtener limpiezas asignadas
-    const { data: cleanings } = await supabase
-        .from('cleanings')
-        .select(`
-            *,
-            house:houses(
-                *,
-                client:profiles!houses_client_id_fkey(id, full_name, email, phone)
-            )
-        `)
+    // Obtener IDs de limpiezas asignadas
+    const { data: assignments } = await supabase
+        .from('cleaning_cleaners')
+        .select('cleaning_id')
         .eq('cleaner_id', user.id)
+
+    const cleaningIds = assignments?.map(a => a.cleaning_id) || []
+
+    // Obtener limpiezas usando la vista
+    const { data: cleanings } = await supabase
+        .from('cleanings_detailed')
+        .select('*')
+        .in('id', cleaningIds)
         .order('scheduled_date', { ascending: true })
 
     const activeCleanings = cleanings?.filter(c => c.status === 'in_progress') || []

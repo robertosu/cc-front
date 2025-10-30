@@ -1,3 +1,4 @@
+// middleware.ts
 import { createServerClient } from "@supabase/ssr"
 import { NextResponse, type NextRequest } from "next/server"
 
@@ -29,7 +30,7 @@ export async function middleware(request: NextRequest) {
         }
     )
 
-    // Refrescar la sesión
+    // IMPORTANTE: Refrescar la sesión antes de cualquier validación
     const {
         data: { user },
     } = await supabase.auth.getUser()
@@ -40,7 +41,7 @@ export async function middleware(request: NextRequest) {
     // 1. RUTAS PÚBLICAS (permitidas sin auth)
     // ========================================
     const publicRoutes = ['/', '/login', '/register', '/auth/callback']
-    const isPublicRoute = publicRoutes.includes(path)
+    const isPublicRoute = publicRoutes.some(route => path === route || path.startsWith(route))
 
     // Si es ruta pública, permitir acceso
     if (isPublicRoute) {
@@ -55,8 +56,7 @@ export async function middleware(request: NextRequest) {
     // 2. VALIDAR AUTENTICACIÓN
     // ========================================
     if (!user) {
-        const redirectUrl = request.nextUrl.clone()
-        redirectUrl.pathname = '/login'
+        const redirectUrl = new URL('/login', request.url)
         redirectUrl.searchParams.set('redirectedFrom', path)
         return NextResponse.redirect(redirectUrl)
     }
@@ -64,28 +64,30 @@ export async function middleware(request: NextRequest) {
     // ========================================
     // 3. OBTENER ROL DEL USUARIO
     // ========================================
-    const { data: profile } = await supabase
+
+    // Dashboard principal - dejar que el componente maneje la redirección
+    if (path === '/dashboard') {
+        return supabaseResponse
+    }
+
+    // Para otras rutas protegidas, verificar el rol
+    const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('role')
         .eq('id', user.id)
         .single()
 
-    const userRole = profile?.role
-
-    if (!userRole) {
-        // Si no tiene rol, redirigir a login
+    // Si hay error obteniendo el perfil, redirigir a login
+    if (profileError || !profile) {
+        console.error('Error obteniendo perfil:', profileError)
         return NextResponse.redirect(new URL('/login', request.url))
     }
+
+    const userRole = profile.role
 
     // ========================================
     // 4. PROTECCIÓN POR ROLES
     // ========================================
-
-    // Dashboard principal - redirigir según rol
-    if (path === '/dashboard') {
-        // El componente page.js ya maneja la redirección
-        return supabaseResponse
-    }
 
     // RUTAS SOLO PARA ADMIN
     if (path.startsWith('/dashboard/admin')) {
@@ -111,9 +113,8 @@ export async function middleware(request: NextRequest) {
         return supabaseResponse
     }
 
-    // API Routes - validación adicional
+    // API Routes - las API routes manejan su propia autorización
     if (path.startsWith('/api/')) {
-        // Las API routes manejan su propia autorización con checkAuth
         return supabaseResponse
     }
 

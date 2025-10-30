@@ -3,14 +3,14 @@
 import { CheckCircle, Circle } from 'lucide-react'
 
 interface CleaningProgressBarProps {
-    currentSector: number
-    totalSectors: number
+    currentStep: number
+    totalSteps: number
     status: 'pending' | 'in_progress' | 'completed' | 'cancelled'
 }
 
 export default function CleaningProgressBar({
-                                                currentSector,
-                                                totalSectors,
+                                                currentStep,
+                                                totalSteps,
                                                 status
                                             }: CleaningProgressBarProps) {
 
@@ -44,7 +44,7 @@ export default function CleaningProgressBar({
         }
     }
 
-    const progress = totalSectors > 0 ? (currentSector / totalSectors) * 100 : 0
+    const progress = totalSteps > 0 ? (currentStep / totalSteps) * 100 : 0
 
     return (
         <div className="space-y-3">
@@ -54,7 +54,7 @@ export default function CleaningProgressBar({
                     {getStatusText()}
                 </span>
                 <span className="text-sm text-gray-600">
-                    {currentSector} de {totalSectors} sectores
+                    {currentStep} de {totalSteps} steps
                 </span>
             </div>
 
@@ -66,11 +66,11 @@ export default function CleaningProgressBar({
                 />
             </div>
 
-            {/* Sectores individuales */}
+            {/* Steps individuales */}
             <div className="flex gap-2 flex-wrap">
-                {Array.from({ length: totalSectors }, (_, i) => {
-                    const sectorNumber = i + 1
-                    const isCompleted = sectorNumber <= currentSector
+                {Array.from({ length: totalSteps }, (_, i) => {
+                    const stepNumber = i + 1
+                    const isCompleted = stepNumber <= currentStep
 
                     return (
                         <div
@@ -86,7 +86,7 @@ export default function CleaningProgressBar({
                             ) : (
                                 <Circle className="w-3 h-3" />
                             )}
-                            Sector {sectorNumber}
+                            Step {stepNumber}
                         </div>
                     )
                 })}
@@ -104,13 +104,3 @@ export default function CleaningProgressBar({
         </div>
     )
 }
-
-/*
-📝 CARACTERÍSTICAS:
-✅ Barra de progreso visual
-✅ Indicadores por sector
-✅ Colores según estado
-✅ Porcentaje de completado
-✅ Animaciones suaves
-✅ Responsive
-*/

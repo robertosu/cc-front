@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation'
 import { cookies } from 'next/headers'
 import LogoutButton from '@/components/auth/LogoutButton'
 import CleaningProgressBar from '@/components/dashboard/CleaningProgressBar'
-import { Calendar, Clock, MapPin, User } from 'lucide-react'
+import { Calendar, Clock, MapPin, User, Users } from 'lucide-react'
 
 export const metadata = {
     title: 'Mi Dashboard - CleanerClub',
@@ -12,7 +12,7 @@ export const metadata = {
 }
 
 export default async function ClientDashboard() {
-    const cookieStore = cookies()
+    const cookieStore = await cookies()
     const supabase = createClient(cookieStore)
 
     const { data: { user } } = await supabase.auth.getUser()
@@ -29,17 +29,11 @@ export default async function ClientDashboard() {
         redirect('/login')
     }
 
-    // Obtener limpiezas del cliente
+    // Obtener limpiezas usando la vista
     const { data: cleanings } = await supabase
-        .from('cleanings')
-        .select(`
-            *,
-            house:houses(
-                *,
-                client:profiles!houses_client_id_fkey(id, full_name, email)
-            ),
-            cleaner:profiles!cleanings_cleaner_id_fkey(id, full_name, phone)
-        `)
+        .from('cleanings_detailed')
+        .select('*')
+        .eq('client->>id', user.id)
         .order('scheduled_date', { ascending: false })
 
     const activeCleanings = cleanings?.filter(c => c.status === 'in_progress') || []
@@ -85,25 +79,29 @@ export default async function ClientDashboard() {
                                                 <div>
                                                     <p className="text-sm text-gray-600">Dirección</p>
                                                     <p className="font-medium text-gray-900">
-                                                        {cleaning.house.address}
+                                                        {cleaning.address}
                                                     </p>
                                                 </div>
                                             </div>
 
-                                            <div className="flex items-start gap-3">
-                                                <User className="w-5 h-5 text-gray-400 flex-shrink-0 mt-1" />
-                                                <div>
-                                                    <p className="text-sm text-gray-600">Cleaner Asignado</p>
-                                                    <p className="font-medium text-gray-900">
-                                                        {cleaning.cleaner?.full_name || 'Sin asignar'}
-                                                    </p>
-                                                    {cleaning.cleaner?.phone && (
+                                            {cleaning.cleaners.length > 0 && (
+                                                <div className="flex items-start gap-3">
+                                                    <Users className="w-5 h-5 text-gray-400 flex-shrink-0 mt-1" />
+                                                    <div>
                                                         <p className="text-sm text-gray-600">
-                                                            {cleaning.cleaner.phone}
+                                                            {cleaning.cleaners.length === 1 ? 'Cleaner Asignado' : 'Equipo Asignado'}
                                                         </p>
-                                                    )}
+                                                        <p className="font-medium text-gray-900">
+                                                            {cleaning.cleaners.map((c: any) => c.full_name).join(', ')}
+                                                        </p>
+                                                        {cleaning.cleaners[0]?.phone && (
+                                                            <p className="text-sm text-gray-600">
+                                                                {cleaning.cleaners[0].phone}
+                                                            </p>
+                                                        )}
+                                                    </div>
                                                 </div>
-                                            </div>
+                                            )}
 
                                             <div className="flex items-start gap-3">
                                                 <Calendar className="w-5 h-5 text-gray-400 flex-shrink-0 mt-1" />
@@ -134,8 +132,8 @@ export default async function ClientDashboard() {
                                         {/* Progreso */}
                                         <div>
                                             <CleaningProgressBar
-                                                currentSector={cleaning.current_sector}
-                                                totalSectors={cleaning.house.sectors_count}
+                                                currentStep={cleaning.current_step}
+                                                totalSteps={cleaning.total_steps}
                                                 status={cleaning.status}
                                             />
                                         </div>
@@ -161,10 +159,10 @@ export default async function ClientDashboard() {
                                     <div className="flex items-start justify-between mb-4">
                                         <div>
                                             <h3 className="font-semibold text-gray-900">
-                                                {cleaning.house.address}
+                                                {cleaning.address}
                                             </h3>
                                             <p className="text-sm text-gray-600">
-                                                {cleaning.house.sectors_count} sectores
+                                                {cleaning.total_steps} steps
                                             </p>
                                         </div>
                                         <span className="px-3 py-1 bg-yellow-100 text-yellow-700 text-xs font-medium rounded-full">
@@ -181,10 +179,10 @@ export default async function ClientDashboard() {
                                             <Clock className="w-4 h-4" />
                                             {cleaning.start_time} - {cleaning.end_time}
                                         </div>
-                                        {cleaning.cleaner && (
+                                        {cleaning.cleaners.length > 0 && (
                                             <div className="flex items-center gap-2 text-gray-600">
-                                                <User className="w-4 h-4" />
-                                                {cleaning.cleaner.full_name}
+                                                <Users className="w-4 h-4" />
+                                                {cleaning.cleaners.map((c: any) => c.full_name).join(', ')}
                                             </div>
                                         )}
                                     </div>
@@ -208,7 +206,7 @@ export default async function ClientDashboard() {
                                 >
                                     <div className="flex items-start justify-between mb-3">
                                         <h3 className="font-semibold text-gray-900">
-                                            {cleaning.house.address}
+                                            {cleaning.address}
                                         </h3>
                                         <span className="px-2 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full">
                                             ✓
@@ -217,9 +215,11 @@ export default async function ClientDashboard() {
                                     <p className="text-sm text-gray-600">
                                         {new Date(cleaning.scheduled_date).toLocaleDateString('es-CL')}
                                     </p>
-                                    <p className="text-sm text-gray-600">
-                                        Por {cleaning.cleaner?.full_name || 'Cleaner'}
-                                    </p>
+                                    {cleaning.cleaners.length > 0 && (
+                                        <p className="text-sm text-gray-600">
+                                            Por {cleaning.cleaners.map((c: any) => c.full_name).join(', ')}
+                                        </p>
+                                    )}
                                 </div>
                             ))}
                         </div>

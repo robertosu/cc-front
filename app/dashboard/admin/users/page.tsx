@@ -29,42 +29,23 @@ export default async function AdminUsersPage() {
         redirect('/dashboard')
     }
 
-    // Obtener usuarios directamente de la BD
-    const { data: users, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .order('created_at', { ascending: false })
+    // Obtener usuarios desde la API
+    const response = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/users`, {
+        headers: {
+            'Cookie': (await cookies()).toString()
+        },
+        cache: 'no-store'
+    })
 
-    if (error) {
-        console.error('Error fetching users:', error)
+    let users = []
+    if (response.ok) {
+        const data = await response.json()
+        users = data.users || []
     }
 
-    // Obtener conteos por separado para cada usuario
-    const processedUsers = await Promise.all(
-        (users || []).map(async (user) => {
-            // Contar casas del cliente
-            const { count: housesCount } = await supabase
-                .from('houses')
-                .select('*', { count: 'exact', head: true })
-                .eq('client_id', user.id)
-
-            // Contar limpiezas del cleaner
-            const { count: cleaningsCount } = await supabase
-                .from('cleanings')
-                .select('*', { count: 'exact', head: true })
-                .eq('cleaner_id', user.id)
-
-            return {
-                ...user,
-                houses_count: [{ count: housesCount || 0 }],
-                cleanings_as_cleaner: [{ count: cleaningsCount || 0 }]
-            }
-        })
-    )
-
-    const clients = processedUsers.filter(u => u.role === 'cliente')
-    const cleaners = processedUsers.filter(u => u.role === 'cleaner')
-    const admins = processedUsers.filter(u => u.role === 'admin')
+    const clients = users.filter((u: any) => u.role === 'cliente')
+    const cleaners = users.filter((u: any) => u.role === 'cleaner')
+    const admins = users.filter((u: any) => u.role === 'admin')
 
     return (
         <div className="min-h-screen bg-gray-50">
@@ -117,11 +98,11 @@ export default async function AdminUsersPage() {
                 <div className="bg-white rounded-xl shadow">
                     <div className="p-6 border-b border-gray-200">
                         <h2 className="text-lg font-bold text-gray-900">
-                            Todos los Usuarios ({processedUsers.length})
+                            Todos los Usuarios ({users.length})
                         </h2>
                     </div>
 
-                    {processedUsers.length === 0 ? (
+                    {users.length === 0 ? (
                         <div className="p-12 text-center">
                             <p className="text-gray-500 text-lg">No hay usuarios registrados</p>
                             <p className="text-gray-400 text-sm mt-2">
@@ -129,7 +110,7 @@ export default async function AdminUsersPage() {
                             </p>
                         </div>
                     ) : (
-                        <UsersList users={processedUsers} />
+                        <UsersList users={users} />
                     )}
                 </div>
             </main>

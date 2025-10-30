@@ -30,29 +30,18 @@ export default async function AdminCleaningsPage() {
         redirect('/login')
     }
 
-    // Obtener limpiezas
+    // Obtener limpiezas usando la vista
     const { data: cleanings } = await supabase
-        .from('cleanings')
-        .select(`
-            *,
-            house:houses(
-                *,
-                client:profiles!houses_client_id_fkey(id, full_name, email, phone)
-            ),
-            cleaner:profiles!cleanings_cleaner_id_fkey(id, full_name, email, phone)
-        `)
+        .from('cleanings_detailed')
+        .select('*')
         .order('scheduled_date', { ascending: false })
 
-    // Obtener casas para el formulario
-    const { data: houses } = await supabase
-        .from('houses')
-        .select(`
-            id,
-            address,
-            sectors_count,
-            client:profiles!houses_client_id_fkey(full_name)
-        `)
-        .order('address', { ascending: true })
+    // Obtener clientes
+    const { data: clients } = await supabase
+        .from('profiles')
+        .select('id, full_name, email')
+        .eq('role', 'cliente')
+        .order('full_name', { ascending: true })
 
     // Obtener cleaners disponibles
     const { data: cleaners } = await supabase
@@ -93,7 +82,7 @@ export default async function AdminCleaningsPage() {
                                 Nueva Limpieza
                             </h2>
                             <CreateCleaningForm
-                                houses={houses || []}
+                                clients={clients || []}
                                 cleaners={cleaners || []}
                             />
                         </div>
@@ -108,7 +97,10 @@ export default async function AdminCleaningsPage() {
                                 </h2>
                             </div>
 
-                            <CleaningsList cleanings={cleanings || []} cleaners={cleaners || []} />
+                            <CleaningsList
+                                cleanings={cleanings || []}
+                                cleaners={cleaners || []}
+                            />
                         </div>
                     </div>
                 </div>

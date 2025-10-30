@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { User, Mail, Phone, Calendar, Shield, Briefcase, Users, Trash2, Edit, MoreVertical } from 'lucide-react'
+import { User, Mail, Phone, Calendar, Shield, Briefcase, Users, Trash2, MoreVertical } from 'lucide-react'
 
 interface Profile {
     id: string
@@ -11,8 +11,8 @@ interface Profile {
     phone?: string
     role: 'admin' | 'cleaner' | 'cliente'
     created_at: string
-    houses_count?: { count: number }[]
-    cleanings_as_cleaner?: { count: number }[]
+    client_cleanings_count?: number
+    cleaner_cleanings_count?: number
 }
 
 export default function UsersList({ users }: { users: Profile[] }) {
@@ -75,12 +75,16 @@ export default function UsersList({ users }: { users: Profile[] }) {
                 body: JSON.stringify({ user_id: userId, role: newRole })
             })
 
-            if (!response.ok) throw new Error('Error al actualizar rol')
+            const data = await response.json()
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Error al actualizar rol')
+            }
 
             setMessage({ type: 'success', text: 'Rol actualizado exitosamente' })
             router.refresh()
-        } catch (error) {
-            setMessage({ type: 'error', text: 'Error al actualizar el rol' })
+        } catch (error: any) {
+            setMessage({ type: 'error', text: error.message })
         } finally {
             setIsLoading(null)
         }
@@ -99,23 +103,19 @@ export default function UsersList({ users }: { users: Profile[] }) {
                 method: 'DELETE'
             })
 
-            if (!response.ok) throw new Error('Error al eliminar usuario')
+            const data = await response.json()
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Error al eliminar usuario')
+            }
 
             setMessage({ type: 'success', text: 'Usuario eliminado exitosamente' })
             router.refresh()
-        } catch (error) {
-            setMessage({ type: 'error', text: 'Error al eliminar usuario' })
+        } catch (error: any) {
+            setMessage({ type: 'error', text: error.message })
         } finally {
             setIsLoading(null)
         }
-    }
-
-    const getHousesCount = (user: Profile) => {
-        return user.houses_count?.[0]?.count || 0
-    }
-
-    const getCleaningsCount = (user: Profile) => {
-        return user.cleanings_as_cleaner?.[0]?.count || 0
     }
 
     return (
@@ -179,18 +179,18 @@ export default function UsersList({ users }: { users: Profile[] }) {
                                     </div>
 
                                     {/* Estadísticas según rol */}
-                                    {user.role === 'cliente' && (
+                                    {user.role === 'cliente' && user.client_cleanings_count !== undefined && (
                                         <div className="flex items-center gap-4 text-sm">
                                             <div className="px-3 py-1 bg-blue-50 text-blue-700 rounded-lg">
-                                                🏠 {getHousesCount(user)} {getHousesCount(user) === 1 ? 'casa' : 'casas'}
+                                                🏠 {user.client_cleanings_count} {user.client_cleanings_count === 1 ? 'limpieza' : 'limpiezas'}
                                             </div>
                                         </div>
                                     )}
 
-                                    {user.role === 'cleaner' && (
+                                    {user.role === 'cleaner' && user.cleaner_cleanings_count !== undefined && (
                                         <div className="flex items-center gap-4 text-sm">
                                             <div className="px-3 py-1 bg-green-50 text-green-700 rounded-lg">
-                                                ✨ {getCleaningsCount(user)} {getCleaningsCount(user) === 1 ? 'limpieza' : 'limpiezas'}
+                                                ✨ {user.cleaner_cleanings_count} {user.cleaner_cleanings_count === 1 ? 'limpieza' : 'limpiezas'}
                                             </div>
                                         </div>
                                     )}

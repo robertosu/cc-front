@@ -1,30 +1,31 @@
 'use client'
 
 import { useState } from 'react'
-import { Calendar, Clock, MapPin, Phone, User, ChevronRight, ChevronLeft, CheckCircle } from 'lucide-react'
+import { Calendar, Clock, MapPin, Phone, User, ChevronRight, ChevronLeft, CheckCircle, Users } from 'lucide-react'
 import CleaningProgressBar from './CleaningProgressBar'
 
 interface Cleaning {
     id: string
+    address: string
+    total_steps: number
+    current_step: number
     scheduled_date: string
     start_time: string
     end_time: string
     status: string
-    current_sector: number
     notes?: string
-    house: {
-        address: string
-        sectors_count: number
-        notes?: string
-        client: {
-            full_name: string
-            phone?: string
-        }
+    progress_percentage: number
+    client: {
+        full_name: string
+        phone?: string
     }
+    cleaners: Array<{
+        full_name: string
+    }>
 }
 
 export default function CleanerCleaningCard({ cleaning }: { cleaning: Cleaning }) {
-    const [currentSector, setCurrentSector] = useState(cleaning.current_sector)
+    const [currentStep, setCurrentStep] = useState(cleaning.current_step)
     const [status, setStatus] = useState(cleaning.status)
     const [isLoading, setIsLoading] = useState(false)
     const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
@@ -44,7 +45,7 @@ export default function CleanerCleaningCard({ cleaning }: { cleaning: Cleaning }
                 body: JSON.stringify({
                     id: cleaning.id,
                     status: 'in_progress',
-                    current_sector: 0
+                    current_step: 0
                 })
             })
 
@@ -59,8 +60,8 @@ export default function CleanerCleaningCard({ cleaning }: { cleaning: Cleaning }
         }
     }
 
-    const handleSectorUpdate = async (newSector: number) => {
-        if (newSector < 0 || newSector > cleaning.house.sectors_count) return
+    const handleStepUpdate = async (newStep: number) => {
+        if (newStep < 0 || newStep > cleaning.total_steps) return
 
         setIsLoading(true)
         setMessage(null)
@@ -71,20 +72,20 @@ export default function CleanerCleaningCard({ cleaning }: { cleaning: Cleaning }
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     id: cleaning.id,
-                    current_sector: newSector,
-                    status: newSector === cleaning.house.sectors_count ? 'completed' : 'in_progress'
+                    current_step: newStep,
+                    status: newStep === cleaning.total_steps ? 'completed' : 'in_progress'
                 })
             })
 
             if (!response.ok) throw new Error('Error al actualizar')
 
-            setCurrentSector(newSector)
+            setCurrentStep(newStep)
 
-            if (newSector === cleaning.house.sectors_count) {
+            if (newStep === cleaning.total_steps) {
                 setStatus('completed')
                 setMessage({ type: 'success', text: '¡Limpieza completada! 🎉' })
             } else {
-                setMessage({ type: 'success', text: `Sector ${newSector} completado` })
+                setMessage({ type: 'success', text: `Step ${newStep} completado` })
             }
         } catch (error) {
             setMessage({ type: 'error', text: 'Error al actualizar el progreso' })
@@ -104,14 +105,14 @@ export default function CleanerCleaningCard({ cleaning }: { cleaning: Cleaning }
                 body: JSON.stringify({
                     id: cleaning.id,
                     status: 'completed',
-                    current_sector: cleaning.house.sectors_count
+                    current_step: cleaning.total_steps
                 })
             })
 
             if (!response.ok) throw new Error('Error al completar')
 
             setStatus('completed')
-            setCurrentSector(cleaning.house.sectors_count)
+            setCurrentStep(cleaning.total_steps)
             setMessage({ type: 'success', text: '¡Limpieza completada! 🎉' })
         } catch (error) {
             setMessage({ type: 'error', text: 'Error al completar la limpieza' })
@@ -157,7 +158,7 @@ export default function CleanerCleaningCard({ cleaning }: { cleaning: Cleaning }
                         <MapPin className="w-5 h-5 text-gray-400 flex-shrink-0 mt-1" />
                         <div>
                             <p className="text-sm text-gray-600">Dirección</p>
-                            <p className="font-medium text-gray-900">{cleaning.house.address}</p>
+                            <p className="font-medium text-gray-900">{cleaning.address}</p>
                         </div>
                     </div>
 
@@ -165,18 +166,30 @@ export default function CleanerCleaningCard({ cleaning }: { cleaning: Cleaning }
                         <User className="w-5 h-5 text-gray-400 flex-shrink-0 mt-1" />
                         <div>
                             <p className="text-sm text-gray-600">Cliente</p>
-                            <p className="font-medium text-gray-900">{cleaning.house.client.full_name}</p>
-                            {cleaning.house.client.phone && (
+                            <p className="font-medium text-gray-900">{cleaning.client.full_name}</p>
+                            {cleaning.client.phone && (
                                 <a
-                                    href={`tel:${cleaning.house.client.phone}`}
+                                    href={`tel:${cleaning.client.phone}`}
                                     className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700 mt-1"
                                 >
                                     <Phone className="w-3 h-3" />
-                                    {cleaning.house.client.phone}
+                                    {cleaning.client.phone}
                                 </a>
                             )}
                         </div>
                     </div>
+
+                    {cleaning.cleaners.length > 1 && (
+                        <div className="flex items-start gap-3">
+                            <Users className="w-5 h-5 text-gray-400 flex-shrink-0 mt-1" />
+                            <div>
+                                <p className="text-sm text-gray-600">Equipo</p>
+                                <p className="font-medium text-gray-900">
+                                    {cleaning.cleaners.map(c => c.full_name).join(', ')}
+                                </p>
+                            </div>
+                        </div>
+                    )}
 
                     <div className="flex items-start gap-3">
                         <Calendar className="w-5 h-5 text-gray-400 flex-shrink-0 mt-1" />
@@ -203,10 +216,10 @@ export default function CleanerCleaningCard({ cleaning }: { cleaning: Cleaning }
                         </div>
                     </div>
 
-                    {cleaning.house.notes && (
+                    {cleaning.notes && (
                         <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
                             <p className="text-sm text-blue-900">
-                                <strong>Notas:</strong> {cleaning.house.notes}
+                                <strong>Notas:</strong> {cleaning.notes}
                             </p>
                         </div>
                     )}
@@ -215,8 +228,8 @@ export default function CleanerCleaningCard({ cleaning }: { cleaning: Cleaning }
                 {/* Controles y progreso */}
                 <div className="space-y-6">
                     <CleaningProgressBar
-                        currentSector={currentSector}
-                        totalSectors={cleaning.house.sectors_count}
+                        currentStep={currentStep}
+                        totalSteps={cleaning.total_steps}
                         status={status as any}
                     />
 
@@ -236,8 +249,8 @@ export default function CleanerCleaningCard({ cleaning }: { cleaning: Cleaning }
                             <>
                                 <div className="flex gap-3">
                                     <button
-                                        onClick={() => handleSectorUpdate(currentSector - 1)}
-                                        disabled={isLoading || currentSector === 0}
+                                        onClick={() => handleStepUpdate(currentStep - 1)}
+                                        disabled={isLoading || currentStep === 0}
                                         className="flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                                     >
                                         <ChevronLeft className="w-5 h-5" />
@@ -245,8 +258,8 @@ export default function CleanerCleaningCard({ cleaning }: { cleaning: Cleaning }
                                     </button>
 
                                     <button
-                                        onClick={() => handleSectorUpdate(currentSector + 1)}
-                                        disabled={isLoading || currentSector >= cleaning.house.sectors_count}
+                                        onClick={() => handleStepUpdate(currentStep + 1)}
+                                        disabled={isLoading || currentStep >= cleaning.total_steps}
                                         className="flex-1 bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                                     >
                                         Siguiente
@@ -254,7 +267,7 @@ export default function CleanerCleaningCard({ cleaning }: { cleaning: Cleaning }
                                     </button>
                                 </div>
 
-                                {currentSector < cleaning.house.sectors_count && (
+                                {currentStep < cleaning.total_steps && (
                                     <button
                                         onClick={handleComplete}
                                         disabled={isLoading}
@@ -284,14 +297,3 @@ export default function CleanerCleaningCard({ cleaning }: { cleaning: Cleaning }
         </div>
     )
 }
-
-/*
-📝 CARACTERÍSTICAS:
-✅ Actualización de progreso por sector
-✅ Botones para avanzar/retroceder
-✅ Inicio de limpieza
-✅ Completar limpieza
-✅ Feedback visual inmediato
-✅ Validaciones de estado
-✅ Información del cliente
-*/

@@ -3,7 +3,7 @@ import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import { cookies } from 'next/headers'
 import LogoutButton from '@/components/auth/LogoutButton'
-import { Users, Home, Briefcase, Clock, CheckCircle, Calendar } from 'lucide-react'
+import { Users, Briefcase, Clock, CheckCircle, Calendar } from 'lucide-react'
 import Link from 'next/link'
 
 export const metadata = {
@@ -29,48 +29,36 @@ export default async function AdminDashboard() {
         redirect('/login')
     }
 
-    // Obtener estadísticas
-    const [
-        clientsCount,
-        cleanersCount,
-        housesCount,
-        activeCleanings,
-        pendingCleanings,
-        completedToday
-    ] = await Promise.all([
-        supabase.from('profiles').select('id', { count: 'exact', head: true }).eq('role', 'cliente'),
-        supabase.from('profiles').select('id', { count: 'exact', head: true }).eq('role', 'cleaner'),
-        supabase.from('houses').select('id', { count: 'exact', head: true }),
-        supabase.from('cleanings').select('id', { count: 'exact', head: true }).eq('status', 'in_progress'),
-        supabase.from('cleanings').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
-        supabase.from('cleanings').select('id', { count: 'exact', head: true })
-            .eq('status', 'completed')
-            .eq('scheduled_date', new Date().toISOString().split('T')[0])
-    ])
+    // Obtener estadísticas usando la función de la BD
+    const { data: stats } = await supabase
+        .rpc('get_dashboard_stats', { user_id: user.id })
 
-    // Próximas limpiezas
-    const { data: upcomingCleanings } = await supabase
-        .from('cleanings')
-        .select(`
-            *,
-            house:houses(address, client:profiles!houses_client_id_fkey(full_name)),
-            cleaner:profiles!cleanings_cleaner_id_fkey(full_name)
-        `)
-        .eq('status', 'pending')
-        .gte('scheduled_date', new Date().toISOString().split('T')[0])
+    const statistics = stats?.[0] || {
+        total_cleanings: 0,
+        pending_cleanings: 0,
+        in_progress_cleanings: 0,
+        completed_cleanings: 0,
+        total_clients: 0,
+        total_cleaners: 0
+    }
+
+    // Obtener limpiezas activas
+    const { data: currentCleanings } = await supabase
+        .from('cleanings_detailed')
+        .select('*')
+        .eq('status', 'in_progress')
         .order('scheduled_date', { ascending: true })
         .limit(5)
 
-    // Limpiezas activas
-    const { data: currentCleanings } = await supabase
-        .from('cleanings')
-        .select(`
-            *,
-            house:houses(address, sectors_count),
-            cleaner:profiles!cleanings_cleaner_id_fkey(full_name)
-        `)
-        .eq('status', 'in_progress')
+    // Próximas limpiezas
+    const today = new Date().toISOString().split('T')[0]
+    const { data: upcomingCleanings } = await supabase
+        .from('cleanings_detailed')
+        .select('*')
+        .eq('status', 'pending')
+        .gte('scheduled_date', today)
         .order('scheduled_date', { ascending: true })
+        .limit(5)
 
     return (
         <div className="min-h-screen bg-gray-50">
@@ -91,19 +79,6 @@ export default async function AdminDashboard() {
 
                 {/* Acciones rápidas */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-                    <Link
-                        href="/dashboard/admin/houses"
-                        className="bg-white rounded-xl shadow p-6 hover:shadow-lg transition-shadow border-l-4 border-blue-500"
-                    >
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <p className="text-sm text-gray-600 mb-1">Gestionar</p>
-                                <p className="text-xl font-bold text-gray-900">Casas</p>
-                            </div>
-                            <Home className="w-10 h-10 text-blue-500" />
-                        </div>
-                    </Link>
-
                     <Link
                         href="/dashboard/admin/cleanings"
                         className="bg-white rounded-xl shadow p-6 hover:shadow-lg transition-shadow border-l-4 border-green-500"
@@ -129,10 +104,20 @@ export default async function AdminDashboard() {
                             <Users className="w-10 h-10 text-purple-500" />
                         </div>
                     </Link>
+
+                    <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow p-6 text-white">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <p className="text-sm text-blue-100 mb-1">Total Limpiezas</p>
+                                <p className="text-3xl font-bold">{statistics.total_cleanings}</p>
+                            </div>
+                            <Briefcase className="w-10 h-10 text-blue-200" />
+                        </div>
+                    </div>
                 </div>
 
                 {/* Estadísticas */}
-                <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-8">
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
                     <div className="bg-white rounded-xl shadow p-4">
                         <div className="flex items-center gap-3">
                             <div className="p-2 bg-blue-100 rounded-lg">
@@ -140,7 +125,7 @@ export default async function AdminDashboard() {
                             </div>
                             <div>
                                 <p className="text-xs text-gray-600">Clientes</p>
-                                <p className="text-xl font-bold text-gray-900">{clientsCount.count || 0}</p>
+                                <p className="text-xl font-bold text-gray-900">{statistics.total_clients}</p>
                             </div>
                         </div>
                     </div>
@@ -152,19 +137,7 @@ export default async function AdminDashboard() {
                             </div>
                             <div>
                                 <p className="text-xs text-gray-600">Cleaners</p>
-                                <p className="text-xl font-bold text-gray-900">{cleanersCount.count || 0}</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="bg-white rounded-xl shadow p-4">
-                        <div className="flex items-center gap-3">
-                            <div className="p-2 bg-green-100 rounded-lg">
-                                <Home className="w-5 h-5 text-green-600" />
-                            </div>
-                            <div>
-                                <p className="text-xs text-gray-600">Casas</p>
-                                <p className="text-xl font-bold text-gray-900">{housesCount.count || 0}</p>
+                                <p className="text-xl font-bold text-gray-900">{statistics.total_cleaners}</p>
                             </div>
                         </div>
                     </div>
@@ -176,7 +149,7 @@ export default async function AdminDashboard() {
                             </div>
                             <div>
                                 <p className="text-xs text-gray-600">Activas</p>
-                                <p className="text-xl font-bold text-gray-900">{activeCleanings.count || 0}</p>
+                                <p className="text-xl font-bold text-gray-900">{statistics.in_progress_cleanings}</p>
                             </div>
                         </div>
                     </div>
@@ -188,7 +161,7 @@ export default async function AdminDashboard() {
                             </div>
                             <div>
                                 <p className="text-xs text-gray-600">Pendientes</p>
-                                <p className="text-xl font-bold text-gray-900">{pendingCleanings.count || 0}</p>
+                                <p className="text-xl font-bold text-gray-900">{statistics.pending_cleanings}</p>
                             </div>
                         </div>
                     </div>
@@ -199,8 +172,8 @@ export default async function AdminDashboard() {
                                 <CheckCircle className="w-5 h-5 text-green-600" />
                             </div>
                             <div>
-                                <p className="text-xs text-gray-600">Hoy</p>
-                                <p className="text-xl font-bold text-gray-900">{completedToday.count || 0}</p>
+                                <p className="text-xs text-gray-600">Completadas</p>
+                                <p className="text-xl font-bold text-gray-900">{statistics.completed_cleanings}</p>
                             </div>
                         </div>
                     </div>
@@ -218,21 +191,26 @@ export default async function AdminDashboard() {
                                             <div className="flex justify-between items-start mb-2">
                                                 <div>
                                                     <p className="font-medium text-gray-900">
-                                                        {cleaning.house.address}
+                                                        {cleaning.address}
                                                     </p>
                                                     <p className="text-sm text-gray-600">
-                                                        {cleaning.cleaner?.full_name || 'Sin asignar'}
+                                                        Cliente: {cleaning.client.full_name}
                                                     </p>
+                                                    {cleaning.cleaners.length > 0 && (
+                                                        <p className="text-sm text-gray-600">
+                                                            Cleaners: {cleaning.cleaners.map((c: any) => c.full_name).join(', ')}
+                                                        </p>
+                                                    )}
                                                 </div>
                                                 <span className="text-sm font-medium text-blue-600">
-                                                    {cleaning.current_sector}/{cleaning.house.sectors_count}
+                                                    {cleaning.current_step}/{cleaning.total_steps}
                                                 </span>
                                             </div>
                                             <div className="w-full bg-gray-200 rounded-full h-2">
                                                 <div
                                                     className="bg-blue-600 h-2 rounded-full transition-all"
                                                     style={{
-                                                        width: `${(cleaning.current_sector / cleaning.house.sectors_count) * 100}%`
+                                                        width: `${cleaning.progress_percentage}%`
                                                     }}
                                                 />
                                             </div>
@@ -259,14 +237,20 @@ export default async function AdminDashboard() {
                                                 <Calendar className="w-5 h-5 text-gray-400 flex-shrink-0 mt-0.5" />
                                                 <div className="flex-1">
                                                     <p className="font-medium text-gray-900">
-                                                        {cleaning.house.address}
+                                                        {cleaning.address}
                                                     </p>
                                                     <p className="text-sm text-gray-600">
-                                                        Cliente: {cleaning.house.client?.full_name}
+                                                        Cliente: {cleaning.client.full_name}
                                                     </p>
-                                                    <p className="text-sm text-gray-600">
-                                                        Cleaner: {cleaning.cleaner?.full_name || 'Sin asignar'}
-                                                    </p>
+                                                    {cleaning.cleaners.length > 0 ? (
+                                                        <p className="text-sm text-gray-600">
+                                                            Cleaners: {cleaning.cleaners.map((c: any) => c.full_name).join(', ')}
+                                                        </p>
+                                                    ) : (
+                                                        <p className="text-sm text-yellow-600">
+                                                            ⚠️ Sin cleaners asignados
+                                                        </p>
+                                                    )}
                                                     <p className="text-xs text-gray-500 mt-1">
                                                         {new Date(cleaning.scheduled_date).toLocaleDateString('es-CL')} • {cleaning.start_time}
                                                     </p>
