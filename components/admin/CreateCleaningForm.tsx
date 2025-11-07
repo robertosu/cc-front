@@ -2,15 +2,12 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { AlertCircle, CheckCircle } from 'lucide-react'
+import { AlertCircle, CheckCircle, X } from 'lucide-react'
 
-interface House {
+interface Client {
     id: string
-    address: string
-    sectors_count: number
-    client: {
-        full_name: any
-    }
+    full_name: string
+    email: string
 }
 
 interface Cleaner {
@@ -19,16 +16,24 @@ interface Cleaner {
     email: string
 }
 
-export default function CreateCleaningForm({ houses, cleaners }: { houses: House[], cleaners: Cleaner[] }) {
+export default function CreateCleaningForm({
+                                               clients,
+                                               cleaners
+                                           }: {
+    clients: Client[],
+    cleaners: Cleaner[]
+}) {
     const router = useRouter()
     const [formData, setFormData] = useState({
-        house_id: '',
-        cleaner_id: '',
+        client_id: '',
+        address: '',
+        total_steps: '3',
         scheduled_date: '',
         start_time: '09:00',
         end_time: '12:00',
         notes: ''
     })
+    const [selectedCleaners, setSelectedCleaners] = useState<string[]>([])
     const [isLoading, setIsLoading] = useState(false)
     const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
 
@@ -38,6 +43,14 @@ export default function CreateCleaningForm({ houses, cleaners }: { houses: House
             [e.target.name]: e.target.value
         }))
         setMessage(null)
+    }
+
+    const toggleCleaner = (cleanerId: string) => {
+        setSelectedCleaners(prev =>
+            prev.includes(cleanerId)
+                ? prev.filter(id => id !== cleanerId)
+                : [...prev, cleanerId]
+        )
     }
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -51,7 +64,8 @@ export default function CreateCleaningForm({ houses, cleaners }: { houses: House
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     ...formData,
-                    cleaner_id: formData.cleaner_id || null
+                    total_steps: parseInt(formData.total_steps),
+                    cleaner_ids: selectedCleaners
                 })
             })
 
@@ -65,13 +79,15 @@ export default function CreateCleaningForm({ houses, cleaners }: { houses: House
 
             // Limpiar formulario
             setFormData({
-                house_id: '',
-                cleaner_id: '',
+                client_id: '',
+                address: '',
+                total_steps: '3',
                 scheduled_date: '',
                 start_time: '09:00',
                 end_time: '12:00',
                 notes: ''
             })
+            setSelectedCleaners([])
 
             // Refrescar página
             router.refresh()
@@ -81,8 +97,6 @@ export default function CreateCleaningForm({ houses, cleaners }: { houses: House
             setIsLoading(false)
         }
     }
-
-    const selectedHouse = houses.find(h => h.id === formData.house_id)
 
     return (
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -101,57 +115,128 @@ export default function CreateCleaningForm({ houses, cleaners }: { houses: House
                 </div>
             )}
 
+            {/* Cliente */}
             <div>
-                <label htmlFor="house_id" className="block text-sm font-medium text-gray-700 mb-2">
-                    Casa *
+                <label htmlFor="client_id" className="block text-sm font-medium text-gray-700 mb-2">
+                    Cliente *
                 </label>
                 <select
-                    id="house_id"
-                    name="house_id"
-                    value={formData.house_id}
+                    id="client_id"
+                    name="client_id"
+                    value={formData.client_id}
                     onChange={handleChange}
                     required
                     disabled={isLoading}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 text-sm"
                 >
-                    <option value="">Selecciona una casa</option>
-                    {houses.map(house => (
-                        <option key={house.id} value={house.id}>
-                            {house.address} - {house.client.full_name}
+                    <option value="">Selecciona un cliente</option>
+                    {clients.map(client => (
+                        <option key={client.id} value={client.id}>
+                            {client.full_name} ({client.email})
                         </option>
                     ))}
                 </select>
-                {selectedHouse && (
-                    <p className="mt-1 text-xs text-gray-500">
-                        {selectedHouse.sectors_count} sectores
-                    </p>
-                )}
             </div>
 
+            {/* Dirección */}
             <div>
-                <label htmlFor="cleaner_id" className="block text-sm font-medium text-gray-700 mb-2">
-                    Cleaner (Opcional)
+                <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-2">
+                    Dirección *
                 </label>
-                <select
-                    id="cleaner_id"
-                    name="cleaner_id"
-                    value={formData.cleaner_id}
+                <input
+                    type="text"
+                    id="address"
+                    name="address"
+                    value={formData.address}
                     onChange={handleChange}
+                    required
                     disabled={isLoading}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 text-sm"
-                >
-                    <option value="">Sin asignar</option>
-                    {cleaners.map(cleaner => (
-                        <option key={cleaner.id} value={cleaner.id}>
-                            {cleaner.full_name}
-                        </option>
-                    ))}
-                </select>
+                    placeholder="Calle 123, Ciudad"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
+                />
+            </div>
+
+            {/* Steps */}
+            <div>
+                <label htmlFor="total_steps" className="block text-sm font-medium text-gray-700 mb-2">
+                    Número de Steps *
+                </label>
+                <input
+                    type="number"
+                    id="total_steps"
+                    name="total_steps"
+                    value={formData.total_steps}
+                    onChange={handleChange}
+                    required
+                    min="1"
+                    max="20"
+                    disabled={isLoading}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
+                />
                 <p className="mt-1 text-xs text-gray-500">
-                    Puedes asignarlo después
+                    Divide la limpieza en pasos (1-20)
                 </p>
             </div>
 
+            {/* Cleaners */}
+            <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Cleaners (Opcional)
+                </label>
+                <div className="border border-gray-300 rounded-lg p-3 max-h-40 overflow-y-auto bg-gray-50">
+                    {cleaners.length === 0 ? (
+                        <p className="text-sm text-gray-500 text-center py-2">
+                            No hay cleaners disponibles
+                        </p>
+                    ) : (
+                        <div className="space-y-2">
+                            {cleaners.map(cleaner => (
+                                <label
+                                    key={cleaner.id}
+                                    className={`flex items-center gap-2 p-2 rounded hover:bg-white cursor-pointer transition-colors ${
+                                        selectedCleaners.includes(cleaner.id) ? 'bg-blue-50' : ''
+                                    }`}
+                                >
+                                    <input
+                                        type="checkbox"
+                                        checked={selectedCleaners.includes(cleaner.id)}
+                                        onChange={() => toggleCleaner(cleaner.id)}
+                                        disabled={isLoading}
+                                        className="w-4 h-4 text-blue-600"
+                                    />
+                                    <span className="text-sm text-gray-900">
+                                        {cleaner.full_name}
+                                    </span>
+                                </label>
+                            ))}
+                        </div>
+                    )}
+                </div>
+                {selectedCleaners.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mt-2">
+                        {selectedCleaners.map(cleanerId => {
+                            const cleaner = cleaners.find(c => c.id === cleanerId)
+                            return (
+                                <span
+                                    key={cleanerId}
+                                    className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full"
+                                >
+                                    {cleaner?.full_name}
+                                    <button
+                                        type="button"
+                                        onClick={() => toggleCleaner(cleanerId)}
+                                        className="hover:text-blue-900"
+                                    >
+                                        <X className="w-3 h-3" />
+                                    </button>
+                                </span>
+                            )
+                        })}
+                    </div>
+                )}
+            </div>
+
+            {/* Fecha */}
             <div>
                 <label htmlFor="scheduled_date" className="block text-sm font-medium text-gray-700 mb-2">
                     Fecha *
@@ -169,6 +254,7 @@ export default function CreateCleaningForm({ houses, cleaners }: { houses: House
                 />
             </div>
 
+            {/* Horarios */}
             <div className="grid grid-cols-2 gap-3">
                 <div>
                     <label htmlFor="start_time" className="block text-sm font-medium text-gray-700 mb-2">
@@ -203,6 +289,7 @@ export default function CreateCleaningForm({ houses, cleaners }: { houses: House
                 </div>
             </div>
 
+            {/* Notas */}
             <div>
                 <label htmlFor="notes" className="block text-sm font-medium text-gray-700 mb-2">
                     Notas (Opcional)
@@ -214,11 +301,12 @@ export default function CreateCleaningForm({ houses, cleaners }: { houses: House
                     onChange={handleChange}
                     disabled={isLoading}
                     rows={3}
-                    placeholder="Instrucciones especiales para el cleaner"
+                    placeholder="Instrucciones especiales para los cleaners"
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 resize-none text-sm"
                 />
             </div>
 
+            {/* Botón */}
             <button
                 type="submit"
                 disabled={isLoading}

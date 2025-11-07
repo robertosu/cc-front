@@ -12,42 +12,70 @@ export async function GET(request: Request) {
         return unauthorizedResponse()
     }
 
-    const cookieStore = cookies()
+    const cookieStore = await cookies()
     const supabase = createClient(cookieStore)
 
     try {
         const { searchParams } = new URL(request.url)
         const status = searchParams.get('status')
 
-        let query = supabase
-            .from('cleanings')
-            .select(`
-                *,
-                house:houses(
-                    *,
-                    client:profiles!houses_client_id_fkey(id, full_name, email, phone)
-                ),
-                cleaner:profiles!cleanings_cleaner_id_fkey(id, full_name, email, phone)
-            `)
+        // Admin: usa la vista para obtener toda la información
+        if (user.role === 'admin') {
+            let query = supabase
+                .from('cleanings_detailed')
+                .select('*')
 
-        // Filtrar por status si se proporciona
-        if (status) {
-            query = query.eq('status', status)
+            if (status) {
+                query = query.eq('status', status)
+            }
+
+            const { data, error } = await query.order('scheduled_date', { ascending: true })
+
+            if (error) throw error
+
+            return NextResponse.json({ cleanings: data })
         }
 
-        // Cleaner solo ve sus limpiezas
+        // Cleaner: solo sus limpiezas asignadas
         if (user.role === 'cleaner') {
-            query = query.eq('cleaner_id', user.id)
+            let query = supabase
+                .from('cleanings_detailed')
+                .select('*')
+                .contains('cleaners', [{ id: user.id }])
+
+            if (status) {
+                query = query.eq('status', status)
+            }
+
+            const { data, error } = await query.order('scheduled_date', { ascending: true })
+
+            if (error) throw error
+
+            return NextResponse.json({ cleanings: data })
         }
 
-        // RLS maneja automáticamente el filtrado para clientes
+        // Cliente: solo sus limpiezas
+        if (user.role === 'cliente') {
+            let query = supabase
+                .from('cleanings_detailed')
+                .select('*')
+                .eq('client->>id', user.id)
 
-        const { data, error } = await query.order('scheduled_date', { ascending: true })
+            if (status) {
+                query = query.eq('status', status)
+            }
 
-        if (error) throw error
+            const { data, error } = await query.order('scheduled_date', { ascending: true })
 
-        return NextResponse.json({ cleanings: data })
+            if (error) throw error
+
+            return NextResponse.json({ cleanings: data })
+        }
+
+        return NextResponse.json({ cleanings: [] })
+
     } catch (error: any) {
+        console.error('Error in GET /api/cleanings:', error)
         return NextResponse.json(
             { error: error.message },
             { status: 500 }
@@ -68,73 +96,107 @@ export async function POST(request: Request) {
 
     try {
         const body = await request.json()
-        const { house_id, cleaner_id, scheduled_date, start_time, end_time, notes } = body
+        const {
+            client_id,
+            cleaner_ids, // Array de IDs de cleaners
+            address,
+            total_steps,
+            scheduled_date,
+            start_time,
+            end_time,
+            notes
+        } = body
 
         // Validaciones
-        if (!house_id || !scheduled_date || !start_time || !end_time) {
+        if (!client_id || !address || !total_steps || !scheduled_date || !start_time || !end_time) {
             return NextResponse.json(
-                { error: 'Faltan campos requeridos' },
+                { error: 'Faltan campos requeridos: client_id, address, total_steps, scheduled_date, start_time, end_time' },
                 { status: 400 }
             )
         }
 
-        // Verificar que la casa existe
-        const { data: house } = await supabase
-            .from('houses')
-            .select('id')
-            .eq('id', house_id)
+        if (total_steps < 1 || total_steps > 20) {
+            return NextResponse.json(
+                { error: 'El número de steps debe estar entre 1 y 20' },
+                { status: 400 }
+            )
+        }
+
+        // Verificar que el cliente existe y tiene rol correcto
+        const { data: clientExists } = await supabase
+            .from('profiles')
+            .select('id, role')
+            .eq('id', client_id)
+            .eq('role', 'cliente')
             .single()
 
-        if (!house) {
+        if (!clientExists) {
             return NextResponse.json(
-                { error: 'Casa no encontrada' },
+                { error: 'Cliente no encontrado' },
                 { status: 404 }
             )
         }
 
-        // Si se asigna cleaner, verificar que existe y tiene rol correcto
-        if (cleaner_id) {
-            const { data: cleaner } = await supabase
+        // Verificar cleaners si se proporcionaron
+        if (cleaner_ids && cleaner_ids.length > 0) {
+            const { data: cleaners } = await supabase
                 .from('profiles')
-                .select('id, role')
-                .eq('id', cleaner_id)
-                .single()
+                .select('id')
+                .eq('role', 'cleaner')
+                .in('id', cleaner_ids)
 
-            if (!cleaner || cleaner.role !== 'cleaner') {
+            if (!cleaners || cleaners.length !== cleaner_ids.length) {
                 return NextResponse.json(
-                    { error: 'Cleaner no válido' },
+                    { error: 'Uno o más cleaners no son válidos' },
                     { status: 400 }
                 )
             }
         }
 
         // Crear limpieza
-        const { data, error } = await supabase
+        const { data: cleaning, error: cleaningError } = await supabase
             .from('cleanings')
             .insert({
-                house_id,
-                cleaner_id: cleaner_id || null,
+                client_id,
+                address,
+                total_steps,
                 scheduled_date,
                 start_time,
                 end_time,
                 notes,
                 status: 'pending',
-                current_sector: 0
+                current_step: 0
             })
-            .select(`
-                *,
-                house:houses(
-                    *,
-                    client:profiles!houses_client_id_fkey(id, full_name, email)
-                ),
-                cleaner:profiles!cleanings_cleaner_id_fkey(id, full_name, email)
-            `)
+            .select()
             .single()
 
-        if (error) throw error
+        if (cleaningError) throw cleaningError
 
-        return NextResponse.json({ cleaning: data }, { status: 201 })
+        // Asignar cleaners si se proporcionaron
+        if (cleaner_ids && cleaner_ids.length > 0) {
+            const assignments = cleaner_ids.map((cleaner_id: string) => ({
+                cleaning_id: cleaning.id,
+                cleaner_id
+            }))
+
+            const { error: assignmentError } = await supabase
+                .from('cleaning_cleaners')
+                .insert(assignments)
+
+            if (assignmentError) throw assignmentError
+        }
+
+        // Obtener limpieza completa con relaciones
+        const { data: fullCleaning } = await supabase
+            .from('cleanings_detailed')
+            .select('*')
+            .eq('id', cleaning.id)
+            .single()
+
+        return NextResponse.json({ cleaning: fullCleaning }, { status: 201 })
+
     } catch (error: any) {
+        console.error('Error in POST /api/cleanings:', error)
         return NextResponse.json(
             { error: error.message },
             { status: 500 }
@@ -155,7 +217,19 @@ export async function PUT(request: Request) {
 
     try {
         const body = await request.json()
-        const { id, cleaner_id, scheduled_date, start_time, end_time, status, current_sector, notes } = body
+        const {
+            id,
+            client_id,
+            cleaner_ids, // Array de IDs para admin
+            address,
+            total_steps,
+            scheduled_date,
+            start_time,
+            end_time,
+            status,
+            current_step,
+            notes
+        } = body
 
         if (!id) {
             return NextResponse.json(
@@ -165,78 +239,112 @@ export async function PUT(request: Request) {
         }
 
         // Obtener limpieza actual
-        const { data: currentCleaning } = await supabase
+        const { data: currentCleaning, error: fetchError } = await supabase
             .from('cleanings')
-            .select('*, house:houses(sectors_count)')
+            .select('*')
             .eq('id', id)
             .single()
 
-        if (!currentCleaning) {
+        if (fetchError || !currentCleaning) {
             return NextResponse.json(
                 { error: 'Limpieza no encontrada' },
                 { status: 404 }
             )
         }
 
-        // Si es cleaner, solo puede actualizar sus propias limpiezas
-        if (user.role === 'cleaner' && currentCleaning.cleaner_id !== user.id) {
-            return unauthorizedResponse('No puedes actualizar limpiezas de otros')
+        // Si es cleaner, verificar que está asignado a esta limpieza
+        if (user.role === 'cleaner') {
+            const { data: assignment } = await supabase
+                .from('cleaning_cleaners')
+                .select('*')
+                .eq('cleaning_id', id)
+                .eq('cleaner_id', user.id)
+                .single()
+
+            if (!assignment) {
+                return unauthorizedResponse('No puedes actualizar limpiezas no asignadas a ti')
+            }
         }
 
         const updateData: any = {}
 
         // Admin puede actualizar todo
         if (user.role === 'admin') {
-            if (cleaner_id !== undefined) updateData.cleaner_id = cleaner_id
+            if (client_id !== undefined) updateData.client_id = client_id
+            if (address !== undefined) updateData.address = address
+            if (total_steps !== undefined) updateData.total_steps = total_steps
             if (scheduled_date !== undefined) updateData.scheduled_date = scheduled_date
             if (start_time !== undefined) updateData.start_time = start_time
             if (end_time !== undefined) updateData.end_time = end_time
             if (status !== undefined) updateData.status = status
+            if (current_step !== undefined) updateData.current_step = current_step
             if (notes !== undefined) updateData.notes = notes
+
+            // Actualizar asignaciones de cleaners si se proporcionaron
+            if (cleaner_ids !== undefined) {
+                // Eliminar asignaciones actuales
+                await supabase
+                    .from('cleaning_cleaners')
+                    .delete()
+                    .eq('cleaning_id', id)
+
+                // Crear nuevas asignaciones
+                if (cleaner_ids.length > 0) {
+                    const assignments = cleaner_ids.map((cleaner_id: string) => ({
+                        cleaning_id: id,
+                        cleaner_id
+                    }))
+
+                    await supabase
+                        .from('cleaning_cleaners')
+                        .insert(assignments)
+                }
+            }
         }
 
-        // Cleaner solo puede actualizar estado y sector
-        if (current_sector !== undefined) {
-            const maxSectors = currentCleaning.house.sectors_count
-            if (current_sector < 0 || current_sector > maxSectors) {
-                return NextResponse.json(
-                    { error: `El sector debe estar entre 0 y ${maxSectors}` },
-                    { status: 400 }
-                )
-            }
-            updateData.current_sector = current_sector
+        // Cleaner solo puede actualizar progreso
+        if (user.role === 'cleaner') {
+            if (current_step !== undefined) {
+                if (current_step < 0 || current_step > currentCleaning.total_steps) {
+                    return NextResponse.json(
+                        { error: `El step debe estar entre 0 y ${currentCleaning.total_steps}` },
+                        { status: 400 }
+                    )
+                }
+                updateData.current_step = current_step
 
-            // Si completa todos los sectores, marcar como completado
-            if (current_sector === maxSectors && status !== 'completed') {
-                updateData.status = 'completed'
+                // Si completa todos los steps, marcar como completado
+                if (current_step === currentCleaning.total_steps) {
+                    updateData.status = 'completed'
+                } else if (current_step > 0 && currentCleaning.status === 'pending') {
+                    updateData.status = 'in_progress'
+                }
             }
-        }
 
-        if (status !== undefined && user.role === 'cleaner') {
-            // Cleaner solo puede cambiar a in_progress o completed
-            if (['in_progress', 'completed'].includes(status)) {
+            if (status !== undefined && ['in_progress', 'completed'].includes(status)) {
                 updateData.status = status
             }
         }
 
-        const { data, error } = await supabase
+        // Actualizar limpieza
+        const { error: updateError } = await supabase
             .from('cleanings')
             .update(updateData)
             .eq('id', id)
-            .select(`
-                *,
-                house:houses(
-                    *,
-                    client:profiles!houses_client_id_fkey(id, full_name, email)
-                ),
-                cleaner:profiles!cleanings_cleaner_id_fkey(id, full_name, email)
-            `)
+
+        if (updateError) throw updateError
+
+        // Obtener limpieza actualizada con relaciones
+        const { data: updatedCleaning } = await supabase
+            .from('cleanings_detailed')
+            .select('*')
+            .eq('id', id)
             .single()
 
-        if (error) throw error
+        return NextResponse.json({ cleaning: updatedCleaning })
 
-        return NextResponse.json({ cleaning: data })
     } catch (error: any) {
+        console.error('Error in PUT /api/cleanings:', error)
         return NextResponse.json(
             { error: error.message },
             { status: 500 }
@@ -266,6 +374,7 @@ export async function DELETE(request: Request) {
             )
         }
 
+        // Las asignaciones se eliminan automáticamente por CASCADE
         const { error } = await supabase
             .from('cleanings')
             .delete()
@@ -274,7 +383,9 @@ export async function DELETE(request: Request) {
         if (error) throw error
 
         return NextResponse.json({ success: true })
+
     } catch (error: any) {
+        console.error('Error in DELETE /api/cleanings:', error)
         return NextResponse.json(
             { error: error.message },
             { status: 500 }
