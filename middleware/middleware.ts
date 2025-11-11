@@ -107,7 +107,7 @@ export async function middleware(request: NextRequest) {
 
     // RUTAS SOLO PARA CLIENTE
     if (path.startsWith('/dashboard/client')) {
-        if (userRole !== 'cliente') {
+        if (userRole !== 'client') {
             return NextResponse.redirect(new URL('/dashboard', request.url))
         }
         return supabaseResponse

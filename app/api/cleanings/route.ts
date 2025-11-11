@@ -6,7 +6,7 @@ import { checkAuth, unauthorizedResponse } from '@/utils/auth/roleCheck'
 
 // GET: Obtener limpiezas (según rol)
 export async function GET(request: Request) {
-    const user = await checkAuth(['admin', 'cleaner', 'cliente'])
+    const user = await checkAuth(['admin', 'cleaner', 'client'])
 
     if (!user) {
         return unauthorizedResponse()
@@ -21,15 +21,11 @@ export async function GET(request: Request) {
 
         // Admin: usa la vista para obtener toda la información
         if (user.role === 'admin') {
-            let query = supabase
-                .from('cleanings_detailed')
+
+            const { data, error } = await supabase
+                .from('cleanings_with_details')
                 .select('*')
-
-            if (status) {
-                query = query.eq('status', status)
-            }
-
-            const { data, error } = await query.order('scheduled_date', { ascending: true })
+                .order('scheduled_date', { ascending: true })
 
             if (error) throw error
 
@@ -39,7 +35,7 @@ export async function GET(request: Request) {
         // Cleaner: solo sus limpiezas asignadas
         if (user.role === 'cleaner') {
             let query = supabase
-                .from('cleanings_detailed')
+                .from('cleanings')
                 .select('*')
                 .contains('cleaners', [{ id: user.id }])
 
@@ -55,9 +51,9 @@ export async function GET(request: Request) {
         }
 
         // Cliente: solo sus limpiezas
-        if (user.role === 'cliente') {
+        if (user.role === 'client') {
             let query = supabase
-                .from('cleanings_detailed')
+                .from('cleanings')
                 .select('*')
                 .eq('client->>id', user.id)
 
@@ -127,7 +123,7 @@ export async function POST(request: Request) {
             .from('profiles')
             .select('id, role')
             .eq('id', client_id)
-            .eq('role', 'cliente')
+            .eq('role', 'client')
             .single()
 
         if (!clientExists) {
@@ -188,7 +184,7 @@ export async function POST(request: Request) {
 
         // Obtener limpieza completa con relaciones
         const { data: fullCleaning } = await supabase
-            .from('cleanings_detailed')
+            .from('cleanings')
             .select('*')
             .eq('id', cleaning.id)
             .single()
@@ -336,7 +332,7 @@ export async function PUT(request: Request) {
 
         // Obtener limpieza actualizada con relaciones
         const { data: updatedCleaning } = await supabase
-            .from('cleanings_detailed')
+            .from('cleanings')
             .select('*')
             .eq('id', id)
             .single()

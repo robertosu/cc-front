@@ -32,7 +32,7 @@ export default async function AdminCleaningsPage() {
 
     // Obtener limpiezas usando la vista
     const { data: cleanings } = await supabase
-        .from('cleanings_detailed')
+        .from('cleanings_with_details')
         .select('*')
         .order('scheduled_date', { ascending: false })
 
@@ -40,7 +40,7 @@ export default async function AdminCleaningsPage() {
     const { data: clients } = await supabase
         .from('profiles')
         .select('id, full_name, email')
-        .eq('role', 'cliente')
+        .eq('role', 'client')
         .order('full_name', { ascending: true })
 
     // Obtener cleaners disponibles

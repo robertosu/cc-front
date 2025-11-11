@@ -25,13 +25,13 @@ export default async function ClientDashboard() {
         .eq('id', user.id)
         .single()
 
-    if (!profile || profile.role !== 'cliente') {
+    if (!profile || profile.role !== 'client') {
         redirect('/login')
     }
 
     // Obtener limpiezas usando la vista
     const { data: cleanings } = await supabase
-        .from('cleanings_detailed')
+        .from('cleanings')
         .select('*')
         .eq('client->>id', user.id)
         .order('scheduled_date', { ascending: false })

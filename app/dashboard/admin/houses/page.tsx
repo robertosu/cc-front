@@ -44,7 +44,7 @@ export default async function AdminHousesPage() {
     const { data: clients } = await supabase
         .from('profiles')
         .select('id, full_name, email')
-        .eq('role', 'cliente')
+        .eq('role', 'client')
         .order('full_name', { ascending: true })
 
     return (

@@ -11,6 +11,39 @@ export const metadata = {
     description: 'Panel de administración'
 }
 
+
+interface Cleaner {
+    id: string
+    full_name: string
+    email: string
+    phone?: string
+}
+
+interface Cleaning {
+    id: string
+    client_id: string
+    address: string
+    total_steps: number
+    current_step: number
+    scheduled_date: string
+    start_time: string
+    end_time: string
+    status: 'pending' | 'in_progress' | 'completed' | 'cancelled'
+    notes?: string
+    created_at: string
+    updated_at: string
+    // Datos relacionados (de la view o JOIN)
+    client_name: string
+    client_phone: string
+    client_email: string
+    assigned_cleaners: Cleaner[]
+}
+
+interface CleaningsListProps {
+    cleanings: Cleaning[]
+    cleaners: Cleaner[]
+}
+
 export default async function AdminDashboard() {
     const cookieStore = await cookies()
     const supabase = createClient(cookieStore)
@@ -44,7 +77,7 @@ export default async function AdminDashboard() {
 
     // Obtener limpiezas activas
     const { data: currentCleanings } = await supabase
-        .from('cleanings_detailed')
+        .from('cleanings_with_details')
         .select('*')
         .eq('status', 'in_progress')
         .order('scheduled_date', { ascending: true })
@@ -53,12 +86,14 @@ export default async function AdminDashboard() {
     // Próximas limpiezas
     const today = new Date().toISOString().split('T')[0]
     const { data: upcomingCleanings } = await supabase
-        .from('cleanings_detailed')
+        .from('cleanings_with_details')
         .select('*')
         .eq('status', 'pending')
         .gte('scheduled_date', today)
         .order('scheduled_date', { ascending: true })
         .limit(5)
+
+
 
     return (
         <div className="min-h-screen bg-gray-50">
@@ -194,11 +229,11 @@ export default async function AdminDashboard() {
                                                         {cleaning.address}
                                                     </p>
                                                     <p className="text-sm text-gray-600">
-                                                        Cliente: {cleaning.client.full_name}
+                                                        Cliente: {cleaning.client_name}
                                                     </p>
-                                                    {cleaning.cleaners.length > 0 && (
+                                                    {cleaning.assigned_cleaners.length > 0 && (
                                                         <p className="text-sm text-gray-600">
-                                                            Cleaners: {cleaning.cleaners.map((c: any) => c.full_name).join(', ')}
+                                                            Cleaners: {cleaning.assigned_cleaners.map(c => c.full_name).join(', ')}
                                                         </p>
                                                     )}
                                                 </div>
@@ -240,17 +275,18 @@ export default async function AdminDashboard() {
                                                         {cleaning.address}
                                                     </p>
                                                     <p className="text-sm text-gray-600">
-                                                        Cliente: {cleaning.client.full_name}
+                                                        Cliente: {cleaning.client_name}
                                                     </p>
-                                                    {cleaning.cleaners.length > 0 ? (
-                                                        <p className="text-sm text-gray-600">
-                                                            Cleaners: {cleaning.cleaners.map((c: any) => c.full_name).join(', ')}
-                                                        </p>
-                                                    ) : (
-                                                        <p className="text-sm text-yellow-600">
-                                                            ⚠️ Sin cleaners asignados
-                                                        </p>
-                                                    )}
+                                                    {
+                                                        cleaning.assigned_cleaners && cleaning.assigned_cleaners.length > 0 ? (
+                                                            <p className="text-sm text-gray-600">
+                                                                Cleaners: {cleaning.assigned_cleaners.map(c => c.full_name).join(', ')}
+                                                            </p>
+                                                        ) : (
+                                                            <p className="text-sm text-yellow-600">
+                                                                ⚠️ Sin cleaners asignados
+                                                            </p>
+                                                        )}
                                                     <p className="text-xs text-gray-500 mt-1">
                                                         {new Date(cleaning.scheduled_date).toLocaleDateString('es-CL')} • {cleaning.start_time}
                                                     </p>

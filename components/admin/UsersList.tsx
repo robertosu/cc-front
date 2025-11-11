@@ -9,7 +9,7 @@ interface Profile {
     full_name: string
     email: string
     phone?: string
-    role: 'admin' | 'cleaner' | 'cliente'
+    role: 'admin' | 'cleaner' | 'client'
     created_at: string
     client_cleanings_count?: number
     cleaner_cleanings_count?: number
@@ -27,7 +27,7 @@ export default function UsersList({ users }: { users: Profile[] }) {
                 return 'bg-purple-100 text-purple-700 border-purple-200'
             case 'cleaner':
                 return 'bg-blue-100 text-blue-700 border-blue-200'
-            case 'cliente':
+            case 'client':
                 return 'bg-green-100 text-green-700 border-green-200'
             default:
                 return 'bg-gray-100 text-gray-700 border-gray-200'
@@ -40,7 +40,7 @@ export default function UsersList({ users }: { users: Profile[] }) {
                 return <Shield className="w-4 h-4" />
             case 'cleaner':
                 return <Briefcase className="w-4 h-4" />
-            case 'cliente':
+            case 'client':
                 return <Users className="w-4 h-4" />
             default:
                 return <User className="w-4 h-4" />
@@ -53,7 +53,7 @@ export default function UsersList({ users }: { users: Profile[] }) {
                 return 'Administrador'
             case 'cleaner':
                 return 'Cleaner'
-            case 'cliente':
+            case 'client':
                 return 'Cliente'
             default:
                 return role
@@ -179,7 +179,7 @@ export default function UsersList({ users }: { users: Profile[] }) {
                                     </div>
 
                                     {/* Estadísticas según rol */}
-                                    {user.role === 'cliente' && user.client_cleanings_count !== undefined && (
+                                    {user.role === 'client' && user.client_cleanings_count !== undefined && (
                                         <div className="flex items-center gap-4 text-sm">
                                             <div className="px-3 py-1 bg-blue-50 text-blue-700 rounded-lg">
                                                 🏠 {user.client_cleanings_count} {user.client_cleanings_count === 1 ? 'limpieza' : 'limpiezas'}
@@ -218,10 +218,10 @@ export default function UsersList({ users }: { users: Profile[] }) {
                                             </label>
                                             <div className="flex gap-2">
                                                 <button
-                                                    onClick={() => handleRoleChange(user.id, 'cliente')}
-                                                    disabled={isLoading === user.id || user.role === 'cliente'}
+                                                    onClick={() => handleRoleChange(user.id, 'client')}
+                                                    disabled={isLoading === user.id || user.role === 'client'}
                                                     className={`flex-1 px-4 py-2 rounded-lg font-medium transition-colors ${
-                                                        user.role === 'cliente'
+                                                        user.role === 'client'
                                                             ? 'bg-green-100 text-green-700 cursor-not-allowed'
                                                             : 'bg-gray-100 text-gray-700 hover:bg-green-100 hover:text-green-700'
                                                     }`}

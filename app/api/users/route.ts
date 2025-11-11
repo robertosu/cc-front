@@ -82,7 +82,7 @@ export async function PUT(request: Request) {
             )
         }
 
-        const validRoles = ['admin', 'cleaner', 'cliente']
+        const validRoles = ['admin', 'cleaner', 'client']
         if (!validRoles.includes(role)) {
             return NextResponse.json(
                 { error: 'Rol inválido' },

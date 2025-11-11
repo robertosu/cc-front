@@ -43,7 +43,7 @@ export default async function AdminUsersPage() {
         users = data.users || []
     }
 
-    const clients = users.filter((u: any) => u.role === 'cliente')
+    const clients = users.filter((u: any) => u.role === 'client')
     const cleaners = users.filter((u: any) => u.role === 'cleaner')
     const admins = users.filter((u: any) => u.role === 'admin')
 

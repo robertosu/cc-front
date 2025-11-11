@@ -40,7 +40,7 @@ export default async function DashboardPage() {
         redirect('/dashboard/admin')
     } else if (profile.role === 'cleaner') {
         redirect('/dashboard/cleaner')
-    } else if (profile.role === 'cliente') {
+    } else if (profile.role === 'client') {
         redirect('/dashboard/client')
     } else {
         // Rol desconocido, redirigir a login

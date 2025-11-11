@@ -3,12 +3,12 @@ import { createClient } from '@/utils/supabase/server'
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 
-export type UserRole = 'admin' | 'cleaner' | 'cliente'
+export type UserRole = 'admin' | 'cleaner' | 'client'
 
 export const USER_ROLES = {
     ADMIN: 'admin',
     CLEANER: 'cleaner',
-    CLIENTE: 'cliente'
+    CLIENTE: 'client'
 } as const
 
 interface AuthUser {
