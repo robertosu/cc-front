@@ -3,7 +3,7 @@ import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import { cookies } from 'next/headers'
 import LogoutButton from '@/components/auth/LogoutButton'
-import { Users, Briefcase, Clock, CheckCircle, Calendar } from 'lucide-react'
+import { Users, Briefcase, Clock, CheckCircle, Calendar, XCircle } from 'lucide-react'
 import Link from 'next/link'
 
 export const metadata = {
@@ -11,37 +11,37 @@ export const metadata = {
     description: 'Panel de administración'
 }
 
+interface DashboardStats {
+    total_cleanings: number
+    pending_cleanings: number
+    in_progress_cleanings: number
+    completed_cleanings: number
+    cancelled_cleanings: number
+    total_clients: number
+    total_cleaners: number
+}
 
 interface Cleaner {
     id: string
     full_name: string
     email: string
-    phone?: string
 }
 
 interface Cleaning {
     id: string
-    client_id: string
     address: string
     total_steps: number
     current_step: number
     scheduled_date: string
     start_time: string
-    end_time: string
-    status: 'pending' | 'in_progress' | 'completed' | 'cancelled'
-    notes?: string
-    created_at: string
-    updated_at: string
-    // Datos relacionados (de la view o JOIN)
+    status: string
     client_name: string
-    client_phone: string
-    client_email: string
-    assigned_cleaners: Cleaner[]
-}
-
-interface CleaningsListProps {
-    cleanings: Cleaning[]
-    cleaners: Cleaner[]
+    assigned_cleaners: Array<{
+        id: string
+        full_name: string
+        email: string
+        assigned_at: string
+    }>
 }
 
 export default async function AdminDashboard() {
@@ -51,7 +51,7 @@ export default async function AdminDashboard() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) redirect('/login')
 
-    // Verificar rol admin
+    // Verificar rol
     const { data: profile } = await supabase
         .from('profiles')
         .select('*')
@@ -62,20 +62,46 @@ export default async function AdminDashboard() {
         redirect('/login')
     }
 
-    // Obtener estadísticas usando la función de la BD
-    const { data: stats } = await supabase
-        .rpc('get_dashboard_stats', { user_id: user.id })
+    // ================================================================
+    // ESTADÍSTICAS - Respetando RLS automáticamente
+    // ================================================================
+    // Las políticas RLS filtran automáticamente según el rol:
+    // - Admin: ve TODO
+    // - Cleaner: ve solo sus cleanings asignados
+    // - Client: ve solo sus cleanings
 
-    const statistics = stats?.[0] || {
-        total_cleanings: 0,
-        pending_cleanings: 0,
-        in_progress_cleanings: 0,
-        completed_cleanings: 0,
-        total_clients: 0,
-        total_cleaners: 0
+    const [
+        { count: totalCleanings },
+        { count: pendingCleanings },
+        { count: inProgressCleanings },
+        { count: completedCleanings },
+        { count: cancelledCleanings },
+        { count: totalClients },
+        { count: totalCleaners }
+    ] = await Promise.all([
+        // Cleanings que el usuario puede ver (RLS aplicado)
+        supabase.from('cleanings').select('*', { count: 'exact', head: true }),
+        supabase.from('cleanings').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
+        supabase.from('cleanings').select('*', { count: 'exact', head: true }).eq('status', 'in_progress'),
+        supabase.from('cleanings').select('*', { count: 'exact', head: true }).eq('status', 'completed'),
+        supabase.from('cleanings').select('*', { count: 'exact', head: true }).eq('status', 'cancelled'),
+
+        // Solo admin puede contar usuarios (RLS aplicado)
+        supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'client'),
+        supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'cleaner')
+    ])
+
+    const statistics: DashboardStats = {
+        total_cleanings: totalCleanings || 0,
+        pending_cleanings: pendingCleanings || 0,
+        in_progress_cleanings: inProgressCleanings || 0,
+        completed_cleanings: completedCleanings || 0,
+        cancelled_cleanings: cancelledCleanings || 0,
+        total_clients: totalClients || 0,
+        total_cleaners: totalCleaners || 0
     }
 
-    // Obtener limpiezas activas
+    // Obtener limpiezas activas con la view (RLS aplicado)
     const { data: currentCleanings } = await supabase
         .from('cleanings_with_details')
         .select('*')
@@ -83,7 +109,7 @@ export default async function AdminDashboard() {
         .order('scheduled_date', { ascending: true })
         .limit(5)
 
-    // Próximas limpiezas
+    // Próximas limpiezas (RLS aplicado)
     const today = new Date().toISOString().split('T')[0]
     const { data: upcomingCleanings } = await supabase
         .from('cleanings_with_details')
@@ -92,8 +118,6 @@ export default async function AdminDashboard() {
         .gte('scheduled_date', today)
         .order('scheduled_date', { ascending: true })
         .limit(5)
-
-
 
     return (
         <div className="min-h-screen bg-gray-50">
@@ -111,7 +135,6 @@ export default async function AdminDashboard() {
             </header>
 
             <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-
                 {/* Acciones rápidas */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
                     <Link
@@ -152,7 +175,7 @@ export default async function AdminDashboard() {
                 </div>
 
                 {/* Estadísticas */}
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
+                <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-8">
                     <div className="bg-white rounded-xl shadow p-4">
                         <div className="flex items-center gap-3">
                             <div className="p-2 bg-blue-100 rounded-lg">
@@ -212,6 +235,18 @@ export default async function AdminDashboard() {
                             </div>
                         </div>
                     </div>
+
+                    <div className="bg-white rounded-xl shadow p-4">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 bg-red-100 rounded-lg">
+                                <XCircle className="w-5 h-5 text-red-600" />
+                            </div>
+                            <div>
+                                <p className="text-xs text-gray-600">Canceladas</p>
+                                <p className="text-xl font-bold text-gray-900">{statistics.cancelled_cleanings}</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-8">
@@ -221,36 +256,37 @@ export default async function AdminDashboard() {
                         <div className="bg-white rounded-xl shadow">
                             {currentCleanings && currentCleanings.length > 0 ? (
                                 <div className="divide-y divide-gray-200">
-                                    {currentCleanings.map((cleaning) => (
-                                        <div key={cleaning.id} className="p-4 hover:bg-gray-50">
-                                            <div className="flex justify-between items-start mb-2">
-                                                <div>
-                                                    <p className="font-medium text-gray-900">
-                                                        {cleaning.address}
-                                                    </p>
-                                                    <p className="text-sm text-gray-600">
-                                                        Cliente: {cleaning.client_name}
-                                                    </p>
-                                                    {cleaning.assigned_cleaners.length > 0 && (
-                                                        <p className="text-sm text-gray-600">
-                                                            Cleaners: {cleaning.assigned_cleaners.map(c => c.full_name).join(', ')}
+                                    {currentCleanings.map((cleaning: Cleaning) => {
+                                        const progressPercentage = (cleaning.current_step / cleaning.total_steps) * 100
+                                        return (
+                                            <div key={cleaning.id} className="p-4 hover:bg-gray-50">
+                                                <div className="flex justify-between items-start mb-2">
+                                                    <div>
+                                                        <p className="font-medium text-gray-900">
+                                                            {cleaning.address}
                                                         </p>
-                                                    )}
+                                                        <p className="text-sm text-gray-600">
+                                                            Cliente: {cleaning.client_name}
+                                                        </p>
+                                                        {cleaning.assigned_cleaners && cleaning.assigned_cleaners.length > 0 && (
+                                                            <p className="text-sm text-gray-600">
+                                                                Cleaners: {cleaning.assigned_cleaners.map((c: any) => c.full_name).join(', ')}
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                    <span className="text-sm font-medium text-blue-600">
+                                                        {cleaning.current_step}/{cleaning.total_steps}
+                                                    </span>
                                                 </div>
-                                                <span className="text-sm font-medium text-blue-600">
-                                                    {cleaning.current_step}/{cleaning.total_steps}
-                                                </span>
+                                                <div className="w-full bg-gray-200 rounded-full h-2">
+                                                    <div
+                                                        className="bg-blue-600 h-2 rounded-full transition-all"
+                                                        style={{ width: `${progressPercentage}%` }}
+                                                    />
+                                                </div>
                                             </div>
-                                            <div className="w-full bg-gray-200 rounded-full h-2">
-                                                <div
-                                                    className="bg-blue-600 h-2 rounded-full transition-all"
-                                                    style={{
-                                                        width: `${cleaning.progress_percentage}%`
-                                                    }}
-                                                />
-                                            </div>
-                                        </div>
-                                    ))}
+                                        )
+                                    })}
                                 </div>
                             ) : (
                                 <div className="p-8 text-center text-gray-500">
@@ -266,7 +302,7 @@ export default async function AdminDashboard() {
                         <div className="bg-white rounded-xl shadow">
                             {upcomingCleanings && upcomingCleanings.length > 0 ? (
                                 <div className="divide-y divide-gray-200">
-                                    {upcomingCleanings.map((cleaning) => (
+                                    {upcomingCleanings.map((cleaning: Cleaning) => (
                                         <div key={cleaning.id} className="p-4 hover:bg-gray-50">
                                             <div className="flex items-start gap-3">
                                                 <Calendar className="w-5 h-5 text-gray-400 flex-shrink-0 mt-0.5" />
@@ -277,18 +313,17 @@ export default async function AdminDashboard() {
                                                     <p className="text-sm text-gray-600">
                                                         Cliente: {cleaning.client_name}
                                                     </p>
-                                                    {
-                                                        cleaning.assigned_cleaners && cleaning.assigned_cleaners.length > 0 ? (
-                                                            <p className="text-sm text-gray-600">
-                                                                Cleaners: {cleaning.assigned_cleaners.map(c => c.full_name).join(', ')}
-                                                            </p>
-                                                        ) : (
-                                                            <p className="text-sm text-yellow-600">
-                                                                ⚠️ Sin cleaners asignados
-                                                            </p>
-                                                        )}
+                                                    {cleaning.assigned_cleaners && cleaning.assigned_cleaners.length > 0 ? (
+                                                        <p className="text-sm text-gray-600">
+                                                            Cleaners: {cleaning.assigned_cleaners.map((c: any) => c.full_name).join(', ')}
+                                                        </p>
+                                                    ) : (
+                                                        <p className="text-sm text-yellow-600">
+                                                            ⚠️ Sin cleaners asignados
+                                                        </p>
+                                                    )}
                                                     <p className="text-xs text-gray-500 mt-1">
-                                                        {new Date(cleaning.scheduled_date).toLocaleDateString('es-CL')} • {cleaning.start_time}
+                                                        {new Date(cleaning.scheduled_date + 'T00:00:00').toLocaleDateString('es-CL')} • {cleaning.start_time}
                                                     </p>
                                                 </div>
                                             </div>
