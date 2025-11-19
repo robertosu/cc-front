@@ -12,7 +12,7 @@ export async function GET(request: Request) {
         return unauthorizedResponse('Solo administradores pueden ver la lista de cleaners')
     }
 
-    const cookieStore = cookies()
+    const cookieStore = await cookies()
     const supabase = createClient(cookieStore)
 
     try {

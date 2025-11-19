@@ -4,25 +4,35 @@ import { useState } from 'react'
 import { Calendar, Clock, MapPin, Phone, User, ChevronRight, ChevronLeft, CheckCircle, Users } from 'lucide-react'
 import CleaningProgressBar from './CleaningProgressBar'
 
+interface Cleaner {
+    id: string
+    full_name: string
+    email: string
+    phone?: string
+}
+
+
 interface Cleaning {
     id: string
+    client_id: string
     address: string
     total_steps: number
     current_step: number
     scheduled_date: string
     start_time: string
     end_time: string
-    status: string
+    status: 'pending' | 'in_progress' | 'completed' | 'cancelled'
     notes?: string
-    progress_percentage: number
-    client: {
-        full_name: string
-        phone?: string
-    }
-    cleaners: Array<{
-        full_name: string
-    }>
+    created_at: string
+    updated_at: string
+    // Datos relacionados (de la view o JOIN)
+    client_name: string
+    client_phone: string
+    client_email: string
+    assigned_cleaners: Cleaner[]
 }
+
+
 
 export default function CleanerCleaningCard({ cleaning }: { cleaning: Cleaning }) {
     const [currentStep, setCurrentStep] = useState(cleaning.current_step)
@@ -33,6 +43,13 @@ export default function CleanerCleaningCard({ cleaning }: { cleaning: Cleaning }
     const canStart = status === 'pending'
     const canUpdate = status === 'in_progress'
     const isCompleted = status === 'completed'
+    console.log(cleaning)
+    // Obtener datos del cliente
+    const clientName = cleaning.client_name || 'Cliente no disponible'
+    const clientPhone = cleaning.client_phone
+
+    // Obtener lista de cleaners
+    const cleanersList = cleaning.assigned_cleaners || []
 
     const handleStart = async () => {
         setIsLoading(true)
@@ -166,26 +183,26 @@ export default function CleanerCleaningCard({ cleaning }: { cleaning: Cleaning }
                         <User className="w-5 h-5 text-gray-400 flex-shrink-0 mt-1" />
                         <div>
                             <p className="text-sm text-gray-600">Cliente</p>
-                            <p className="font-medium text-gray-900">{cleaning.client.full_name}</p>
-                            {cleaning.client.phone && (
+                            <p className="font-medium text-gray-900">{clientName}</p>
+                            {clientPhone && (
                                 <a
-                                    href={`tel:${cleaning.client.phone}`}
+                                    href={`tel:${clientPhone}`}
                                     className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700 mt-1"
                                 >
                                     <Phone className="w-3 h-3" />
-                                    {cleaning.client.phone}
+                                    {clientPhone}
                                 </a>
                             )}
                         </div>
                     </div>
 
-                    {cleaning.cleaners.length > 1 && (
+                    {cleanersList.length > 1 && (
                         <div className="flex items-start gap-3">
                             <Users className="w-5 h-5 text-gray-400 flex-shrink-0 mt-1" />
                             <div>
                                 <p className="text-sm text-gray-600">Equipo</p>
                                 <p className="font-medium text-gray-900">
-                                    {cleaning.cleaners.map(c => c.full_name).join(', ')}
+                                    {cleanersList.map(c => c.full_name).join(', ')}
                                 </p>
                             </div>
                         </div>
@@ -196,7 +213,7 @@ export default function CleanerCleaningCard({ cleaning }: { cleaning: Cleaning }
                         <div>
                             <p className="text-sm text-gray-600">Fecha</p>
                             <p className="font-medium text-gray-900">
-                                {new Date(cleaning.scheduled_date).toLocaleDateString('es-CL', {
+                                {new Date(cleaning.scheduled_date + 'T00:00:00').toLocaleDateString('es-CL', {
                                     weekday: 'long',
                                     year: 'numeric',
                                     month: 'long',

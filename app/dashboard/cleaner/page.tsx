@@ -39,7 +39,7 @@ export default async function CleanerDashboard() {
 
     // Obtener limpiezas usando la vista
     const { data: cleanings } = await supabase
-        .from('cleanings')
+        .from('cleanings_with_details')
         .select('*')
         .in('id', cleaningIds)
         .order('scheduled_date', { ascending: true })
