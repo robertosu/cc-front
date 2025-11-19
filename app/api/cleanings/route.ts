@@ -87,7 +87,7 @@ export async function POST(request: Request) {
         return unauthorizedResponse('Solo administradores pueden crear limpiezas')
     }
 
-    const cookieStore = cookies()
+    const cookieStore = await cookies()
     const supabase = createClient(cookieStore)
 
     try {

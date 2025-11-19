@@ -21,7 +21,7 @@ export async function POST(request: Request) {
             )
         }
 
-        const cookieStore = cookies()
+        const cookieStore = await cookies()
         const supabase = createClient(cookieStore)
 
         // Obtener la URL base del request
@@ -33,7 +33,8 @@ export async function POST(request: Request) {
             options: {
                 data: {
                     full_name: fullName,
-                    phone: phone
+                    phone: phone,
+                    role: 'client' // Agrega esto si quieres especificar el rol
                 },
                 emailRedirectTo: `${origin}/auth/callback`
             }
@@ -59,19 +60,3 @@ export async function POST(request: Request) {
         )
     }
 }
-
-/*
-📝 FLUJO DE REGISTRO:
-1. Usuario completa el formulario
-2. Backend crea la cuenta en Supabase
-3. Supabase envía email con link de verificación
-4. Usuario hace click en el link del email
-5. Link redirige a /auth/callback con código
-6. /auth/callback valida el código y crea la sesión
-7. Usuario es redirigido a /dashboard ya autenticado
-
-⚠️ IMPORTANTE: Configurar en Supabase Dashboard:
-Authentication → Email Templates → Confirm signup
-Cambiar {{ .ConfirmationURL }} por: 
-{{ .SiteURL }}/auth/callback?code={{ .TokenHash }}
-*/
