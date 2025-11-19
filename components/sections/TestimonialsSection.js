@@ -38,22 +38,3 @@ export default function TestimonialsSection() {
         </section>
     );
 }
-
-/*
-📝 CONCEPTOS APLICADOS EN TU TAREA:
-
-✅ Componente Server (sin 'use client')
-✅ Importación de iconos de Lucide React
-✅ Array.map() para renderizar lista de elementos
-✅ Grid responsive: grid-cols-1 md:grid-cols-2 lg:grid-cols-3
-✅ Hover effects: hover:shadow-lg
-✅ Spacing consistente: py-20, mb-16, space-y-2
-✅ Color system: text-blue-600, text-gray-900, bg-gray-50
-✅ Flex layout: flex items-center para alinear iconos
-✅ Key prop en map() para performance de React
-
-🚀 SIGUIENTE NIVEL:
-- Podrías hacer las tarjetas clickeables
-- Agregar animaciones de entrada
-- Crear modal con más detalles del servicio
-*/
