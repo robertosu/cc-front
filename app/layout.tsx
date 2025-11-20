@@ -21,7 +21,7 @@ export const metadata: {
     keywords: string;
     authors: { name: string }[];
     openGraph: { title: string; description: string; type: string; locale: string };
-    viewport: { width: string; initialScale: number }
+
 } = {
     title: 'CleanerClub - Limpieza Profesional a Domicilio',
     description: 'Servicios de limpieza profesional para tu hogar. Limpieza general, profunda, post-obra y más. Profesionales certificados y productos ecológicos.',
@@ -32,10 +32,6 @@ export const metadata: {
         description: 'Tu hogar impecable con nuestros servicios de limpieza profesional',
         type: 'website',
         locale: 'es_ES',
-    },
-    viewport: {
-        width: 'device-width',
-        initialScale: 1,
     },
 }
 
