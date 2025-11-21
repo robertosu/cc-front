@@ -22,8 +22,7 @@ interface AuthUser {
  * Útil para evitar recursión en políticas RLS
  */
 export async function checkAuthSimple(allowedRoles: UserRole[]): Promise<AuthUser | null> {
-    const cookieStore = await cookies()
-    const supabase = createClient(cookieStore)
+    const supabase = await createClient()
 
     const { data: { user }, error: authError } = await supabase.auth.getUser()
 
@@ -50,8 +49,7 @@ export async function checkAuthSimple(allowedRoles: UserRole[]): Promise<AuthUse
  * SOLO usar en endpoints que NO modifican profiles
  */
 export async function checkAuth(allowedRoles: UserRole[]): Promise<AuthUser | null> {
-    const cookieStore = await cookies()
-    const supabase = createClient(cookieStore)
+    const supabase = await createClient()
 
     const { data: { user }, error: authError } = await supabase.auth.getUser()
 

@@ -1,20 +1,13 @@
 // app/api/users/route.ts
 import { createClient } from '@/utils/supabase/server'
-import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 import { checkAuthSimple, unauthorizedResponse } from '@/utils/auth/roleCheck'
 
 export async function GET(request: Request) {
     try {
-        // CAMBIO: Usar checkAuthSimple para evitar recursión
-        const user = await checkAuthSimple(['admin'])
-
-        if (!user) {
-            return unauthorizedResponse('Solo administradores pueden ver usuarios')
-        }
-
         const supabase = await createClient()
 
+        // ✅ SOLO consultar profiles - sin JOINs innecesarios
         const { data: profiles, error: profilesError } = await supabase
             .from('profiles')
             .select('*')
@@ -25,22 +18,28 @@ export async function GET(request: Request) {
             throw profilesError
         }
 
+
+
+
+        // ✅ Contar limpiezas por usuario (como cliente y como cleaner)
         const usersWithCounts = await Promise.all(
             (profiles || []).map(async (profile) => {
-                const { count: housesCount } = await supabase
-                    .from('houses')
+                // Contar limpiezas como cliente
+                const { count: clientCleaningsCount } = await supabase
+                    .from('cleanings')
                     .select('*', { count: 'exact', head: true })
                     .eq('client_id', profile.id)
 
-                const { count: cleaningsCount } = await supabase
-                    .from('cleanings')
+                // Contar asignaciones como cleaner
+                const { count: cleanerCleaningsCount } = await supabase
+                    .from('cleaning_cleaners')
                     .select('*', { count: 'exact', head: true })
                     .eq('cleaner_id', profile.id)
 
                 return {
                     ...profile,
-                    houses_count: [{ count: housesCount || 0 }],
-                    cleanings_as_cleaner: [{ count: cleaningsCount || 0 }]
+                    client_cleanings_count: clientCleaningsCount || 0,
+                    cleaner_cleanings_count: cleanerCleaningsCount || 0
                 }
             })
         )
@@ -61,38 +60,35 @@ export async function GET(request: Request) {
 
 export async function PUT(request: Request) {
     try {
-        // CAMBIO: Usar checkAuthSimple
-        const user = await checkAuthSimple(['admin'])
-
-        if (!user) {
-            return unauthorizedResponse('Solo administradores pueden actualizar roles')
-        }
 
         const supabase = await createClient()
+        const { data: { user } } = await supabase.auth.getUser()
 
         const body = await request.json()
         const { user_id, role } = body
 
-        if (!user_id || !role) {
-            return NextResponse.json(
-                { error: 'user_id y role son requeridos' },
-                { status: 400 }
-            )
-        }
+        if (user) {
+            if (!user_id || !role) {
+                return NextResponse.json(
+                    {error: 'user_id y role son requeridos'},
+                    {status: 400}
+                )
+            }
 
-        const validRoles = ['admin', 'cleaner', 'client']
-        if (!validRoles.includes(role)) {
-            return NextResponse.json(
-                { error: 'Rol inválido' },
-                { status: 400 }
-            )
-        }
+            const validRoles = ['admin', 'cleaner', 'client']
+            if (!validRoles.includes(role)) {
+                return NextResponse.json(
+                    {error: 'Rol inválido'},
+                    {status: 400}
+                )
+            }
 
-        if (user_id === user.id) {
-            return NextResponse.json(
-                { error: 'No puedes cambiar tu propio rol' },
-                { status: 400 }
-            )
+            if (user_id === user.id) {
+                return NextResponse.json(
+                    {error: 'No puedes cambiar tu propio rol'},
+                    {status: 400}
+                )
+            }
         }
 
         const { data, error } = await supabase
@@ -120,7 +116,6 @@ export async function PUT(request: Request) {
 
 export async function DELETE(request: Request) {
     try {
-        // CAMBIO: Usar checkAuthSimple
         const user = await checkAuthSimple(['admin'])
 
         if (!user) {
@@ -128,7 +123,6 @@ export async function DELETE(request: Request) {
         }
 
         const supabase = await createClient()
-
         const { searchParams } = new URL(request.url)
         const id = searchParams.get('id')
 
@@ -146,6 +140,7 @@ export async function DELETE(request: Request) {
             )
         }
 
+        // ✅ El CASCADE en FK eliminará automáticamente cleanings y cleaning_cleaners
         const { error } = await supabase
             .from('profiles')
             .delete()

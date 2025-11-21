@@ -1,7 +1,6 @@
 // app/dashboard/admin/users/page.tsx
 import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
-import { cookies } from 'next/headers'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 import UsersList from '@/components/admin/UsersList'
@@ -28,19 +27,43 @@ export default async function AdminUsersPage() {
         redirect('/dashboard')
     }
 
-    // Obtener usuarios desde la API
-    const response = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/users`, {
-        headers: {
-            'Cookie': (await cookies()).toString()
-        },
-        cache: 'no-store'
-    })
+    // 🔍 OPCIÓN 1: Consulta directa (para debug)
+    const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('*')
+        .order('created_at', { ascending: false })
+
+    console.log('📊 Profiles obtenidos:', profiles?.length)
+    console.log('❌ Error:', profilesError)
 
     let users = []
-    if (response.ok) {
-        const data = await response.json()
-        users = data.users || []
+
+    if (profiles && !profilesError) {
+        // Agregar contadores de limpiezas
+        users = await Promise.all(
+            profiles.map(async (profile) => {
+                // Contar limpiezas como cliente
+                const { count: clientCleaningsCount } = await supabase
+                    .from('cleanings')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('client_id', profile.id)
+
+                // Contar asignaciones como cleaner
+                const { count: cleanerCleaningsCount } = await supabase
+                    .from('cleaning_cleaners')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('cleaner_id', profile.id)
+
+                return {
+                    ...profile,
+                    client_cleanings_count: clientCleaningsCount || 0,
+                    cleaner_cleanings_count: cleanerCleaningsCount || 0
+                }
+            })
+        )
     }
+
+    console.log('👥 Usuarios finales:', users.length)
 
     const clients = users.filter((u: any) => u.role === 'client')
     const cleaners = users.filter((u: any) => u.role === 'cleaner')
@@ -69,6 +92,14 @@ export default async function AdminUsersPage() {
             </header>
 
             <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                {/* Debug Info */}
+                {profilesError && (
+                    <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6">
+                        <p className="text-red-700 font-semibold">Error al cargar usuarios:</p>
+                        <p className="text-red-600 text-sm">{profilesError.message}</p>
+                    </div>
+                )}
+
                 {/* Estadísticas */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                     <div className="bg-blue-50 border border-blue-200 rounded-xl p-6">
