@@ -1,10 +1,11 @@
+
+
 import { Sparkles, Menu, User } from "lucide-react"
 import { createClient } from '@/utils/supabase/server'
-import { cookies } from 'next/headers'
+import Link from "next/link";
 
 export default async function Header() {
-    const cookieStore = await cookies()
-    const supabase = createClient(cookieStore)
+    const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
 
     return (
@@ -13,9 +14,9 @@ export default async function Header() {
                 <div className="flex justify-between items-center h-16">
                     <div className="flex items-center space-x-2">
                         <Sparkles className="w-8 h-8 text-blue-400" />
-                        <a href="/" className="text-2xl font-bold text-gray-900">
+                        <Link href="/" className="text-2xl font-bold text-gray-900">
                             CleanerClub
-                        </a>
+                        </Link>
                     </div>
 
                     <nav className="hidden md:flex items-center space-x-8">

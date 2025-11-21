@@ -13,8 +13,7 @@ export async function GET(request: Request) {
             return unauthorizedResponse('Solo administradores pueden ver usuarios')
         }
 
-        const cookieStore = cookies()
-        const supabase = createClient(cookieStore)
+        const supabase = await createClient()
 
         const { data: profiles, error: profilesError } = await supabase
             .from('profiles')
@@ -69,8 +68,7 @@ export async function PUT(request: Request) {
             return unauthorizedResponse('Solo administradores pueden actualizar roles')
         }
 
-        const cookieStore = cookies()
-        const supabase = createClient(cookieStore)
+        const supabase = await createClient()
 
         const body = await request.json()
         const { user_id, role } = body
@@ -129,8 +127,7 @@ export async function DELETE(request: Request) {
             return unauthorizedResponse('Solo administradores pueden eliminar usuarios')
         }
 
-        const cookieStore = cookies()
-        const supabase = createClient(cookieStore)
+        const supabase = await createClient()
 
         const { searchParams } = new URL(request.url)
         const id = searchParams.get('id')

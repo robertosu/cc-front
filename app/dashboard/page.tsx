@@ -3,14 +3,14 @@ import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import { cookies } from 'next/headers'
 
-export const metadata = {
+export const metadata: { title: string; description: string } = {
     title: 'Dashboard - CleanerClub',
     description: 'Panel de control de usuario'
 }
 
 export default async function DashboardPage() {
-    const cookieStore = await cookies()
-    const supabase = createClient(cookieStore)
+
+    const supabase = await createClient()
 
     // Obtener el usuario actual
     const {

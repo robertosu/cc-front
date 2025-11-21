@@ -12,8 +12,7 @@ export async function GET(request: Request) {
         return unauthorizedResponse()
     }
 
-    const cookieStore = await cookies()
-    const supabase = createClient(cookieStore)
+    const supabase = await createClient()
 
     try {
         const { searchParams } = new URL(request.url)
@@ -87,8 +86,7 @@ export async function POST(request: Request) {
         return unauthorizedResponse('Solo administradores pueden crear limpiezas')
     }
 
-    const cookieStore = await cookies()
-    const supabase = createClient(cookieStore)
+    const supabase = await createClient()
 
     try {
         const body = await request.json()
@@ -208,8 +206,7 @@ export async function PUT(request: Request) {
         return unauthorizedResponse()
     }
 
-    const cookieStore = cookies()
-    const supabase = createClient(cookieStore)
+    const supabase = await createClient()
 
     try {
         const body = await request.json()
@@ -356,8 +353,7 @@ export async function DELETE(request: Request) {
         return unauthorizedResponse('Solo administradores pueden eliminar limpiezas')
     }
 
-    const cookieStore = cookies()
-    const supabase = createClient(cookieStore)
+    const supabase = await createClient()
 
     try {
         const { searchParams } = new URL(request.url)

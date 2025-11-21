@@ -21,8 +21,7 @@ export async function POST(request: Request) {
             )
         }
 
-        const cookieStore = await cookies()
-        const supabase = createClient(cookieStore)
+        const supabase = await createClient()
 
         // Obtener la URL base del request
         const origin = request.headers.get('origin') || 'http://localhost:3000'
