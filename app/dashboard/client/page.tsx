@@ -6,8 +6,9 @@ import LogoutButton from '@/components/auth/LogoutButton'
 import CleaningProgressBar from '@/components/dashboard/CleaningProgressBar'
 import { Calendar, Clock, MapPin, Users } from 'lucide-react'
 import Link from 'next/link'
+import {Metadata} from "next";
 
-export const metadata = {
+export const metadata: Metadata = {
     title: 'Mi Dashboard - CleanerClub',
     description: 'Mis limpiezas y servicios'
 }
@@ -45,8 +46,7 @@ interface Cleaning {
 }
 
 export default async function ClientDashboard() {
-    const cookieStore = await cookies()
-    const supabase = createClient(cookieStore)
+    const supabase = await createClient()
 
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) redirect('/login')

@@ -13,8 +13,7 @@ export const metadata = {
 }
 
 export default async function AdminCleaningsPage() {
-    const cookieStore = await cookies()
-    const supabase = createClient(cookieStore)
+    const supabase = await createClient()
 
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) redirect('/login')

@@ -45,22 +45,9 @@ export default function RootLayout({ children  }) {
     return (
         <html lang="es" className={`${inter.variable} ${geistMono.variable}`}>
         <body className="min-h-screen bg-gray-50 antialiased">
-        {/*
-          Estructura base del layout:
-          - Smooth scrolling habilitado
-          - Variables CSS disponibles globalmente
-          - Antialiasing para mejor tipografía
-        */}
         <div className="flex flex-col min-h-screen">
             {children}
         </div>
-
-        {/*
-          Scripts opcionales que podrías necesitar:
-          - Analytics
-          - Chat widgets
-          - Mapas
-        */}
         </body>
         </html>
     )

@@ -1,8 +1,9 @@
 // app/login/page.js
 import LoginForm from '@/components/auth/LoginForm'
 import {Suspense} from "react";
+import {Metadata} from "next";
 
-export const metadata = {
+export const metadata: Metadata= {
     title: 'Iniciar Sesión - CleanerClub',
     description: 'Accede a tu cuenta de CleanerClub'
 }

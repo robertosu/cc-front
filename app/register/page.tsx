@@ -1,8 +1,9 @@
 // app/register/page.js
 import RegisterForm from '@/components/auth/RegisterForm'
 import {Suspense} from "react";
+import {Metadata} from "next";
 
-export const metadata = {
+export const metadata: Metadata = {
     title: 'Registro - CleanerClub',
     description: 'Crea tu cuenta en CleanerClub'
 }
