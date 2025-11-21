@@ -1,7 +1,7 @@
 // app/api/users/route.ts
 import { createClient } from '@/utils/supabase/server'
 import { NextResponse } from 'next/server'
-import { checkAuthSimple, unauthorizedResponse } from '@/utils/auth/roleCheck'
+import {checkAuth, unauthorizedResponse, USER_ROLES} from '@/utils/auth/roleCheck'
 
 export async function GET(request: Request) {
     try {
@@ -116,7 +116,7 @@ export async function PUT(request: Request) {
 
 export async function DELETE(request: Request) {
     try {
-        const user = await checkAuthSimple(['admin'])
+        const user = await checkAuth([USER_ROLES.ADMIN])
 
         if (!user) {
             return unauthorizedResponse('Solo administradores pueden eliminar usuarios')

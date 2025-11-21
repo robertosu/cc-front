@@ -21,28 +21,7 @@ interface AuthUser {
  * Verifica auth usando SOLO auth.uid() sin consultar profiles
  * Útil para evitar recursión en políticas RLS
  */
-export async function checkAuthSimple(allowedRoles: UserRole[]): Promise<AuthUser | null> {
-    const supabase = await createClient()
 
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-
-    if (authError || !user) {
-        return null
-    }
-
-    // Obtener rol desde user metadata (configurado en el trigger)
-    const userRole = user.user_metadata?.role as UserRole
-
-    if (!userRole || !allowedRoles.includes(userRole)) {
-        return null
-    }
-
-    return {
-        id: user.id,
-        email: user.email!,
-        role: userRole
-    }
-}
 
 /**
  * Verifica auth consultando la tabla profiles
