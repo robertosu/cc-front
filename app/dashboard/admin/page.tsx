@@ -121,19 +121,6 @@ export default async function AdminDashboard() {
 
     return (
         <div className="min-h-screen bg-gray-50">
-            {/* Header */}
-            <header className="bg-gradient-to-r from-purple-600 to-purple-700 text-white shadow-lg">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-                    <div className="flex justify-between items-center">
-                        <div>
-                            <h1 className="text-3xl font-bold">Panel de Administración</h1>
-                            <p className="text-purple-100 mt-1">CleanerClub Management</p>
-                        </div>
-                        <LogoutButton />
-                    </div>
-                </div>
-            </header>
-
             <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 {/* Acciones rápidas */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
