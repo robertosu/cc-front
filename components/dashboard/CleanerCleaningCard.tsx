@@ -102,7 +102,7 @@ export default function CleanerCleaningCard({ cleaning }: { cleaning: Cleaning }
                 setStatus('completed')
                 setMessage({ type: 'success', text: '¡Limpieza completada! 🎉' })
             } else {
-                setMessage({ type: 'success', text: `Step ${newStep} completado` })
+                setMessage({ type: 'success', text: `Paso ${newStep} completado` })
             }
         } catch (error) {
             setMessage({ type: 'error', text: 'Error al actualizar el progreso' })

@@ -371,6 +371,15 @@ export default function RegisterForm() {
                         Inicia sesión
                     </a>
                 </p>
+
+
+                <p className="text-center text-sm text-gray-600">
+                    ¿No recibiste correo de verificación?{' '}
+                    <a href="/login" className="text-blue-600 hover:text-blue-700 font-semibold">
+                        Haz click aquí
+                    </a>
+                </p>
+
             </form>
         </div>
     )

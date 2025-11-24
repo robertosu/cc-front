@@ -54,7 +54,7 @@ export default function CleaningProgressBar({
                     {getStatusText()}
                 </span>
                 <span className="text-sm text-gray-600">
-                    {currentStep} de {totalSteps} steps
+                    {currentStep} de {totalSteps} pasos
                 </span>
             </div>
 
@@ -86,7 +86,7 @@ export default function CleaningProgressBar({
                             ) : (
                                 <Circle className="w-3 h-3" />
                             )}
-                            Step {stepNumber}
+                            Paso {stepNumber}
                         </div>
                     )
                 })}

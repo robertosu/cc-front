@@ -18,10 +18,7 @@ export async function GET(request: Request) {
             throw profilesError
         }
 
-
-
-
-        // ✅ Contar limpiezas por usuario (como cliente y como cleaner)
+        //  Contar limpiezas por usuario (como cliente y como cleaner)
         const usersWithCounts = await Promise.all(
             (profiles || []).map(async (profile) => {
                 // Contar limpiezas como cliente
@@ -114,15 +111,17 @@ export async function PUT(request: Request) {
     }
 }
 
+// app/api/users/route.ts
 export async function DELETE(request: Request) {
     try {
+        // Verificación programática (primera línea de defensa)
         const user = await checkAuth([USER_ROLES.ADMIN])
 
         if (!user) {
             return unauthorizedResponse('Solo administradores pueden eliminar usuarios')
         }
 
-        const supabase = await createClient()
+        const supabase = await createClient() // Cliente normal, NO admin
         const { searchParams } = new URL(request.url)
         const id = searchParams.get('id')
 
@@ -133,6 +132,7 @@ export async function DELETE(request: Request) {
             )
         }
 
+        // Verificación adicional (segunda línea de defensa)
         if (id === user.id) {
             return NextResponse.json(
                 { error: 'No puedes eliminar tu propia cuenta' },
@@ -140,13 +140,17 @@ export async function DELETE(request: Request) {
             )
         }
 
-        // ✅ El CASCADE en FK eliminará automáticamente cleanings y cleaning_cleaners
-        const { error } = await supabase
-            .from('profiles')
-            .delete()
-            .eq('id', id)
+        // ✅ Llamar a la función SQL que tiene SECURITY DEFINER
+        // Las verificaciones TAMBIÉN se hacen en la base de datos
+        const { data, error } = await supabase.rpc('delete_user_completely', {
+            target_user_id: id
+        })
 
         if (error) throw error
+
+        if (data && !data.success) {
+            throw new Error(data.error || 'Error al eliminar usuario')
+        }
 
         return NextResponse.json({
             success: true,

@@ -149,8 +149,18 @@ export default function LoginForm() {
                     {errors.password && <p className="mt-1 text-sm text-red-600">{errors.password}</p>}
                 </div>
 
-                <div className="text-right">
-                    <a href="/reset-password" className="text-sm text-blue-600 hover:text-blue-700 transition-colors">
+                <div className="flex items-center justify-between">
+                    <a
+                        href="/resend-confirmation"
+                        className="text-sm text-blue-600 hover:text-blue-700 transition-colors"
+                    >
+                        ¿No recibiste el correo de confirmación?
+                    </a>
+
+                    <a
+                        href="/reset-password"
+                        className="text-sm text-blue-600 hover:text-blue-700 transition-colors"
+                    >
                         ¿Olvidaste tu contraseña?
                     </a>
                 </div>

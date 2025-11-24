@@ -111,7 +111,7 @@ export async function POST(request: Request) {
 
         if (total_steps < 1 || total_steps > 20) {
             return NextResponse.json(
-                { error: 'El número de steps debe estar entre 1 y 20' },
+                { error: 'El número de pasos debe estar entre 1 y 20' },
                 { status: 400 }
             )
         }
