@@ -1,8 +1,11 @@
+// components/dashboard/CleanerCleaningCard.tsx (ACTUALIZADO)
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Calendar, Clock, MapPin, Phone, User, ChevronRight, ChevronLeft, CheckCircle, Users } from 'lucide-react'
 import CleaningProgressBar from './CleaningProgressBar'
+import { createClient } from '@/utils/supabase/client'
+import { useRouter } from 'next/navigation'
 
 interface Cleaner {
     id: string
@@ -10,7 +13,6 @@ interface Cleaner {
     email: string
     phone?: string
 }
-
 
 interface Cleaning {
     id: string
@@ -25,25 +27,29 @@ interface Cleaning {
     notes?: string
     created_at: string
     updated_at: string
-    // Datos relacionados (de la view o JOIN)
     client_name: string
     client_phone: string
     client_email: string
     assigned_cleaners: Cleaner[]
 }
 
-
-
-export default function CleanerCleaningCard({ cleaning }: { cleaning: Cleaning }) {
-    const [currentStep, setCurrentStep] = useState(cleaning.current_step)
-    const [status, setStatus] = useState(cleaning.status)
+export default function CleanerCleaningCard({ cleaning: initialCleaning }: { cleaning: Cleaning }) {
+    const [cleaning, setCleaning] = useState(initialCleaning)
     const [isLoading, setIsLoading] = useState(false)
     const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
+    const router = useRouter()
+    const supabase = createClient()
 
-    const canStart = status === 'pending'
-    const canUpdate = status === 'in_progress'
-    const isCompleted = status === 'completed'
-    console.log(cleaning)
+    // Sincronizar cuando cleaning cambia desde el padre (por el hook de realtime)
+    useEffect(() => {
+        console.log('🔵 Card - Cleaning updated from parent:', initialCleaning.current_step)
+        setCleaning(initialCleaning)
+    }, [initialCleaning.id, initialCleaning.current_step, initialCleaning.status])
+
+    const canStart = cleaning.status === 'pending'
+    const canUpdate = cleaning.status === 'in_progress'
+    const isCompleted = cleaning.status === 'completed'
+
     // Obtener datos del cliente
     const clientName = cleaning.client_name || 'Cliente no disponible'
     const clientPhone = cleaning.client_phone
@@ -66,12 +72,17 @@ export default function CleanerCleaningCard({ cleaning }: { cleaning: Cleaning }
                 })
             })
 
-            if (!response.ok) throw new Error('Error al iniciar')
+            const data = await response.json()
 
-            setStatus('in_progress')
+            if (!response.ok) throw new Error(data.error || 'Error al iniciar')
+
             setMessage({ type: 'success', text: '¡Limpieza iniciada!' })
-        } catch (error) {
-            setMessage({ type: 'error', text: 'Error al iniciar la limpieza' })
+
+            // La actualización vendrá automáticamente por Realtime
+            // pero hacemos refresh por si acaso
+            router.refresh()
+        } catch (error: any) {
+            setMessage({ type: 'error', text: error.message || 'Error al iniciar la limpieza' })
         } finally {
             setIsLoading(false)
         }
@@ -94,18 +105,20 @@ export default function CleanerCleaningCard({ cleaning }: { cleaning: Cleaning }
                 })
             })
 
-            if (!response.ok) throw new Error('Error al actualizar')
+            const data = await response.json()
 
-            setCurrentStep(newStep)
+            if (!response.ok) throw new Error(data.error || 'Error al actualizar')
 
             if (newStep === cleaning.total_steps) {
-                setStatus('completed')
                 setMessage({ type: 'success', text: '¡Limpieza completada! 🎉' })
             } else {
                 setMessage({ type: 'success', text: `Paso ${newStep} completado` })
             }
-        } catch (error) {
-            setMessage({ type: 'error', text: 'Error al actualizar el progreso' })
+
+            // La actualización vendrá automáticamente por Realtime
+            router.refresh()
+        } catch (error: any) {
+            setMessage({ type: 'error', text: error.message || 'Error al actualizar el progreso' })
         } finally {
             setIsLoading(false)
         }
@@ -126,13 +139,16 @@ export default function CleanerCleaningCard({ cleaning }: { cleaning: Cleaning }
                 })
             })
 
-            if (!response.ok) throw new Error('Error al completar')
+            const data = await response.json()
 
-            setStatus('completed')
-            setCurrentStep(cleaning.total_steps)
+            if (!response.ok) throw new Error(data.error || 'Error al completar')
+
             setMessage({ type: 'success', text: '¡Limpieza completada! 🎉' })
-        } catch (error) {
-            setMessage({ type: 'error', text: 'Error al completar la limpieza' })
+
+            // La actualización vendrá automáticamente por Realtime
+            router.refresh()
+        } catch (error: any) {
+            setMessage({ type: 'error', text: error.message || 'Error al completar la limpieza' })
         } finally {
             setIsLoading(false)
         }
@@ -245,9 +261,9 @@ export default function CleanerCleaningCard({ cleaning }: { cleaning: Cleaning }
                 {/* Controles y progreso */}
                 <div className="space-y-6">
                     <CleaningProgressBar
-                        currentStep={currentStep}
+                        currentStep={cleaning.current_step}
                         totalSteps={cleaning.total_steps}
-                        status={status as any}
+                        status={cleaning.status}
                     />
 
                     {/* Botones de acción */}
@@ -266,8 +282,8 @@ export default function CleanerCleaningCard({ cleaning }: { cleaning: Cleaning }
                             <>
                                 <div className="flex gap-3">
                                     <button
-                                        onClick={() => handleStepUpdate(currentStep - 1)}
-                                        disabled={isLoading || currentStep === 0}
+                                        onClick={() => handleStepUpdate(cleaning.current_step - 1)}
+                                        disabled={isLoading || cleaning.current_step === 0}
                                         className="flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                                     >
                                         <ChevronLeft className="w-5 h-5" />
@@ -275,8 +291,8 @@ export default function CleanerCleaningCard({ cleaning }: { cleaning: Cleaning }
                                     </button>
 
                                     <button
-                                        onClick={() => handleStepUpdate(currentStep + 1)}
-                                        disabled={isLoading || currentStep >= cleaning.total_steps}
+                                        onClick={() => handleStepUpdate(cleaning.current_step + 1)}
+                                        disabled={isLoading || cleaning.current_step >= cleaning.total_steps}
                                         className="flex-1 bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                                     >
                                         Siguiente
@@ -284,7 +300,7 @@ export default function CleanerCleaningCard({ cleaning }: { cleaning: Cleaning }
                                     </button>
                                 </div>
 
-                                {currentStep < cleaning.total_steps && (
+                                {cleaning.current_step < cleaning.total_steps && (
                                     <button
                                         onClick={handleComplete}
                                         disabled={isLoading}
