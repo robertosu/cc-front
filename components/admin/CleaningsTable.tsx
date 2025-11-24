@@ -5,7 +5,6 @@ import {Fragment, useState} from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import {
     Search,
-    Filter,
     ChevronLeft,
     ChevronRight,
     Calendar,
@@ -21,11 +20,13 @@ import {
     AlertCircle
 } from 'lucide-react'
 import React from "react"
+import MultiSearchableSelect from '@/components/common/MultiSearchableSelect'
 
 interface Cleaner {
     id: string
     full_name: string
     email: string
+    phone?: string
 }
 
 interface Cleaning {
@@ -121,17 +122,6 @@ export default function CleaningsTable({
         })
     }
 
-    const toggleCleanerSelection = (cleanerId: string) => {
-        setEditData((prev: any) => {
-            const cleanerIds = prev.cleaner_ids || []
-            if (cleanerIds.includes(cleanerId)) {
-                return { ...prev, cleaner_ids: cleanerIds.filter((id: string) => id !== cleanerId) }
-            } else {
-                return { ...prev, cleaner_ids: [...cleanerIds, cleanerId] }
-            }
-        })
-    }
-
     const handleSaveEdit = async (cleaningId: string) => {
         setIsLoading(cleaningId)
         setMessage(null)
@@ -206,6 +196,13 @@ export default function CleaningsTable({
             </span>
         )
     }
+
+    // Convertir cleaners a opciones para el selector
+    const cleanerOptions = cleaners.map(cleaner => ({
+        id: cleaner.id,
+        label: cleaner.full_name,
+        sublabel: `${cleaner.email}${cleaner.phone ? ` • ${cleaner.phone}` : ''}`
+    }))
 
     return (
         <div className="bg-white shadow rounded-lg">
@@ -375,38 +372,17 @@ export default function CleaningsTable({
                                             {editingCleaning === cleaning.id ? (
                                                 <div className="space-y-4">
                                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                        {/* Selector de cleaners mejorado */}
                                                         <div>
-                                                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                                Cleaners
-                                                            </label>
-                                                            <div className="border border-gray-300 rounded-lg p-3 max-h-40 overflow-y-auto bg-white">
-                                                                {cleaners.length === 0 ? (
-                                                                    <p className="text-sm text-gray-500 text-center py-2">
-                                                                        No hay cleaners disponibles
-                                                                    </p>
-                                                                ) : (
-                                                                    <div className="space-y-2">
-                                                                        {cleaners.map(cleaner => (
-                                                                            <label
-                                                                                key={cleaner.id}
-                                                                                className={`flex items-center gap-2 p-2 rounded hover:bg-gray-50 cursor-pointer transition-colors ${
-                                                                                    editData.cleaner_ids?.includes(cleaner.id) ? 'bg-purple-50' : ''
-                                                                                }`}
-                                                                            >
-                                                                                <input
-                                                                                    type="checkbox"
-                                                                                    checked={editData.cleaner_ids?.includes(cleaner.id) || false}
-                                                                                    onChange={() => toggleCleanerSelection(cleaner.id)}
-                                                                                    className="w-4 h-4 text-purple-600"
-                                                                                />
-                                                                                <span className="text-sm text-gray-900">
-                                                                                    {cleaner.full_name}
-                                                                                </span>
-                                                                            </label>
-                                                                        ))}
-                                                                    </div>
-                                                                )}
-                                                            </div>
+                                                            <MultiSearchableSelect
+                                                                options={cleanerOptions}
+                                                                value={editData.cleaner_ids || []}
+                                                                onChange={(value) => setEditData({ ...editData, cleaner_ids: value })}
+                                                                label="Cleaners"
+                                                                placeholder="Buscar y seleccionar cleaners..."
+                                                                disabled={isLoading === cleaning.id}
+                                                                maxHeight="200px"
+                                                            />
                                                         </div>
 
                                                         <div>

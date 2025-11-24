@@ -2,8 +2,8 @@
 import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import { Plus } from 'lucide-react'
-import CreateCleaningModal from '@/components/admin/CreateCleaningModal'
 import CleaningsTable from '@/components/admin/CleaningsTable'
+import Link from 'next/link'
 
 export const metadata = {
     title: 'Gestión de Limpiezas - Admin',
@@ -21,7 +21,6 @@ interface PageProps {
 }
 
 export default async function AdminCleaningsPage({ searchParams }: PageProps) {
-    // 👇 NECESARIO en Next 14.2+ / 15
     const params = await searchParams
 
     const supabase = await createClient()
@@ -75,13 +74,7 @@ export default async function AdminCleaningsPage({ searchParams }: PageProps) {
 
     const totalPages = count ? Math.ceil(count / pageSize) : 0
 
-    // Obtener clientes y cleaners para el formulario
-    const { data: clients } = await supabase
-        .from('profiles')
-        .select('id, full_name, email')
-        .eq('role', 'client')
-        .order('full_name', { ascending: true })
-
+    // Obtener cleaners para el formulario de edición
     const { data: cleaners } = await supabase
         .from('profiles')
         .select('id, full_name, email, phone')
@@ -119,10 +112,13 @@ export default async function AdminCleaningsPage({ searchParams }: PageProps) {
                     </p>
                 </div>
                 <div className="mt-4 sm:mt-0">
-                    <CreateCleaningModal
-                        clients={clients || []}
-                        cleaners={cleaners || []}
-                    />
+                    <Link
+                        href="/dashboard/admin/cleanings/create"
+                        className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+                    >
+                        <Plus className="w-5 h-5 mr-2" />
+                        Nueva Limpieza
+                    </Link>
                 </div>
             </div>
 

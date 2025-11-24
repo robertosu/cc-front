@@ -8,11 +8,12 @@ import {
     LayoutDashboard,
     Users,
     Briefcase,
-    Settings,
+    Plus,
     ChevronLeft,
     ChevronRight,
     Sparkles,
-    Home
+    Home,
+    ClipboardList
 } from 'lucide-react'
 
 interface AdminSidebarProps {
@@ -23,9 +24,27 @@ interface AdminSidebarProps {
 }
 
 const navigation = [
-    { name: 'Dashboard', href: '/dashboard/admin', icon: LayoutDashboard },
-    { name: 'Limpiezas', href: '/dashboard/admin/cleanings', icon: Briefcase },
-    { name: 'Usuarios', href: '/dashboard/admin/users', icon: Users },
+    {
+        name: 'Dashboard',
+        href: '/dashboard/admin',
+        icon: LayoutDashboard
+    },
+    {
+        name: 'Limpiezas',
+        href: '/dashboard/admin/cleanings',
+        icon: ClipboardList
+    },
+    {
+        name: 'Nueva Limpieza',
+        href: '/dashboard/admin/cleanings/create',
+        icon: Plus,
+        highlight: true
+    },
+    {
+        name: 'Usuarios',
+        href: '/dashboard/admin/users',
+        icon: Users
+    },
 ]
 
 export default function AdminSidebar({ profile }: AdminSidebarProps) {
@@ -75,11 +94,17 @@ export default function AdminSidebar({ profile }: AdminSidebarProps) {
                                                     className={`group flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6 transition-colors ${
                                                         isActive
                                                             ? 'bg-purple-50 text-purple-600'
-                                                            : 'text-gray-700 hover:text-purple-600 hover:bg-gray-50'
+                                                            : item.highlight
+                                                                ? 'text-purple-600 hover:bg-purple-50'
+                                                                : 'text-gray-700 hover:text-purple-600 hover:bg-gray-50'
                                                     } ${collapsed ? 'justify-center' : ''}`}
                                                 >
                                                     <item.icon className={`h-6 w-6 shrink-0 ${
-                                                        isActive ? 'text-purple-600' : 'text-gray-400 group-hover:text-purple-600'
+                                                        isActive
+                                                            ? 'text-purple-600'
+                                                            : item.highlight
+                                                                ? 'text-purple-600'
+                                                                : 'text-gray-400 group-hover:text-purple-600'
                                                     }`} />
                                                     {!collapsed && item.name}
                                                 </Link>
@@ -124,8 +149,6 @@ export default function AdminSidebar({ profile }: AdminSidebarProps) {
                     </nav>
                 </div>
             </div>
-
-            {/* Mobile Sidebar - Por implementar si lo necesitas */}
         </>
     )
 }

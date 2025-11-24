@@ -2,27 +2,35 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { AlertCircle, CheckCircle, X } from 'lucide-react'
+import { AlertCircle, CheckCircle } from 'lucide-react'
+import SearchableSelect from '@/components/common/SearchableSelect'
+import MultiSearchableSelect from '@/components/common/MultiSearchableSelect'
 
 interface Client {
     id: string
     full_name: string
     email: string
+    phone?: string
 }
 
 interface Cleaner {
     id: string
     full_name: string
     email: string
+    phone?: string
+}
+
+interface CreateCleaningFormProps {
+    clients: Client[]
+    cleaners: Cleaner[]
+    redirectAfterSuccess?: string
 }
 
 export default function CreateCleaningForm({
-                                               clients,
-                                               cleaners
-                                           }: {
-    clients: Client[],
-    cleaners: Cleaner[]
-}) {
+    clients,
+    cleaners,
+    redirectAfterSuccess = '/dashboard/admin/cleanings'
+}: CreateCleaningFormProps) {
     const router = useRouter()
     const [formData, setFormData] = useState({
         client_id: '',
@@ -45,13 +53,19 @@ export default function CreateCleaningForm({
         setMessage(null)
     }
 
-    const toggleCleaner = (cleanerId: string) => {
-        setSelectedCleaners(prev =>
-            prev.includes(cleanerId)
-                ? prev.filter(id => id !== cleanerId)
-                : [...prev, cleanerId]
-        )
-    }
+    // Convertir clientes a opciones
+    const clientOptions = clients.map(client => ({
+        id: client.id,
+        label: client.full_name,
+        sublabel: `${client.email}${client.phone ? ` • ${client.phone}` : ''}`
+    }))
+
+    // Convertir cleaners a opciones
+    const cleanerOptions = cleaners.map(cleaner => ({
+        id: cleaner.id,
+        label: cleaner.full_name,
+        sublabel: `${cleaner.email}${cleaner.phone ? ` • ${cleaner.phone}` : ''}`
+    }))
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -77,20 +91,11 @@ export default function CreateCleaningForm({
 
             setMessage({ type: 'success', text: '¡Limpieza programada exitosamente!' })
 
-            // Limpiar formulario
-            setFormData({
-                client_id: '',
-                address: '',
-                total_steps: '3',
-                scheduled_date: '',
-                start_time: '09:00',
-                end_time: '12:00',
-                notes: ''
-            })
-            setSelectedCleaners([])
-
-            // Refrescar página
-            router.refresh()
+            // Redirigir después de 1.5 segundos
+            setTimeout(() => {
+                router.push(redirectAfterSuccess)
+                router.refresh()
+            }, 1500)
         } catch (error: any) {
             setMessage({ type: 'error', text: error.message })
         } finally {
@@ -99,7 +104,7 @@ export default function CreateCleaningForm({
     }
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-6">
             {message && (
                 <div className={`px-4 py-3 rounded-lg flex items-start gap-2 ${
                     message.type === 'success'
@@ -115,33 +120,25 @@ export default function CreateCleaningForm({
                 </div>
             )}
 
-            {/* Cliente */}
-            <div>
-                <label htmlFor="client_id" className="block text-sm font-medium text-gray-700 mb-2">
-                    Cliente *
-                </label>
-                <select
-                    id="client_id"
-                    name="client_id"
-                    value={formData.client_id}
-                    onChange={handleChange}
-                    required
-                    disabled={isLoading}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 text-sm"
-                >
-                    <option value="">Selecciona un cliente</option>
-                    {clients.map(client => (
-                        <option key={client.id} value={client.id}>
-                            {client.full_name} ({client.email})
-                        </option>
-                    ))}
-                </select>
-            </div>
+            {/* Cliente con búsqueda */}
+            <SearchableSelect
+                options={clientOptions}
+                value={formData.client_id}
+                onChange={(value) => {
+                    setFormData(prev => ({ ...prev, client_id: value }))
+                    setMessage(null)
+                }}
+                label="Cliente"
+                placeholder="Buscar cliente por nombre, email o teléfono..."
+                required
+                disabled={isLoading}
+                emptyMessage="No se encontraron clientes"
+            />
 
             {/* Dirección */}
             <div>
                 <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-2">
-                    Dirección *
+                    Dirección <span className="text-red-500">*</span>
                 </label>
                 <input
                     type="text"
@@ -152,14 +149,14 @@ export default function CreateCleaningForm({
                     required
                     disabled={isLoading}
                     placeholder="Calle 123, Ciudad"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:bg-gray-100"
                 />
             </div>
 
             {/* Steps */}
             <div>
                 <label htmlFor="total_steps" className="block text-sm font-medium text-gray-700 mb-2">
-                    Número de Steps *
+                    Número de Steps <span className="text-red-500">*</span>
                 </label>
                 <input
                     type="number"
@@ -171,94 +168,47 @@ export default function CreateCleaningForm({
                     min="1"
                     max="20"
                     disabled={isLoading}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:bg-gray-100"
                 />
                 <p className="mt-1 text-xs text-gray-500">
                     Divide la limpieza en pasos (1-20)
                 </p>
             </div>
 
-            {/* Cleaners */}
-            <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Cleaners (Opcional)
-                </label>
-                <div className="border border-gray-300 rounded-lg p-3 max-h-40 overflow-y-auto bg-gray-50">
-                    {cleaners.length === 0 ? (
-                        <p className="text-sm text-gray-500 text-center py-2">
-                            No hay cleaners disponibles
-                        </p>
-                    ) : (
-                        <div className="space-y-2">
-                            {cleaners.map(cleaner => (
-                                <label
-                                    key={cleaner.id}
-                                    className={`flex items-center gap-2 p-2 rounded hover:bg-white cursor-pointer transition-colors ${
-                                        selectedCleaners.includes(cleaner.id) ? 'bg-blue-50' : ''
-                                    }`}
-                                >
-                                    <input
-                                        type="checkbox"
-                                        checked={selectedCleaners.includes(cleaner.id)}
-                                        onChange={() => toggleCleaner(cleaner.id)}
-                                        disabled={isLoading}
-                                        className="w-4 h-4 text-blue-600"
-                                    />
-                                    <span className="text-sm text-gray-900">
-                                        {cleaner.full_name}
-                                    </span>
-                                </label>
-                            ))}
-                        </div>
-                    )}
+            {/* Cleaners con búsqueda múltiple */}
+            <MultiSearchableSelect
+                options={cleanerOptions}
+                value={selectedCleaners}
+                onChange={setSelectedCleaners}
+                label="Cleaners (Opcional)"
+                placeholder="Buscar y seleccionar cleaners..."
+                disabled={isLoading}
+                emptyMessage="No se encontraron cleaners disponibles"
+                maxHeight="240px"
+            />
+
+            {/* Fecha y Horarios */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label htmlFor="scheduled_date" className="block text-sm font-medium text-gray-700 mb-2">
+                        Fecha <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                        type="date"
+                        id="scheduled_date"
+                        name="scheduled_date"
+                        value={formData.scheduled_date}
+                        onChange={handleChange}
+                        required
+                        min={new Date().toISOString().split('T')[0]}
+                        disabled={isLoading}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:bg-gray-100"
+                    />
                 </div>
-                {selectedCleaners.length > 0 && (
-                    <div className="flex flex-wrap gap-2 mt-2">
-                        {selectedCleaners.map(cleanerId => {
-                            const cleaner = cleaners.find(c => c.id === cleanerId)
-                            return (
-                                <span
-                                    key={cleanerId}
-                                    className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full"
-                                >
-                                    {cleaner?.full_name}
-                                    <button
-                                        type="button"
-                                        onClick={() => toggleCleaner(cleanerId)}
-                                        className="hover:text-blue-900"
-                                    >
-                                        <X className="w-3 h-3" />
-                                    </button>
-                                </span>
-                            )
-                        })}
-                    </div>
-                )}
-            </div>
 
-            {/* Fecha */}
-            <div>
-                <label htmlFor="scheduled_date" className="block text-sm font-medium text-gray-700 mb-2">
-                    Fecha *
-                </label>
-                <input
-                    type="date"
-                    id="scheduled_date"
-                    name="scheduled_date"
-                    value={formData.scheduled_date}
-                    onChange={handleChange}
-                    required
-                    min={new Date().toISOString().split('T')[0]}
-                    disabled={isLoading}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
-                />
-            </div>
-
-            {/* Horarios */}
-            <div className="grid grid-cols-2 gap-3">
                 <div>
                     <label htmlFor="start_time" className="block text-sm font-medium text-gray-700 mb-2">
-                        Hora Inicio *
+                        Hora Inicio <span className="text-red-500">*</span>
                     </label>
                     <input
                         type="time"
@@ -268,13 +218,13 @@ export default function CreateCleaningForm({
                         onChange={handleChange}
                         required
                         disabled={isLoading}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:bg-gray-100"
                     />
                 </div>
 
                 <div>
                     <label htmlFor="end_time" className="block text-sm font-medium text-gray-700 mb-2">
-                        Hora Fin *
+                        Hora Fin <span className="text-red-500">*</span>
                     </label>
                     <input
                         type="time"
@@ -284,7 +234,7 @@ export default function CreateCleaningForm({
                         onChange={handleChange}
                         required
                         disabled={isLoading}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:bg-gray-100"
                     />
                 </div>
             </div>
@@ -302,18 +252,28 @@ export default function CreateCleaningForm({
                     disabled={isLoading}
                     rows={3}
                     placeholder="Instrucciones especiales para los cleaners"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 resize-none text-sm"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:bg-gray-100 resize-none text-sm"
                 />
             </div>
 
-            {/* Botón */}
-            <button
-                type="submit"
-                disabled={isLoading}
-                className="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
-            >
-                {isLoading ? 'Programando...' : 'Programar Limpieza'}
-            </button>
+            {/* Botones */}
+            <div className="flex gap-3 pt-4">
+                <button
+                    type="button"
+                    onClick={() => router.back()}
+                    disabled={isLoading}
+                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors disabled:opacity-50"
+                >
+                    Cancelar
+                </button>
+                <button
+                    type="submit"
+                    disabled={isLoading}
+                    className="flex-1 bg-purple-600 text-white py-2 rounded-lg font-semibold hover:bg-purple-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+                >
+                    {isLoading ? 'Programando...' : 'Programar Limpieza'}
+                </button>
+            </div>
         </form>
     )
 }
