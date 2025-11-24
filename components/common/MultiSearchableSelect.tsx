@@ -95,11 +95,11 @@ export default function MultiSearchableSelect({
                 </label>
             )}
 
-            {/* Botón selector */}
-            <button
-                type="button"
+            <div
+                role="button"
+                tabIndex={0}
                 onClick={() => !disabled && setIsOpen(!isOpen)}
-                disabled={disabled}
+                onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && !disabled && setIsOpen(!isOpen)}
                 className={`w-full flex items-start justify-between px-3 py-2 border rounded-lg transition-colors ${
                     disabled
                         ? 'bg-gray-100 cursor-not-allowed'
@@ -146,7 +146,7 @@ export default function MultiSearchableSelect({
                         isOpen ? 'rotate-180' : ''
                     }`} />
                 </div>
-            </button>
+            </div>
 
             {/* Dropdown */}
             {isOpen && (
