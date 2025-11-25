@@ -1,6 +1,6 @@
 // app/dashboard/admin/page.tsx
-import { createClient } from '@/utils/supabase/server'
-import { redirect } from 'next/navigation'
+import {createClient} from '@/utils/supabase/server'
+import {redirect} from 'next/navigation'
 import AdminDashboardClient from '@/components/admin/AdminDashboardClient'
 
 export const metadata = {

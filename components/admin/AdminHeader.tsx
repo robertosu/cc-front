@@ -1,7 +1,7 @@
 // components/admin/AdminHeader.tsx
 'use client'
 
-import { Bell, Search } from 'lucide-react'
+import {Bell} from 'lucide-react'
 import LogoutButton from '@/components/auth/LogoutButton'
 
 interface AdminHeaderProps {

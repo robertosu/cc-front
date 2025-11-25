@@ -1,8 +1,8 @@
 // app/dashboard/admin/cleanings/create/page.tsx
-import { createClient } from '@/utils/supabase/server'
-import { redirect } from 'next/navigation'
+import {createClient} from '@/utils/supabase/server'
+import {redirect} from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft } from 'lucide-react'
+import {ArrowLeft} from 'lucide-react'
 import CreateCleaningForm from '@/components/admin/CreateCleaningForm'
 
 export const metadata = {

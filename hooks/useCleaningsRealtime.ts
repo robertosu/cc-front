@@ -1,10 +1,10 @@
 // hooks/useCleaningsRealtime.ts
 'use client'
 
-import { useEffect, useState } from 'react'
-import { createClient } from '@/utils/supabase/client'
-import type { RealtimePostgresChangesPayload } from '@supabase/supabase-js'
-import { Cleaning } from '@/types/cleaning'
+import {useEffect, useState} from 'react'
+import {createClient} from '@/utils/supabase/client'
+import type {RealtimePostgresChangesPayload} from '@supabase/supabase-js'
+import {Cleaning} from '@/types/cleaning'
 
 interface UseCleaningsRealtimeOptions {
     userId?: string

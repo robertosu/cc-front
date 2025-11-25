@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
-import { ChevronDown, Search } from 'lucide-react'
-import { countries, defaultCountry, type Country } from '@/data/Countries'
+import {useEffect, useRef, useState} from 'react'
+import {ChevronDown, Search} from 'lucide-react'
+import {countries, type Country} from '@/data/Countries'
 
 interface CountrySelectorProps {
     selectedCountry: Country

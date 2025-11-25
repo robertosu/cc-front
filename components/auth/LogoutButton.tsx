@@ -1,8 +1,8 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { LogOut } from 'lucide-react'
+import {useState} from 'react'
+import {useRouter} from 'next/navigation'
+import {LogOut} from 'lucide-react'
 
 export default function LogoutButton() {
     const [isLoading, setIsLoading] = useState(false)

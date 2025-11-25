@@ -1,8 +1,7 @@
 // app/api/cleaners/route.ts
-import { createClient } from '@/utils/supabase/server'
-import { cookies } from 'next/headers'
-import { NextResponse } from 'next/server'
-import { checkAuth, unauthorizedResponse } from '@/utils/auth/roleCheck'
+import {createClient} from '@/utils/supabase/server'
+import {NextResponse} from 'next/server'
+import {checkAuth, unauthorizedResponse} from '@/utils/auth/roleCheck'
 
 // GET: Obtener lista de cleaners (solo admin)
 export async function GET(request: Request) {

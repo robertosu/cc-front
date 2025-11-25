@@ -1,12 +1,12 @@
 // components/auth/RegisterForm.tsx
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { Mail, Lock, User, Phone, AlertCircle, CheckCircle, Eye, EyeOff } from 'lucide-react'
+import {useState} from 'react'
+import {useRouter} from 'next/navigation'
+import {AlertCircle, CheckCircle, Eye, EyeOff, Lock, Mail, Phone, User} from 'lucide-react'
 import CountrySelector from './CountrySelector'
-import PasswordStrength, { validatePassword } from './PasswordStrength'
-import { defaultCountry, type Country } from '@/data/Countries'
+import PasswordStrength, {validatePassword} from './PasswordStrength'
+import {type Country, defaultCountry} from '@/data/Countries'
 
 export default function RegisterForm() {
     const [formData, setFormData] = useState({

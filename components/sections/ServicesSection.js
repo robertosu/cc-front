@@ -1,7 +1,6 @@
 // app/components/sections/ServicesSection.js
-import { CheckCircle } from 'lucide-react'
-import { services} from '@/data/Services'
-
+import {CheckCircle} from 'lucide-react'
+import {services} from '@/data/Services'
 
 
 export default function ServicesSection() {

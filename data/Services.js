@@ -1,4 +1,4 @@
-import { Home, Building, Car, Users, Sofa, Sparkles } from 'lucide-react'
+import {Building, Car, Home, Sofa, Sparkles, Users} from 'lucide-react'
 
 
 export const services = [

@@ -1,8 +1,8 @@
 // components/admin/AdminDashboardClient.tsx
 'use client'
 
-import { useCleaningsRealtime } from '@/hooks/useCleaningsRealtime'
-import { Users, Briefcase, Clock, CheckCircle, Calendar, XCircle } from 'lucide-react'
+import {useCleaningsRealtime} from '@/hooks/useCleaningsRealtime'
+import {Briefcase, Calendar, CheckCircle, Clock, Users, XCircle} from 'lucide-react'
 import Link from 'next/link'
 
 interface DashboardStats {

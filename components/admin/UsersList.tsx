@@ -1,8 +1,8 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { User, Mail, Phone, Calendar, Shield, Briefcase, Users, Trash2, MoreVertical } from 'lucide-react'
+import {useState} from 'react'
+import {useRouter} from 'next/navigation'
+import {Briefcase, Calendar, Mail, MoreVertical, Phone, Shield, Trash2, User, Users} from 'lucide-react'
 
 interface Profile {
     id: string

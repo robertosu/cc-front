@@ -1,7 +1,7 @@
 // app/dashboard/admin/users/page.tsx
-import { createClient } from '@/utils/supabase/server'
-import { redirect } from 'next/navigation'
-import { Users as UsersIcon, Shield, Briefcase } from 'lucide-react'
+import {createClient} from '@/utils/supabase/server'
+import {redirect} from 'next/navigation'
+import {Briefcase, Shield, Users as UsersIcon} from 'lucide-react'
 import UsersList from '@/components/admin/UsersList'
 
 export const metadata = {

@@ -1,20 +1,10 @@
 // components/admin/AdminSidebar.tsx
 'use client'
 
-import { useState } from 'react'
+import {useState} from 'react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import {
-    LayoutDashboard,
-    Users,
-    Briefcase,
-    Plus,
-    ChevronLeft,
-    ChevronRight,
-    Sparkles,
-    Home,
-    ClipboardList
-} from 'lucide-react'
+import {usePathname} from 'next/navigation'
+import {ChevronLeft, ChevronRight, ClipboardList, Home, LayoutDashboard, Plus, Sparkles, Users} from 'lucide-react'
 
 interface AdminSidebarProps {
     profile: {

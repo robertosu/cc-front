@@ -1,9 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
-import { Lock, AlertCircle, CheckCircle, Eye, EyeOff } from 'lucide-react'
-import { createClient } from '@/utils/supabase/client'
+import {useEffect, useState} from 'react'
+import {useRouter, useSearchParams} from 'next/navigation'
+import {AlertCircle, CheckCircle, Eye, EyeOff, Lock} from 'lucide-react'
+import {createClient} from '@/utils/supabase/client'
 import PasswordStrength from '@/components/auth/PasswordStrength'
 
 export default function ResetPasswordConfirmPage() {

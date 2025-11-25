@@ -1,6 +1,6 @@
 // app/dashboard/admin/layout.tsx
-import { createClient } from '@/utils/supabase/server'
-import { redirect } from 'next/navigation'
+import {createClient} from '@/utils/supabase/server'
+import {redirect} from 'next/navigation'
 import AdminSidebar from '@/components/admin/AdminSidebar'
 import AdminHeader from '@/components/admin/AdminHeader'
 

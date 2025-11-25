@@ -1,12 +1,12 @@
 // components/dashboard/ClientDashboardClient.tsx
 'use client'
 
-import { useCleaningsRealtime } from '@/hooks/useCleaningsRealtime'
-import { Calendar, Clock, MapPin, Users } from 'lucide-react'
+import {useCleaningsRealtime} from '@/hooks/useCleaningsRealtime'
+import {Calendar, Clock, MapPin, Users} from 'lucide-react'
 import LogoutButton from '@/components/auth/LogoutButton'
 import CleaningProgressBar from '@/components/dashboard/CleaningProgressBar'
 import Link from 'next/link'
-import { Cleaning } from '@/types/cleaning'
+import {Cleaning} from '@/types/cleaning'
 
 interface Profile {
     id: string

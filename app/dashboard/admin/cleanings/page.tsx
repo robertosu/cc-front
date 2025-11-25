@@ -1,7 +1,7 @@
 // app/dashboard/admin/cleanings/page.tsx
-import { createClient } from '@/utils/supabase/server'
-import { redirect } from 'next/navigation'
-import { Plus } from 'lucide-react'
+import {createClient} from '@/utils/supabase/server'
+import {redirect} from 'next/navigation'
+import {Plus} from 'lucide-react'
 import CleaningsTable from '@/components/admin/CleaningsTable'
 import Link from 'next/link'
 

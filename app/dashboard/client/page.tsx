@@ -1,6 +1,6 @@
 // app/dashboard/client/page.tsx
-import { createClient } from '@/utils/supabase/server'
-import { redirect } from 'next/navigation'
+import {createClient} from '@/utils/supabase/server'
+import {redirect} from 'next/navigation'
 import ClientDashboardClient from '@/components/dashboard/ClientDashboardClient'
 import {Metadata} from "next";
 

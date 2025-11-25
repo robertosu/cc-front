@@ -1,8 +1,8 @@
 // components/dashboard/CleanerDashboardClient.tsx
 'use client'
 
-import { useCleaningsRealtime } from '@/hooks/useCleaningsRealtime'
-import { Briefcase, Clock, CheckCircle } from 'lucide-react'
+import {useCleaningsRealtime} from '@/hooks/useCleaningsRealtime'
+import {Briefcase, CheckCircle, Clock} from 'lucide-react'
 import LogoutButton from '@/components/auth/LogoutButton'
 import CleanerCleaningCard from '@/components/dashboard/CleanerCleaningCard'
 

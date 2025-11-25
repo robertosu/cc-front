@@ -1,7 +1,5 @@
-
-
-import { Sparkles, Menu, User } from "lucide-react"
-import { createClient } from '@/utils/supabase/server'
+import {Sparkles, User} from "lucide-react"
+import {createClient} from '@/utils/supabase/server'
 import Link from "next/link";
 
 export default async function Header() {

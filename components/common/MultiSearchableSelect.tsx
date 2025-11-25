@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
-import { Search, ChevronDown, Check, X } from 'lucide-react'
+import {useEffect, useRef, useState} from 'react'
+import {Check, ChevronDown, Search, X} from 'lucide-react'
 
 interface Option {
     id: string

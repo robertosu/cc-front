@@ -1,8 +1,8 @@
 // components/common/TimeSelector24h.tsx
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
-import { Clock, ChevronDown } from 'lucide-react'
+import {useEffect, useRef, useState} from 'react'
+import {ChevronDown, Clock} from 'lucide-react'
 
 interface TimeSelector24hProps {
     value: string // Formato "HH:MM"

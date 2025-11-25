@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
-import { Mail, Lock, AlertCircle, Eye, EyeOff } from 'lucide-react'
+import {useEffect, useState} from 'react'
+import {useRouter, useSearchParams} from 'next/navigation'
+import {AlertCircle, Eye, EyeOff, Lock, Mail} from 'lucide-react'
 
 export default function LoginForm() {
     const [formData, setFormData] = useState({ email: '', password: '' })

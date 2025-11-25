@@ -1,6 +1,6 @@
 // app/api/users/route.ts
-import { createClient } from '@/utils/supabase/server'
-import { NextResponse } from 'next/server'
+import {createClient} from '@/utils/supabase/server'
+import {NextResponse} from 'next/server'
 import {checkAuth, unauthorizedResponse, USER_ROLES} from '@/utils/auth/roleCheck'
 
 export async function GET(request: Request) {

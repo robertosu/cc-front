@@ -1,6 +1,6 @@
 'use client'
 
-import { CheckCircle, Circle } from 'lucide-react'
+import {CheckCircle, Circle} from 'lucide-react'
 
 interface CleaningProgressBarProps {
     currentStep: number

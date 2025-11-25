@@ -1,7 +1,6 @@
 // app/dashboard/cleaner/page.tsx
-import { createClient } from '@/utils/supabase/server'
-import { redirect } from 'next/navigation'
-import { Briefcase, Clock, CheckCircle } from 'lucide-react'
+import {createClient} from '@/utils/supabase/server'
+import {redirect} from 'next/navigation'
 import CleanerDashboardClient from '@/components/dashboard/CleanerDashboardClient'
 
 export const metadata = {

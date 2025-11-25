@@ -1,8 +1,19 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { Calendar, Clock, MapPin, User, Edit, Trash2, CheckCircle, XCircle, AlertCircle, ChevronDown, ChevronUp } from 'lucide-react'
+import {useState} from 'react'
+import {useRouter} from 'next/navigation'
+import {
+    AlertCircle,
+    Calendar,
+    CheckCircle,
+    ChevronDown,
+    ChevronUp,
+    Clock,
+    Edit,
+    Trash2,
+    User,
+    XCircle
+} from 'lucide-react'
 
 interface Cleaner {
     id: string

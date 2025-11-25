@@ -1,7 +1,6 @@
 // app/dashboard/page.tsx
-import { createClient } from '@/utils/supabase/server'
-import { redirect } from 'next/navigation'
-import { cookies } from 'next/headers'
+import {createClient} from '@/utils/supabase/server'
+import {redirect} from 'next/navigation'
 
 export const metadata: { title: string; description: string } = {
     title: 'Dashboard - CleanerClub',

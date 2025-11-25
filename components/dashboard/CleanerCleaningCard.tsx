@@ -1,11 +1,11 @@
 // components/dashboard/CleanerCleaningCard.tsx (ACTUALIZADO)
 'use client'
 
-import { useState, useEffect } from 'react'
-import { Calendar, Clock, MapPin, Phone, User, ChevronRight, ChevronLeft, CheckCircle, Users } from 'lucide-react'
+import {useEffect, useState} from 'react'
+import {Calendar, CheckCircle, ChevronLeft, ChevronRight, Clock, MapPin, Phone, User, Users} from 'lucide-react'
 import CleaningProgressBar from './CleaningProgressBar'
-import { createClient } from '@/utils/supabase/client'
-import { useRouter } from 'next/navigation'
+import {createClient} from '@/utils/supabase/client'
+import {useRouter} from 'next/navigation'
 
 interface Cleaner {
     id: string

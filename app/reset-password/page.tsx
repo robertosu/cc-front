@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { Mail, AlertCircle, CheckCircle, ArrowLeft } from 'lucide-react'
+import {useState} from 'react'
+import {AlertCircle, ArrowLeft, CheckCircle, Mail} from 'lucide-react'
 import Link from 'next/link'
 
 export default function ResetPasswordPage() {
