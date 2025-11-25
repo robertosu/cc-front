@@ -44,15 +44,15 @@ export default function CleanerCleaningCard({ cleaning: initialCleaning }: { cle
     useEffect(() => {
         console.log('🔵 Card - Cleaning updated from parent:', initialCleaning.current_step)
         setCleaning(initialCleaning)
-    }, [initialCleaning.id, initialCleaning.current_step, initialCleaning.status])
+    }, [initialCleaning])
 
-    const canStart = cleaning.status === 'pending'
-    const canUpdate = cleaning.status === 'in_progress'
-    const isCompleted = cleaning.status === 'completed'
+    const canStart: boolean = cleaning.status === 'pending'
+    const canUpdate: boolean = cleaning.status === 'in_progress'
+    const isCompleted: boolean = cleaning.status === 'completed'
 
     // Obtener datos del cliente
-    const clientName = cleaning.client_name || 'Cliente no disponible'
-    const clientPhone = cleaning.client_phone
+    const clientName: string = cleaning.client_name || 'Cliente no disponible'
+    const clientPhone: string = cleaning.client_phone
 
     // Obtener lista de cleaners
     const cleanersList = cleaning.assigned_cleaners || []
