@@ -1,3 +1,4 @@
+// components/admin/CreateCleaningForm.tsx - CON SELECTOR DE HORA PERSONALIZADO
 'use client'
 
 import { useState } from 'react'
@@ -5,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { AlertCircle, CheckCircle } from 'lucide-react'
 import SearchableSelect from '@/components/common/SearchableSelect'
 import MultiSearchableSelect from '@/components/common/MultiSearchableSelect'
+import TimeSelector24h from '@/components/common/TimeSelector24h'
 
 interface Client {
     id: string
@@ -27,10 +29,10 @@ interface CreateCleaningFormProps {
 }
 
 export default function CreateCleaningForm({
-    clients,
-    cleaners,
-    redirectAfterSuccess = '/dashboard/admin/cleanings'
-}: CreateCleaningFormProps) {
+                                               clients,
+                                               cleaners,
+                                               redirectAfterSuccess = '/dashboard/admin/cleanings'
+                                           }: CreateCleaningFormProps) {
     const router = useRouter()
     const [formData, setFormData] = useState({
         client_id: '',
@@ -187,7 +189,7 @@ export default function CreateCleaningForm({
                 maxHeight="240px"
             />
 
-            {/* Fecha y Horarios */}
+            {/* Fecha y Horarios - CON SELECTOR PERSONALIZADO */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                     <label htmlFor="scheduled_date" className="block text-sm font-medium text-gray-700 mb-2">
@@ -206,37 +208,25 @@ export default function CreateCleaningForm({
                     />
                 </div>
 
-                <div>
-                    <label htmlFor="start_time" className="block text-sm font-medium text-gray-700 mb-2">
-                        Hora Inicio <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                        type="time"
-                        id="start_time"
-                        name="start_time"
-                        value={formData.start_time}
-                        onChange={handleChange}
-                        required
-                        disabled={isLoading}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:bg-gray-100"
-                    />
-                </div>
+                {/* ✅ SELECTOR DE HORA PERSONALIZADO - INICIO */}
+                <TimeSelector24h
+                    value={formData.start_time}
+                    onChange={(value) => setFormData(prev => ({ ...prev, start_time: value }))}
+                    label="Hora Inicio"
+                    required
+                    disabled={isLoading}
+                    placeholder="09:00"
+                />
 
-                <div>
-                    <label htmlFor="end_time" className="block text-sm font-medium text-gray-700 mb-2">
-                        Hora Fin <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                        type="time"
-                        id="end_time"
-                        name="end_time"
-                        value={formData.end_time}
-                        onChange={handleChange}
-                        required
-                        disabled={isLoading}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:bg-gray-100"
-                    />
-                </div>
+                {/* ✅ SELECTOR DE HORA PERSONALIZADO - FIN */}
+                <TimeSelector24h
+                    value={formData.end_time}
+                    onChange={(value) => setFormData(prev => ({ ...prev, end_time: value }))}
+                    label="Hora Fin"
+                    required
+                    disabled={isLoading}
+                    placeholder="12:00"
+                />
             </div>
 
             {/* Notas */}

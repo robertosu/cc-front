@@ -21,6 +21,7 @@ import {
 } from 'lucide-react'
 import React from "react"
 import MultiSearchableSelect from '@/components/common/MultiSearchableSelect'
+import {formatTime} from "@/utils/formatTime";
 
 interface Cleaner {
     id: string
@@ -67,7 +68,7 @@ export default function CleaningsTable({
     const [editingCleaning, setEditingCleaning] = useState<string | null>(null)
     const [editData, setEditData] = useState<any>({})
     const [isLoading, setIsLoading] = useState<string | null>(null)
-    const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
+    const [rowMessage, setRowMessage] = useState<{ cleaningId: string, type: 'success' | 'error', text: string } | null>(null)
 
     const handleSearch = (value: string) => {
         setSearchTerm(value)
@@ -111,6 +112,7 @@ export default function CleaningsTable({
 
     const handleEdit = (cleaning: Cleaning) => {
         setEditingCleaning(cleaning.id)
+        setRowMessage(null) // Limpiar mensaje al empezar a editar
         setEditData({
             cleaner_ids: cleaning.assigned_cleaners?.map(c => c.id) || [],
             scheduled_date: cleaning.scheduled_date,
@@ -124,7 +126,7 @@ export default function CleaningsTable({
 
     const handleSaveEdit = async (cleaningId: string) => {
         setIsLoading(cleaningId)
-        setMessage(null)
+        setRowMessage(null)
 
         try {
             const response = await fetch('/api/cleanings', {
@@ -141,11 +143,17 @@ export default function CleaningsTable({
 
             if (!response.ok) throw new Error(data.error || 'Error al actualizar limpieza')
 
-            setMessage({ type: 'success', text: 'Limpieza actualizada exitosamente' })
+            setRowMessage({ cleaningId, type: 'success', text: 'Limpieza actualizada exitosamente' })
             setEditingCleaning(null)
+
+            // Limpiar mensaje después de 3 segundos
+            setTimeout(() => {
+                setRowMessage(null)
+            }, 10000)
+
             router.refresh()
         } catch (error: any) {
-            setMessage({ type: 'error', text: error.message })
+            setRowMessage({ cleaningId, type: 'error', text: error.message })
         } finally {
             setIsLoading(null)
         }
@@ -157,7 +165,7 @@ export default function CleaningsTable({
         }
 
         setIsLoading(cleaningId)
-        setMessage(null)
+        setRowMessage(null)
 
         try {
             const response = await fetch(`/api/cleanings?id=${cleaningId}`, {
@@ -166,10 +174,16 @@ export default function CleaningsTable({
 
             if (!response.ok) throw new Error('Error al eliminar limpieza')
 
-            setMessage({ type: 'success', text: 'Limpieza eliminada exitosamente' })
-            router.refresh()
+            setRowMessage({ cleaningId, type: 'success', text: 'Limpieza eliminada exitosamente' })
+
+            // Cerrar fila expandida y limpiar mensaje después de 2 segundos
+            setTimeout(() => {
+                setExpandedRow(null)
+                setRowMessage(null)
+                router.refresh()
+            }, 2000)
         } catch (error) {
-            setMessage({ type: 'error', text: 'Error al eliminar la limpieza' })
+            setRowMessage({ cleaningId, type: 'error', text: 'Error al eliminar la limpieza' })
         } finally {
             setIsLoading(null)
         }
@@ -205,23 +219,7 @@ export default function CleaningsTable({
     }))
 
     return (
-        <div className="bg-white shadow rounded-lg">
-            {/* Mensaje de éxito/error */}
-            {message && (
-                <div className={`m-6 mb-0 px-4 py-3 rounded-lg flex items-start gap-2 ${
-                    message.type === 'success'
-                        ? 'bg-green-50 text-green-700 border border-green-200'
-                        : 'bg-red-50 text-red-700 border border-red-200'
-                }`}>
-                    {message.type === 'success' ? (
-                        <CheckCircle className="w-5 h-5 flex-shrink-0" />
-                    ) : (
-                        <AlertCircle className="w-5 h-5 flex-shrink-0" />
-                    )}
-                    <span className="text-sm">{message.text}</span>
-                </div>
-            )}
-
+        <div className="bg-white shadow rounded-lg p-3">
             {/* Filtros y búsqueda */}
             <div className="p-6 border-b border-gray-200">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -319,7 +317,7 @@ export default function CleaningsTable({
                                         </div>
                                         <div className="flex items-center text-xs text-gray-500 mt-1">
                                             <Clock className="w-3 h-3 mr-1" />
-                                            {cleaning.start_time} - {cleaning.end_time}
+                                            {formatTime(cleaning.start_time)} - {formatTime(cleaning.end_time)}
                                         </div>
                                     </td>
                                     <td className="px-6 py-4 text-sm text-gray-900">
@@ -369,6 +367,22 @@ export default function CleaningsTable({
                                 {expandedRow === cleaning.id && (
                                     <tr>
                                         <td colSpan={6} className="px-6 py-4 bg-gray-50">
+                                            {/* Mensaje de éxito/error en la fila */}
+                                            {rowMessage && rowMessage.cleaningId === cleaning.id && (
+                                                <div className={`mb-4 px-4 py-3 rounded-lg flex items-start gap-2 ${
+                                                    rowMessage.type === 'success'
+                                                        ? 'bg-green-50 text-green-700 border border-green-200'
+                                                        : 'bg-red-50 text-red-700 border border-red-200'
+                                                }`}>
+                                                    {rowMessage.type === 'success' ? (
+                                                        <CheckCircle className="w-5 h-5 flex-shrink-0" />
+                                                    ) : (
+                                                        <AlertCircle className="w-5 h-5 flex-shrink-0" />
+                                                    )}
+                                                    <span className="text-sm">{rowMessage.text}</span>
+                                                </div>
+                                            )}
+
                                             {editingCleaning === cleaning.id ? (
                                                 <div className="space-y-4">
                                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -477,7 +491,10 @@ export default function CleaningsTable({
                                                             {isLoading === cleaning.id ? 'Guardando...' : 'Guardar Cambios'}
                                                         </button>
                                                         <button
-                                                            onClick={() => setEditingCleaning(null)}
+                                                            onClick={() => {
+                                                                setEditingCleaning(null)
+                                                                setRowMessage(null)
+                                                            }}
                                                             disabled={isLoading === cleaning.id}
                                                             className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition-colors"
                                                         >
