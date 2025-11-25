@@ -1,44 +1,21 @@
-// components/dashboard/CleanerCleaningCard.tsx (ACTUALIZADO)
+// components/dashboard/CleanerCleaningCard.tsx
 'use client'
 
-import {useEffect, useState} from 'react'
-import {Calendar, CheckCircle, ChevronLeft, ChevronRight, Clock, MapPin, Phone, User, Users} from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { Calendar, CheckCircle, ChevronLeft, ChevronRight, Clock, MapPin, Phone, User, Users } from 'lucide-react'
 import CleaningProgressBar from './CleaningProgressBar'
-import {createClient} from '@/utils/supabase/client'
-import {useRouter} from 'next/navigation'
+import { useRouter } from 'next/navigation'
+import type { Cleaning } from '@/types'
 
-interface Cleaner {
-    id: string
-    full_name: string
-    email: string
-    phone?: string
+interface CleanerCleaningCardProps {
+    cleaning: Cleaning
 }
 
-interface Cleaning {
-    id: string
-    client_id: string
-    address: string
-    total_steps: number
-    current_step: number
-    scheduled_date: string
-    start_time: string
-    end_time: string
-    status: 'pending' | 'in_progress' | 'completed' | 'cancelled'
-    notes?: string
-    created_at: string
-    updated_at: string
-    client_name: string
-    client_phone: string
-    client_email: string
-    assigned_cleaners: Cleaner[]
-}
-
-export default function CleanerCleaningCard({ cleaning: initialCleaning }: { cleaning: Cleaning }) {
-    const [cleaning, setCleaning] = useState(initialCleaning)
+export default function CleanerCleaningCard({ cleaning: initialCleaning }: CleanerCleaningCardProps) {
+    const [cleaning, setCleaning] = useState<Cleaning>(initialCleaning)
     const [isLoading, setIsLoading] = useState(false)
     const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
     const router = useRouter()
-    const supabase = createClient()
 
     // Sincronizar cuando cleaning cambia desde el padre (por el hook de realtime)
     useEffect(() => {
@@ -46,16 +23,17 @@ export default function CleanerCleaningCard({ cleaning: initialCleaning }: { cle
         setCleaning(initialCleaning)
     }, [initialCleaning])
 
-    const canStart: boolean = cleaning.status === 'pending'
-    const canUpdate: boolean = cleaning.status === 'in_progress'
-    const isCompleted: boolean = cleaning.status === 'completed'
+    const canStart = cleaning.status === 'pending'
+    const canUpdate = cleaning.status === 'in_progress'
+    const isCompleted = cleaning.status === 'completed'
 
-    // Obtener datos del cliente
-    const clientName: string = cleaning.client_name || 'Cliente no disponible'
-    const clientPhone: string = cleaning.client_phone
+    // 🔥 Helper para obtener cleaners válidos
+    const getValidCleaners = () => {
+        return cleaning.assigned_cleaners?.filter(ac => ac.cleaner !== null) || []
+    }
 
-    // Obtener lista de cleaners
-    const cleanersList = cleaning.assigned_cleaners || []
+    const validCleaners = getValidCleaners()
+    const cleanersList = validCleaners.map(ac => ac.cleaner!)
 
     const handleStart = async () => {
         setIsLoading(true)
@@ -77,9 +55,6 @@ export default function CleanerCleaningCard({ cleaning: initialCleaning }: { cle
             if (!response.ok) throw new Error(data.error || 'Error al iniciar')
 
             setMessage({ type: 'success', text: '¡Limpieza iniciada!' })
-
-            // La actualización vendrá automáticamente por Realtime
-            // pero hacemos refresh por si acaso
             router.refresh()
         } catch (error: any) {
             setMessage({ type: 'error', text: error.message || 'Error al iniciar la limpieza' })
@@ -115,7 +90,6 @@ export default function CleanerCleaningCard({ cleaning: initialCleaning }: { cle
                 setMessage({ type: 'success', text: `Paso ${newStep} completado` })
             }
 
-            // La actualización vendrá automáticamente por Realtime
             router.refresh()
         } catch (error: any) {
             setMessage({ type: 'error', text: error.message || 'Error al actualizar el progreso' })
@@ -144,8 +118,6 @@ export default function CleanerCleaningCard({ cleaning: initialCleaning }: { cle
             if (!response.ok) throw new Error(data.error || 'Error al completar')
 
             setMessage({ type: 'success', text: '¡Limpieza completada! 🎉' })
-
-            // La actualización vendrá automáticamente por Realtime
             router.refresh()
         } catch (error: any) {
             setMessage({ type: 'error', text: error.message || 'Error al completar la limpieza' })
@@ -182,8 +154,8 @@ export default function CleanerCleaningCard({ cleaning: initialCleaning }: { cle
                                     canUpdate ? 'bg-blue-100 text-blue-700' :
                                         'bg-yellow-100 text-yellow-700'
                             }`}>
-                                {isCompleted ? 'Completada' : canUpdate ? 'En Progreso' : 'Pendiente'}
-                            </span>
+                {isCompleted ? 'Completada' : canUpdate ? 'En Progreso' : 'Pendiente'}
+              </span>
                         </div>
                     </div>
 
@@ -199,14 +171,14 @@ export default function CleanerCleaningCard({ cleaning: initialCleaning }: { cle
                         <User className="w-5 h-5 text-gray-400 flex-shrink-0 mt-1" />
                         <div>
                             <p className="text-sm text-gray-600">Cliente</p>
-                            <p className="font-medium text-gray-900">{clientName}</p>
-                            {clientPhone && (
+                            <p className="font-medium text-gray-900">{cleaning.client_name}</p>
+                            {cleaning.client_phone && (
                                 <a
-                                    href={`tel:${clientPhone}`}
+                                    href={`tel:${cleaning.client_phone}`}
                                     className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700 mt-1"
                                 >
                                     <Phone className="w-3 h-3" />
-                                    {clientPhone}
+                                    {cleaning.client_phone}
                                 </a>
                             )}
                         </div>

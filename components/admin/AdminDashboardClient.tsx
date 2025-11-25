@@ -1,36 +1,10 @@
 // components/admin/AdminDashboardClient.tsx
 'use client'
 
-import {useCleaningsRealtime} from '@/hooks/useCleaningsRealtime'
-import {Briefcase, Calendar, CheckCircle, Clock, Users, XCircle} from 'lucide-react'
+import { useCleaningsRealtime } from '@/hooks/useCleaningsRealtime'
+import { Briefcase, Calendar, CheckCircle, Clock, Users, XCircle } from 'lucide-react'
 import Link from 'next/link'
-
-interface DashboardStats {
-    total_cleanings: number
-    pending_cleanings: number
-    in_progress_cleanings: number
-    completed_cleanings: number
-    cancelled_cleanings: number
-    total_clients: number
-    total_cleaners: number
-}
-
-interface Cleaning {
-    id: string
-    address: string
-    total_steps: number
-    current_step: number
-    scheduled_date: string
-    start_time: string
-    status: string
-    client_name: string
-    assigned_cleaners: Array<{
-        id: string
-        full_name: string
-        email: string
-        assigned_at: string
-    }>
-}
+import type { DashboardStats, Cleaning } from '@/types'
 
 interface AdminDashboardClientProps {
     initialStats: DashboardStats
@@ -50,21 +24,26 @@ export default function AdminDashboardClient({
     })
 
     // Calcular stats en tiempo real
-    const statistics = {
+    const statistics: DashboardStats = {
         total_cleanings: cleanings.length,
-        pending_cleanings: cleanings.filter((c: Cleaning) => c.status === 'pending').length,
-        in_progress_cleanings: cleanings.filter((c: Cleaning) => c.status === 'in_progress').length,
-        completed_cleanings: cleanings.filter((c: Cleaning) => c.status === 'completed').length,
-        cancelled_cleanings: cleanings.filter((c: Cleaning) => c.status === 'cancelled').length,
+        pending_cleanings: cleanings.filter(c => c.status === 'pending').length,
+        in_progress_cleanings: cleanings.filter(c => c.status === 'in_progress').length,
+        completed_cleanings: cleanings.filter(c => c.status === 'completed').length,
+        cancelled_cleanings: cleanings.filter(c => c.status === 'cancelled').length,
         total_clients: initialStats.total_clients,
         total_cleaners: initialStats.total_cleaners
     }
 
-    const currentCleanings = cleanings.filter((c: Cleaning) => c.status === 'in_progress').slice(0, 5)
+    const currentCleanings = cleanings.filter(c => c.status === 'in_progress').slice(0, 5)
     const today = new Date().toISOString().split('T')[0]
     const upcomingCleanings = cleanings
-        .filter((c: Cleaning) => c.status === 'pending' && c.scheduled_date >= today)
+        .filter(c => c.status === 'pending' && c.scheduled_date >= today)
         .slice(0, 5)
+
+    // 🔥 Helper para obtener cleaners válidos
+    const getValidCleaners = (cleaning: Cleaning) => {
+        return cleaning.assigned_cleaners?.filter(ac => ac.cleaner !== null) || []
+    }
 
     return (
         <div className="min-h-screen bg-gray-50">
@@ -198,8 +177,10 @@ export default function AdminDashboardClient({
                         <div className="bg-white rounded-xl shadow">
                             {currentCleanings && currentCleanings.length > 0 ? (
                                 <div className="divide-y divide-gray-200">
-                                    {currentCleanings.map((cleaning: Cleaning) => {
+                                    {currentCleanings.map((cleaning) => {
                                         const progressPercentage = (cleaning.current_step / cleaning.total_steps) * 100
+                                        const validCleaners = getValidCleaners(cleaning)
+
                                         return (
                                             <div key={cleaning.id} className="p-4 hover:bg-gray-50">
                                                 <div className="flex justify-between items-start mb-2">
@@ -210,15 +191,15 @@ export default function AdminDashboardClient({
                                                         <p className="text-sm text-gray-600">
                                                             Cliente: {cleaning.client_name}
                                                         </p>
-                                                        {cleaning.assigned_cleaners && cleaning.assigned_cleaners.length > 0 && (
+                                                        {validCleaners.length > 0 && (
                                                             <p className="text-sm text-gray-600">
-                                                                Cleaners: {cleaning.assigned_cleaners.map((c: any) => c.full_name).join(', ')}
+                                                                Cleaners: {validCleaners.map(ac => ac.cleaner!.full_name).join(', ')}
                                                             </p>
                                                         )}
                                                     </div>
                                                     <span className="text-sm font-medium text-blue-600">
-                                                        {cleaning.current_step}/{cleaning.total_steps}
-                                                    </span>
+                            {cleaning.current_step}/{cleaning.total_steps}
+                          </span>
                                                 </div>
                                                 <div className="w-full bg-gray-200 rounded-full h-2">
                                                     <div
@@ -244,33 +225,37 @@ export default function AdminDashboardClient({
                         <div className="bg-white rounded-xl shadow">
                             {upcomingCleanings && upcomingCleanings.length > 0 ? (
                                 <div className="divide-y divide-gray-200">
-                                    {upcomingCleanings.map((cleaning: Cleaning) => (
-                                        <div key={cleaning.id} className="p-4 hover:bg-gray-50">
-                                            <div className="flex items-start gap-3">
-                                                <Calendar className="w-5 h-5 text-gray-400 flex-shrink-0 mt-0.5" />
-                                                <div className="flex-1">
-                                                    <p className="font-medium text-gray-900">
-                                                        {cleaning.address}
-                                                    </p>
-                                                    <p className="text-sm text-gray-600">
-                                                        Cliente: {cleaning.client_name}
-                                                    </p>
-                                                    {cleaning.assigned_cleaners && cleaning.assigned_cleaners.length > 0 ? (
+                                    {upcomingCleanings.map((cleaning) => {
+                                        const validCleaners = getValidCleaners(cleaning)
+
+                                        return (
+                                            <div key={cleaning.id} className="p-4 hover:bg-gray-50">
+                                                <div className="flex items-start gap-3">
+                                                    <Calendar className="w-5 h-5 text-gray-400 flex-shrink-0 mt-0.5" />
+                                                    <div className="flex-1">
+                                                        <p className="font-medium text-gray-900">
+                                                            {cleaning.address}
+                                                        </p>
                                                         <p className="text-sm text-gray-600">
-                                                            Cleaners: {cleaning.assigned_cleaners.map((c: any) => c.full_name).join(', ')}
+                                                            Cliente: {cleaning.client_name}
                                                         </p>
-                                                    ) : (
-                                                        <p className="text-sm text-yellow-600">
-                                                            ⚠️ Sin cleaners asignados
+                                                        {validCleaners.length > 0 ? (
+                                                            <p className="text-sm text-gray-600">
+                                                                Cleaners: {validCleaners.map(ac => ac.cleaner!.full_name).join(', ')}
+                                                            </p>
+                                                        ) : (
+                                                            <p className="text-sm text-yellow-600">
+                                                                ⚠️ Sin cleaners asignados
+                                                            </p>
+                                                        )}
+                                                        <p className="text-xs text-gray-500 mt-1">
+                                                            {new Date(cleaning.scheduled_date + 'T00:00:00').toLocaleDateString('es-CL')} • {cleaning.start_time}
                                                         </p>
-                                                    )}
-                                                    <p className="text-xs text-gray-500 mt-1">
-                                                        {new Date(cleaning.scheduled_date + 'T00:00:00').toLocaleDateString('es-CL')} • {cleaning.start_time}
-                                                    </p>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    ))}
+                                        )
+                                    })}
                                 </div>
                             ) : (
                                 <div className="p-8 text-center text-gray-500">

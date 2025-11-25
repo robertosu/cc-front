@@ -1,37 +1,10 @@
-// components/dashboard/CleanerDashboardClient.tsx
 'use client'
 
-import {useCleaningsRealtime} from '@/hooks/useCleaningsRealtime'
-import {Briefcase, CheckCircle, Clock} from 'lucide-react'
+import { useCleaningsRealtime } from '@/hooks/useCleaningsRealtime'
+import { Briefcase, CheckCircle, Clock } from 'lucide-react'
 import LogoutButton from '@/components/auth/LogoutButton'
 import CleanerCleaningCard from '@/components/dashboard/CleanerCleaningCard'
-
-
-interface Profile {
-    id: string
-    full_name: string
-    email: string
-    role: string
-}
-
-interface Cleaning {
-    id: string
-    client_id: string
-    address: string
-    total_steps: number
-    current_step: number
-    scheduled_date: string
-    start_time: string
-    end_time: string
-    status: 'pending' | 'in_progress' | 'completed' | 'cancelled'
-    notes?: string
-    created_at: string
-    updated_at: string
-    client_name: string
-    client_phone: string
-    client_email: string
-    assigned_cleaners: any[]
-}
+import type { Profile, Cleaning } from '@/types'
 
 interface CleanerDashboardClientProps {
     profile: Profile
@@ -69,9 +42,9 @@ export default function CleanerDashboardClient({
                                 Tus trabajos del día
                                 {isLoading && (
                                     <span className="ml-2 inline-flex items-center">
-                                        <span className="animate-pulse">●</span>
-                                        <span className="ml-1 text-xs">actualizando...</span>
-                                    </span>
+                    <span className="animate-pulse">●</span>
+                    <span className="ml-1 text-xs">actualizando...</span>
+                  </span>
                                 )}
                             </p>
                         </div>
@@ -81,7 +54,7 @@ export default function CleanerDashboardClient({
             </header>
 
             <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                {/* Estadísticas rápidas */}
+                {/* Estadísticas */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                     <div className="bg-white rounded-xl shadow p-6">
                         <div className="flex items-center gap-4">

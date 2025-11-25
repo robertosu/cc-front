@@ -1,30 +1,11 @@
-// components/dashboard/ClientDashboardClient.tsx
 'use client'
 
-import {useCleaningsRealtime} from '@/hooks/useCleaningsRealtime'
-import {Calendar, Clock, MapPin, Users} from 'lucide-react'
+import { useCleaningsRealtime } from '@/hooks/useCleaningsRealtime'
+import { Calendar, Clock, MapPin, Users } from 'lucide-react'
 import LogoutButton from '@/components/auth/LogoutButton'
 import CleaningProgressBar from '@/components/dashboard/CleaningProgressBar'
 import Link from 'next/link'
-import {Cleaning} from '@/types/cleaning'
-
-interface Profile {
-    id: string
-    full_name: string
-    email: string
-    role: string
-}
-
-interface AssignedCleaner {
-    assigned_at: string
-    cleaner: {
-        id: string
-        full_name: string
-        email: string
-        phone?: string
-    } | null
-}
-
+import type { Profile, Cleaning } from '@/types'
 
 interface ClientDashboardClientProps {
     profile: Profile
@@ -41,14 +22,13 @@ export default function ClientDashboardClient({
         initialData: initialCleanings
     })
 
-    const activeCleanings = cleanings.filter((c: Cleaning) => c.status === 'in_progress')
-    const upcomingCleanings = cleanings.filter((c: Cleaning) => c.status === 'pending')
-    const completedCleanings = cleanings.filter((c: Cleaning) => c.status === 'completed').slice(0, 3)
+    const activeCleanings = cleanings.filter(c => c.status === 'in_progress')
+    const upcomingCleanings = cleanings.filter(c => c.status === 'pending')
+    const completedCleanings = cleanings.filter(c => c.status === 'completed').slice(0, 3)
 
     // Helper para obtener cleaners válidos
-    const getValidCleaners = (assignedCleaners?: AssignedCleaner[]) => {
-        if (!assignedCleaners) return []
-        return assignedCleaners.filter(ac => ac.cleaner !== null)
+    const getValidCleaners = (cleaning: Cleaning) => {
+        return cleaning.assigned_cleaners?.filter(ac => ac.cleaner !== null) || []
     }
 
     return (
@@ -64,9 +44,9 @@ export default function ClientDashboardClient({
                                 Mis Servicios de Limpieza
                                 {isLoading && (
                                     <span className="ml-2 inline-flex items-center text-sm">
-                                        <span className="animate-pulse text-blue-600">●</span>
-                                        <span className="ml-1 text-xs text-blue-600">actualizando...</span>
-                                    </span>
+                    <span className="animate-pulse text-blue-600">●</span>
+                    <span className="ml-1 text-xs text-blue-600">actualizando...</span>
+                  </span>
                                 )}
                             </p>
                         </div>
@@ -82,8 +62,8 @@ export default function ClientDashboardClient({
                             🔄 Limpiezas en Progreso
                         </h2>
                         <div className="grid grid-cols-1 gap-6">
-                            {activeCleanings.map((cleaning: Cleaning) => {
-                                const validCleaners = getValidCleaners(cleaning.assigned_cleaners)
+                            {activeCleanings.map((cleaning) => {
+                                const validCleaners = getValidCleaners(cleaning)
                                 return (
                                     <div
                                         key={cleaning.id}
@@ -150,7 +130,7 @@ export default function ClientDashboardClient({
                                                 <CleaningProgressBar
                                                     currentStep={cleaning.current_step}
                                                     totalSteps={cleaning.total_steps}
-                                                    status={cleaning.status as any}
+                                                    status={cleaning.status}
                                                 />
                                             </div>
                                         </div>
@@ -167,8 +147,8 @@ export default function ClientDashboardClient({
                             📅 Próximas Limpiezas
                         </h2>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            {upcomingCleanings.map((cleaning: Cleaning) => {
-                                const validCleaners = getValidCleaners(cleaning.assigned_cleaners)
+                            {upcomingCleanings.map((cleaning) => {
+                                const validCleaners = getValidCleaners(cleaning)
                                 return (
                                     <div
                                         key={cleaning.id}
@@ -184,8 +164,8 @@ export default function ClientDashboardClient({
                                                 </p>
                                             </div>
                                             <span className="px-3 py-1 bg-yellow-100 text-yellow-700 text-xs font-medium rounded-full">
-                                                Pendiente
-                                            </span>
+                        Pendiente
+                      </span>
                                         </div>
 
                                         <div className="space-y-2 text-sm">
@@ -217,8 +197,8 @@ export default function ClientDashboardClient({
                             ✅ Limpiezas Completadas Recientemente
                         </h2>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            {completedCleanings.map((cleaning: Cleaning) => {
-                                const validCleaners = getValidCleaners(cleaning.assigned_cleaners)
+                            {completedCleanings.map((cleaning) => {
+                                const validCleaners = getValidCleaners(cleaning)
                                 return (
                                     <div
                                         key={cleaning.id}
@@ -229,8 +209,8 @@ export default function ClientDashboardClient({
                                                 {cleaning.address}
                                             </h3>
                                             <span className="px-2 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full">
-                                                ✓
-                                            </span>
+                        ✓
+                      </span>
                                         </div>
                                         <p className="text-sm text-gray-600">
                                             {new Date(cleaning.scheduled_date + 'T00:00:00').toLocaleDateString('es-CL')}

@@ -1,14 +1,14 @@
 // hooks/useCleaningsRealtime.ts
 'use client'
 
-import {useEffect, useState} from 'react'
-import {createClient} from '@/utils/supabase/client'
-import type {RealtimePostgresChangesPayload} from '@supabase/supabase-js'
-import {Cleaning} from '@/types/cleaning'
+import { useEffect, useState } from 'react'
+import { createClient } from '@/utils/supabase/client'
+import type { RealtimePostgresChangesPayload } from '@supabase/supabase-js'
+import type { Cleaning, CleaningBase, UserRole } from '@/types'
 
 interface UseCleaningsRealtimeOptions {
     userId?: string
-    role?: 'admin' | 'cleaner' | 'client'
+    role?: UserRole
     initialData?: Cleaning[]
 }
 
@@ -53,27 +53,95 @@ export function useCleaningsRealtime({
 
         setIsLoading(true)
         try {
-            let query = supabase.from('cleanings').select('*')
+            // 🔥 ADMIN: Usa la vista con todos los detalles
+            if (role === 'admin') {
+                const { data, error } = await supabase
+                    .from('cleanings_with_details')
+                    .select('*')
+                    .order('scheduled_date', { ascending: true })
 
-            // Filtrar según rol
+                if (error) throw error
+
+                // Transformar al formato Cleaning esperado
+                const transformedData: Cleaning[] = (data || []).map(d => ({
+                    ...d,
+                    assigned_cleaners: d.assigned_cleaners?.map((c: any) => ({
+                        assigned_at: new Date().toISOString(),
+                        cleaner: c
+                    })) || []
+                }))
+
+                setCleanings(transformedData)
+                return
+            }
+
+            // 🔥 CLIENT: Consulta directa con joins
             if (role === 'client') {
-                query = query.eq('client_id', userId)
-            } else if (role === 'cleaner') {
-                // Para cleaners, necesitamos sus asignaciones
+                const { data, error } = await supabase
+                    .from('cleanings')
+                    .select(`
+            *,
+            client:profiles!cleanings_client_id_fkey(
+              id, full_name, email, phone
+            ),
+            assigned_cleaners:cleaning_cleaners(
+              assigned_at,
+              cleaner:profiles!cleaning_cleaners_cleaner_id_fkey(
+                id, full_name, email, phone
+              )
+            )
+          `)
+                    .eq('client_id', userId)
+                    .order('scheduled_date', { ascending: true })
+
+                if (error) throw error
+
+                // Transformar añadiendo campos faltantes
+                const transformedData: Cleaning[] = (data || []).map(d => ({
+                    ...d,
+                    client_name: d.client?.full_name || '',
+                    client_email: d.client?.email || '',
+                    client_phone: d.client?.phone || ''
+                }))
+
+                setCleanings(transformedData)
+                return
+            }
+
+            // 🔥 CLEANER: Consulta sus asignaciones
+            if (role === 'cleaner') {
                 const { data: assignments } = await supabase
                     .from('cleaning_cleaners')
                     .select('cleaning_id')
                     .eq('cleaner_id', userId)
 
                 const cleaningIds = assignments?.map(a => a.cleaning_id) || []
-                query = query.in('id', cleaningIds)
+
+                if (cleaningIds.length === 0) {
+                    setCleanings([])
+                    return
+                }
+
+                const { data, error } = await supabase
+                    .from('cleanings_with_details')
+                    .select('*')
+                    .in('id', cleaningIds)
+                    .order('scheduled_date', { ascending: true })
+
+                if (error) throw error
+
+                // Transformar al formato Cleaning esperado
+                const transformedData: Cleaning[] = (data || []).map(d => ({
+                    ...d,
+                    assigned_cleaners: d.assigned_cleaners?.map((c: any) => ({
+                        assigned_at: new Date().toISOString(),
+                        cleaner: c
+                    })) || []
+                }))
+
+                setCleanings(transformedData)
             }
-            // Admin ve todo (sin filtro)
 
-            const { data, error } = await query.order('scheduled_date', { ascending: true })
-
-            if (error) throw error
-            setCleanings(data || [])
         } catch (error) {
             console.error('Error loading cleanings:', error)
         } finally {
@@ -81,24 +149,33 @@ export function useCleaningsRealtime({
         }
     }
 
-    const handleRealtimeChange = (payload: RealtimePostgresChangesPayload<Cleaning>) => {
+    const handleRealtimeChange = (payload: RealtimePostgresChangesPayload<CleaningBase>) => {
         const { eventType, new: newRecord, old: oldRecord } = payload
 
         console.log('🔴 Realtime event:', eventType, newRecord)
 
         switch (eventType) {
             case 'INSERT':
-                // Verificar si el usuario debe ver este cleaning
-                if (shouldShowCleaning(newRecord as Cleaning)) {
-                    setCleanings(prev => [...prev, newRecord as Cleaning])
+                // Para INSERT, recargar todo para tener las relaciones
+                if (shouldShowCleaning(newRecord as CleaningBase)) {
+                    loadCleanings()
                 }
                 break
 
             case 'UPDATE':
+                // Para UPDATE, solo actualizar campos del registro base
                 setCleanings(prev =>
                     prev.map(cleaning =>
-                        cleaning.id === (newRecord as Cleaning).id
-                            ? { ...cleaning, ...(newRecord as Cleaning) }
+                        cleaning.id === (newRecord as CleaningBase).id
+                            ? {
+                                ...cleaning,
+                                ...newRecord,
+                                // Preservar las relaciones existentes
+                                client_name: cleaning.client_name,
+                                client_email: cleaning.client_email,
+                                client_phone: cleaning.client_phone,
+                                assigned_cleaners: cleaning.assigned_cleaners
+                            }
                             : cleaning
                     )
                 )
@@ -106,18 +183,16 @@ export function useCleaningsRealtime({
 
             case 'DELETE':
                 setCleanings(prev =>
-                    prev.filter(cleaning => cleaning.id !== (oldRecord as Cleaning).id)
+                    prev.filter(cleaning => cleaning.id !== (oldRecord as CleaningBase).id)
                 )
                 break
         }
     }
 
-    const shouldShowCleaning = (cleaning: Cleaning): boolean => {
+    const shouldShowCleaning = (cleaning: CleaningBase): boolean => {
         if (!userId || !role) return false
-
         if (role === 'admin') return true
         if (role === 'client') return cleaning.client_id === userId
-        // Para cleaner, necesitaríamos verificar asignaciones (se hace en el server)
         return false
     }
 
