@@ -1,28 +1,12 @@
-// app/dashboard/admin/layout.tsx
-import {createClient} from '@/utils/supabase/server'
-import {redirect} from 'next/navigation'
+
 import AdminSidebar from '@/components/admin/AdminSidebar'
 import AdminHeader from '@/components/admin/AdminHeader'
 import React from "react";
+import {requireAdmin} from "@/app/dashboard/admin/page";
 
-export default async function AdminLayout({
-                                              children,
-                                          }: {
-    children: React.ReactNode }) {
-    const supabase = await createClient()
-
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) redirect('/login')
-
-    const { data: profile } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single()
-
-    if (!profile || profile.role !== 'admin') {
-        redirect('/login')
-    }
+export default async function AdminLayout({ children }: { children: React.ReactNode }) {
+    // 1 sola línea reemplaza las 14 duplicadas
+    const { profile } = await requireAdmin()
 
     return (
         <div className="min-h-screen bg-gray-50">

@@ -19,7 +19,7 @@ interface DashboardStats {
     total_cleaners: number
 }
 
-export default async function AdminDashboard() {
+export async function requireAdmin() {
     const supabase = await createClient()
 
     const { data: { user } } = await supabase.auth.getUser()
@@ -34,6 +34,14 @@ export default async function AdminDashboard() {
     if (!profile || profile.role !== 'admin') {
         redirect('/login')
     }
+
+    return { supabase, user, profile }
+}
+
+
+export default async function AdminDashboard() {
+
+    const { supabase } = await requireAdmin()
 
     // Estadísticas
     const [
