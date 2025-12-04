@@ -22,7 +22,7 @@ type Props = {
 }
 
 export default async function AdminCleaningsPage({ searchParams }: Props) {
-    // 1. Esperamos a que se resuelvan los parámetros (Next.js 15 req)
+    // 1. Esperamos a que se resuelvan los parámetross (Next.js 15 req)
     const params = await searchParams
 
     const supabase = await createClient()
