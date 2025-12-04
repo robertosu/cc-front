@@ -23,7 +23,7 @@ export default function TestimonialsSection() {
                                     />
                                 ))}
                             </div>
-                            <p className="text-gray-700 mb-4 italic">"{testimonial.text}"</p>
+                            <p className="text-gray-700 mb-4 italic">“{testimonial.text}”</p>
                             <div className="flex items-center">
                                 <div className="bg-gray-300 rounded-full w-10 h-10 mr-3"></div>
                                 <div>

@@ -2,8 +2,9 @@
 import {createClient} from '@/utils/supabase/server'
 import {redirect} from 'next/navigation'
 import CleanerDashboardClient from '@/components/dashboard/CleanerDashboardClient'
+import {Metadata} from "next";
 
-export const metadata = {
+export const metadata: Metadata = {
     title: 'Mis Limpiezas - CleanerClub',
     description: 'Gestiona tus trabajos de limpieza'
 }

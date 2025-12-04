@@ -1,8 +1,7 @@
-// components/admin/CleaningsTable.tsx
 'use client'
 
-import React, {Fragment, useState} from 'react'
-import {useRouter, useSearchParams} from 'next/navigation'
+import React, { Fragment, useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import {
     AlertCircle,
     ArrowUpDown,
@@ -20,7 +19,7 @@ import {
     User
 } from 'lucide-react'
 import MultiSearchableSelect from '@/components/common/MultiSearchableSelect'
-import {formatTime} from "@/utils/formatTime";
+import { formatTime } from "@/utils/formatTime"
 
 interface Cleaner {
     id: string
@@ -52,6 +51,16 @@ interface CleaningsTableProps {
     totalCount: number
 }
 
+interface EditData {
+    cleaner_ids: string[]
+    scheduled_date: string
+    start_time: string
+    end_time: string
+    status: 'pending' | 'in_progress' | 'completed' | 'cancelled'
+    current_step: number | string
+    notes: string
+}
+
 export default function CleaningsTable({
                                            cleanings,
                                            cleaners,
@@ -59,15 +68,20 @@ export default function CleaningsTable({
                                            totalPages,
                                            totalCount
                                        }: CleaningsTableProps) {
+
     const router = useRouter()
     const searchParams = useSearchParams()
     const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '')
     const [statusFilter, setStatusFilter] = useState(searchParams.get('status') || '')
     const [expandedRow, setExpandedRow] = useState<string | null>(null)
     const [editingCleaning, setEditingCleaning] = useState<string | null>(null)
-    const [editData, setEditData] = useState<any>({})
+    const [editData, setEditData] = useState<Partial<EditData>>({})
     const [isLoading, setIsLoading] = useState<string | null>(null)
-    const [rowMessage, setRowMessage] = useState<{ cleaningId: string, type: 'success' | 'error', text: string } | null>(null)
+    const [rowMessage, setRowMessage] = useState<{
+        cleaningId: string
+        type: 'success' | 'error'
+        text: string
+    } | null>(null)
 
     const handleSearch = (value: string) => {
         setSearchTerm(value)
@@ -95,23 +109,19 @@ export default function CleaningsTable({
         const current = new URLSearchParams(Array.from(searchParams.entries()))
 
         Object.entries(params).forEach(([key, value]) => {
-            if (value) {
-                current.set(key, value)
-            } else {
-                current.delete(key)
-            }
+            if (value) current.set(key, value)
+            else current.delete(key)
         })
 
         router.push(`?${current.toString()}`)
     }
 
-    const goToPage = (page: number) => {
-        updateUrl({ page: page.toString() })
-    }
+    const goToPage = (page: number) => updateUrl({ page: page.toString() })
 
     const handleEdit = (cleaning: Cleaning) => {
         setEditingCleaning(cleaning.id)
-        setRowMessage(null) // Limpiar mensaje al empezar a editar
+        setRowMessage(null)
+
         setEditData({
             cleaner_ids: cleaning.assigned_cleaners?.map(c => c.id) || [],
             scheduled_date: cleaning.scheduled_date,
@@ -134,34 +144,34 @@ export default function CleaningsTable({
                 body: JSON.stringify({
                     id: cleaningId,
                     ...editData,
-                    current_step: parseInt(editData.current_step)
+                    current_step: parseInt(String(editData.current_step))
                 })
             })
 
             const data = await response.json()
-
             if (!response.ok) throw new Error(data.error || 'Error al actualizar limpieza')
 
-            setRowMessage({ cleaningId, type: 'success', text: 'Limpieza actualizada exitosamente' })
+            setRowMessage({
+                cleaningId,
+                type: 'success',
+                text: 'Limpieza actualizada exitosamente'
+            })
+
             setEditingCleaning(null)
 
-            // Limpiar mensaje después de 3 segundos
-            setTimeout(() => {
-                setRowMessage(null)
-            }, 10000)
+            setTimeout(() => setRowMessage(null), 10000)
 
             router.refresh()
-        } catch (error: any) {
-            setRowMessage({ cleaningId, type: 'error', text: error.message })
+        } catch (error: unknown) {
+            const msg = error instanceof Error ? error.message : 'Error desconocido'
+            setRowMessage({ cleaningId, type: 'error', text: msg })
         } finally {
             setIsLoading(null)
         }
     }
 
     const handleDelete = async (cleaningId: string, address: string) => {
-        if (!confirm(`¿Estás seguro de eliminar la limpieza en ${address}?`)) {
-            return
-        }
+        if (!confirm(`¿Estás seguro de eliminar la limpieza en ${address}?`)) return
 
         setIsLoading(cleaningId)
         setRowMessage(null)
@@ -171,24 +181,31 @@ export default function CleaningsTable({
                 method: 'DELETE'
             })
 
-            if (!response.ok) throw new Error('Error al eliminar limpieza')
+            if (!response.ok) throw new Error()
 
-            setRowMessage({ cleaningId, type: 'success', text: 'Limpieza eliminada exitosamente' })
+            setRowMessage({
+                cleaningId,
+                type: 'success',
+                text: 'Limpieza eliminada exitosamente'
+            })
 
-            // Cerrar fila expandida y limpiar mensaje después de 2 segundos
             setTimeout(() => {
                 setExpandedRow(null)
                 setRowMessage(null)
                 router.refresh()
             }, 2000)
-        } catch (error) {
-            setRowMessage({ cleaningId, type: 'error', text: 'Error al eliminar la limpieza' })
+        } catch {
+            setRowMessage({
+                cleaningId,
+                type: 'error',
+                text: 'Error al eliminar la limpieza'
+            })
         } finally {
             setIsLoading(null)
         }
     }
 
-    const getStatusBadge = (status: string) => {
+    const getStatusBadge = (status: Cleaning['status']) => {
         const styles = {
             pending: 'bg-yellow-100 text-yellow-800',
             in_progress: 'bg-blue-100 text-blue-800',
@@ -204,13 +221,12 @@ export default function CleaningsTable({
         }
 
         return (
-            <span className={`px-2 py-1 text-xs font-medium rounded-full ${styles[status as keyof typeof styles]}`}>
-                {labels[status as keyof typeof labels]}
+            <span className={`px-2 py-1 text-xs font-medium rounded-full ${styles[status]}`}>
+                {labels[status]}
             </span>
         )
     }
 
-    // Convertir cleaners a opciones para el selector
     const cleanerOptions = cleaners.map(cleaner => ({
         id: cleaner.id,
         label: cleaner.full_name,
@@ -404,7 +420,12 @@ export default function CleaningsTable({
                                                             </label>
                                                             <select
                                                                 value={editData.status}
-                                                                onChange={(e) => setEditData({ ...editData, status: e.target.value })}
+                                                                onChange={(e) =>
+                                                                    setEditData({
+                                                                        ...editData,
+                                                                        status: e.target.value as EditData['status']
+                                                                    })
+                                                                }
                                                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
                                                             >
                                                                 <option value="pending">Pendiente</option>

@@ -51,7 +51,7 @@ export async function POST(request: Request) {
             user: data.user
         })
 
-    } catch (error) {
+    } catch {
         return NextResponse.json(
             { error: 'Error al intentar registrar, por favor intentelo nuevamente' },
             { status: 500 }

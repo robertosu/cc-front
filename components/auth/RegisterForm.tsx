@@ -2,7 +2,7 @@
 'use client'
 
 import {useState} from 'react'
-import {useRouter} from 'next/navigation'
+//import {useRouter} from 'next/navigation'
 import {AlertCircle, CheckCircle, Eye, EyeOff, Lock, Mail, Phone, User} from 'lucide-react'
 import CountrySelector from './CountrySelector'
 import PasswordStrength, {validatePassword} from './PasswordStrength'
@@ -24,7 +24,7 @@ export default function RegisterForm() {
     const [showPassword, setShowPassword] = useState(false)
     const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
-    const router = useRouter()
+    //const router = useRouter()
 
     // Validación del formulario en el cliente (UX inmediato)
     const validateForm = () => {

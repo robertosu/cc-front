@@ -2,8 +2,9 @@
 import {createClient} from '@/utils/supabase/server'
 import {redirect} from 'next/navigation'
 import AdminDashboardClient from '@/components/admin/AdminDashboardClient'
+import {Metadata} from "next";
 
-export const metadata = {
+export const metadata: Metadata = {
     title: 'Admin Dashboard - CleanerClub',
     description: 'Panel de administración'
 }

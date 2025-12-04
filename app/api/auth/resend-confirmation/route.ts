@@ -35,7 +35,7 @@ export async function POST(request: Request) {
             message: 'Correo de confirmación reenviado. Revisa tu bandeja de entrada.'
         })
 
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Error en resend-confirmation:', error)
         return NextResponse.json(
             { error: 'Error al reenviar el correo' },

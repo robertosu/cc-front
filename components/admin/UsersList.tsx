@@ -78,13 +78,16 @@ export default function UsersList({ users }: { users: Profile[] }) {
             const data = await response.json()
 
             if (!response.ok) {
-                throw new Error(data.error || 'Error al actualizar rol')
+                setMessage({ type: 'error', text: data.error || 'Error al actualizar rol' })
+                return
             }
 
             setMessage({ type: 'success', text: 'Rol actualizado exitosamente' })
             router.refresh()
-        } catch (error: any) {
-            setMessage({ type: 'error', text: error.message })
+
+        } catch (error: unknown) {
+            const err = error instanceof Error ? error.message : 'Error desconocido'
+            setMessage({ type: 'error', text: err })
         } finally {
             setIsLoading(null)
         }
@@ -103,20 +106,25 @@ export default function UsersList({ users }: { users: Profile[] }) {
                 method: 'DELETE'
             })
 
-            const data = await response.json()
+            const data: { error?: string } = await response.json()
 
             if (!response.ok) {
-                throw new Error(data.error || 'Error al eliminar usuario')
+                setMessage({ type: 'error', text: data.error || 'Error al eliminar usuario' })
+                return
             }
 
             setMessage({ type: 'success', text: 'Usuario eliminado exitosamente' })
             router.refresh()
-        } catch (error: any) {
-            setMessage({ type: 'error', text: error.message })
+
+        } catch (error: unknown) {
+            const errMsg = error instanceof Error ? error.message : 'Error desconocido'
+            setMessage({ type: 'error', text: errMsg })
+
         } finally {
             setIsLoading(null)
         }
     }
+
 
     return (
         <div>

@@ -1,11 +1,11 @@
-import {Geist_Mono, Inter} from 'next/font/google'
+import { Geist_Mono, Inter } from 'next/font/google'
 import './globals.css'
+import React from 'react'  // Asegúrate de importar React si usas types
 
-// Configuración de fuentes optimizada para Next.js
 const inter = Inter({
     subsets: ['latin'],
     variable: '--font-geist-sans',
-    display: 'swap', // Mejora la performance de carga
+    display: 'swap',
 })
 
 const geistMono = Geist_Mono({
@@ -14,14 +14,12 @@ const geistMono = Geist_Mono({
     display: 'swap',
 })
 
-// Metadata para SEO (una de las grandes ventajas de Next.js)
 export const metadata: {
-    title: string;
-    description: string;
-    keywords: string;
-    authors: { name: string }[];
-    openGraph: { title: string; description: string; type: string; locale: string };
-
+    title: string
+    description: string
+    keywords: string
+    authors: { name: string }[]
+    openGraph: { title: string; description: string; type: string; locale: string }
 } = {
     title: 'CleanerClub - Limpieza Profesional a Domicilio',
     description: 'Servicios de limpieza profesional para tu hogar. Limpieza general, profunda, post-obra y más. Profesionales certificados y productos ecológicos.',
@@ -37,11 +35,11 @@ export const metadata: {
 
 export const viewport = {
     width: 'device-width',
-    initialScale: 1
+    initialScale: 1,
 }
 
-// @ts-ignore
-export default function RootLayout({ children  }) {
+// ✨ Tipeo explícito de children
+export default function RootLayout({ children }: { children: React.ReactNode }) {
     return (
         <html lang="es" className={`${inter.variable} ${geistMono.variable}`}>
         <body className="min-h-screen bg-gray-50 antialiased">

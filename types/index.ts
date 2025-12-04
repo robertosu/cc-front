@@ -19,12 +19,6 @@ export interface Profile {
     cleaner_cleanings_count?: number
 }
 
-export interface AuthUser {
-    id: string
-    email: string
-    role: UserRole
-}
-
 // ==================== CLEANERS ====================
 export interface Cleaner {
     id: string
@@ -80,24 +74,8 @@ export interface Cleaning extends CleaningBase {
 }
 
 // 🔥 TIPO PARA LA VISTA cleanings_with_details
-export interface CleaningWithDetails extends CleaningBase {
-    client_name: string
-    client_email: string
-    client_phone: string
-    assigned_cleaners: Cleaner[] // Array directo de cleaners
-}
 
 // ==================== API RESPONSES ====================
-export interface ApiError {
-    error: string
-    field?: string
-}
-
-export interface ApiSuccess<T = any> {
-    success: boolean
-    data?: T
-    message?: string
-}
 
 // ==================== FORMS ====================
 export interface CreateCleaningForm {

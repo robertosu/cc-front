@@ -3,7 +3,7 @@ import {createClient} from '@/utils/supabase/server'
 import {NextResponse} from 'next/server'
 import {checkAuth, unauthorizedResponse, USER_ROLES} from '@/utils/auth/roleCheck'
 
-export async function GET(request: Request) {
+export async function GET() {
     try {
         const supabase = await createClient()
 
@@ -102,12 +102,10 @@ export async function PUT(request: Request) {
             message: 'Rol actualizado exitosamente'
         })
 
-    } catch (error: any) {
-        console.error('Error in PUT /api/users:', error)
-        return NextResponse.json(
-            { error: error.message || 'Error al actualizar rol' },
-            { status: 500 }
-        )
+    } catch (error) {
+        const message = error instanceof Error ? error.message : String(error)
+        console.error('Error in GET /api/users:', error)
+        return NextResponse.json({ error: message }, { status: 500 })
     }
 }
 
@@ -157,10 +155,11 @@ export async function DELETE(request: Request) {
             message: 'Usuario eliminado exitosamente'
         })
 
-    } catch (error: any) {
+    }catch (error) {
+        const message = error instanceof Error ? error.message : String(error)
         console.error('Error in DELETE /api/users:', error)
         return NextResponse.json(
-            { error: error.message || 'Error al eliminar usuario' },
+            { error: message },
             { status: 500 }
         )
     }

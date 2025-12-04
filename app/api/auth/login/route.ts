@@ -44,6 +44,7 @@ export async function POST(request: Request) {
         })
 
     } catch (error) {
+        console.error('Error en POST /api/auth/login:', error)
         return NextResponse.json(
             {error: 'Error del servidor'},
             {status: 500}

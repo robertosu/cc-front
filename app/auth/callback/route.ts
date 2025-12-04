@@ -46,9 +46,12 @@ export async function GET(request: Request) {
                 return NextResponse.redirect(`${origin}${next}?verified=true`)
             }
 
-        } catch (error: any) {
+        } catch (error) {
+            const message = error instanceof Error ? error.message : String(error)
             console.error('Unexpected error in callback:', error)
-            return NextResponse.redirect(`${origin}/login?error=verification_failed&message=${encodeURIComponent(error.message)}`)
+            return NextResponse.redirect(
+                `${origin}/login?error=verification_failed&message=${encodeURIComponent(message)}`
+            )
         }
     }
 

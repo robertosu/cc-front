@@ -4,8 +4,9 @@ import {redirect} from 'next/navigation'
 import {Plus} from 'lucide-react'
 import CleaningsTable from '@/components/admin/CleaningsTable'
 import Link from 'next/link'
+import {Metadata} from "next";
 
-export const metadata = {
+export const metadata: Metadata = {
     title: 'Gestión de Limpiezas - Admin',
     description: 'Administrar limpiezas programadas'
 }

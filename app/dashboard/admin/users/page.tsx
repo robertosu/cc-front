@@ -3,8 +3,9 @@ import {createClient} from '@/utils/supabase/server'
 import {redirect} from 'next/navigation'
 import {Briefcase, Shield, Users as UsersIcon} from 'lucide-react'
 import UsersList from '@/components/admin/UsersList'
+import {Metadata} from "next";
 
-export const metadata = {
+export const metadata: Metadata = {
     title: 'Gestión de Usuarios - Admin',
     description: 'Administrar usuarios y roles'
 }

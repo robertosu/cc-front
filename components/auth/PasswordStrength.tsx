@@ -38,9 +38,7 @@ export default function PasswordStrength({ password }: PasswordStrengthProps) {
     if (!password) return null
 
     const passedRequirements = requirements.filter(req => req.test(password)).length
-    const allPassed = passedRequirements === requirements.length
-
-    // Calcular el nivel de seguridad
+// Calcular el nivel de seguridad
     const getStrengthLevel = () => {
         if (passedRequirements <= 2) return { label: 'Débil', color: 'bg-red-500', width: '33%' }
         if (passedRequirements <= 4) return { label: 'Media', color: 'bg-yellow-500', width: '66%' }
@@ -98,18 +96,7 @@ export default function PasswordStrength({ password }: PasswordStrengthProps) {
         </div>
     )
 }
-
 // Función helper para validar contraseña (exportable para uso en el formulario)
 export function validatePassword(password: string): boolean {
     return requirements.every(req => req.test(password))
 }
-
-/*
-📝 CARACTERÍSTICAS:
-✅ Validación en tiempo real
-✅ Indicadores visuales con iconos
-✅ Barra de progreso con colores
-✅ Lista clara de requisitos
-✅ Feedback inmediato
-✅ Exporta función de validación
-*/

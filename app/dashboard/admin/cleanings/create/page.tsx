@@ -4,8 +4,9 @@ import {redirect} from 'next/navigation'
 import Link from 'next/link'
 import {ArrowLeft} from 'lucide-react'
 import CreateCleaningForm from '@/components/admin/CreateCleaningForm'
+import {Metadata} from "next";
 
-export const metadata = {
+export const metadata: Metadata = {
     title: 'Nueva Limpieza - Admin',
     description: 'Crear nueva limpieza programada'
 }

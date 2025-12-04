@@ -42,7 +42,7 @@ export default function AdminDashboardClient({
 
     // 🔥 Helper para obtener cleaners válidos
     const getValidCleaners = (cleaning: Cleaning) => {
-        return cleaning.assigned_cleaners?.filter(ac => ac.cleaner !== null) || []
+        return cleaning.assigned_cleaners?.filter(ac => ac.cleaner != null) || []
     }
 
     return (

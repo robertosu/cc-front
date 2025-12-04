@@ -4,7 +4,7 @@ import {NextResponse} from 'next/server'
 import {checkAuth, unauthorizedResponse} from '@/utils/auth/roleCheck'
 
 // GET: Obtener lista de cleaners (solo admin)
-export async function GET(request: Request) {
+export async function GET() {
     const user = await checkAuth(['admin'])
 
     if (!user) {
@@ -14,7 +14,7 @@ export async function GET(request: Request) {
     const supabase = await createClient()
 
     try {
-        const { data, error } = await supabase
+        const { data} = await supabase
             .from('profiles')
             .select(`
                 id,
@@ -27,14 +27,13 @@ export async function GET(request: Request) {
             .eq('role', 'cleaner')
             .order('full_name', { ascending: true })
 
-        if (error) throw error
 
         return NextResponse.json({ cleaners: data })
-    } catch (error: any) {
-        return NextResponse.json(
-            { error: error.message },
-            { status: 500 }
-        )
+    } catch (error: unknown) {
+        if (error instanceof Error) {
+            return NextResponse.json({ error: error.message }, { status: 500 })
+        }
+        return NextResponse.json({ error: 'Error desconocido' }, { status: 500 })
     }
 }
 
@@ -59,20 +58,18 @@ export async function POST(request: Request) {
             )
         }
 
-        const { data, error } = await supabase
+        const { data } = await supabase
             .from('profiles')
             .update({ role: 'cleaner' })
             .eq('id', user_id)
             .select()
             .single()
 
-        if (error) throw error
-
         return NextResponse.json({ profile: data })
-    } catch (error: any) {
-        return NextResponse.json(
-            { error: error.message },
-            { status: 500 }
-        )
+    } catch (error: unknown) {
+        if (error instanceof Error) {
+            return NextResponse.json({ error: error.message }, { status: 500 })
+        }
+        return NextResponse.json({ error: 'Error desconocido' }, { status: 500 })
     }
 }

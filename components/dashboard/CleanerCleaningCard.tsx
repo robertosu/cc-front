@@ -56,8 +56,11 @@ export default function CleanerCleaningCard({ cleaning: initialCleaning }: Clean
 
             setMessage({ type: 'success', text: '¡Limpieza iniciada!' })
             router.refresh()
-        } catch (error: any) {
-            setMessage({ type: 'error', text: error.message || 'Error al iniciar la limpieza' })
+        } catch (error: unknown) {
+            setMessage({
+                type: 'error',
+                text: error instanceof Error ? error.message : 'Error al iniciar la limpieza'
+            })
         } finally {
             setIsLoading(false)
         }
@@ -91,8 +94,11 @@ export default function CleanerCleaningCard({ cleaning: initialCleaning }: Clean
             }
 
             router.refresh()
-        } catch (error: any) {
-            setMessage({ type: 'error', text: error.message || 'Error al actualizar el progreso' })
+        } catch (error: unknown) {
+            setMessage({
+                type: 'error',
+                text: error instanceof Error ? error.message : 'Error al actualizar el progreso'
+            })
         } finally {
             setIsLoading(false)
         }
@@ -119,8 +125,11 @@ export default function CleanerCleaningCard({ cleaning: initialCleaning }: Clean
 
             setMessage({ type: 'success', text: '¡Limpieza completada! 🎉' })
             router.refresh()
-        } catch (error: any) {
-            setMessage({ type: 'error', text: error.message || 'Error al completar la limpieza' })
+        } catch (error: unknown) {
+            setMessage({
+                type: 'error',
+                text: error instanceof Error ? error.message : 'Error al completar la limpieza'
+            })
         } finally {
             setIsLoading(false)
         }
