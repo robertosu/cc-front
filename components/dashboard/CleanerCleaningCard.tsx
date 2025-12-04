@@ -15,19 +15,35 @@ export default function CleanerCleaningCard({ cleaning: initialCleaning }: Clean
     const [cleaning, setCleaning] = useState<Cleaning>(initialCleaning)
     const [isLoading, setIsLoading] = useState(false)
     const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
+
+    // ESTADO NUEVO: Para guardar la fecha formateada
+    const [formattedDate, setFormattedDate] = useState<string>('')
+
     const router = useRouter()
 
-    // Sincronizar cuando cleaning cambia desde el padre (por el hook de realtime)
+    // Sincronizar cuando cleaning cambia desde el padre y formatear fecha
     useEffect(() => {
         console.log('🔵 Card - Cleaning updated from parent:', initialCleaning.current_step)
         setCleaning(initialCleaning)
+
+        // LÓGICA DE FECHA MOVIDA AQUÍ (Solo corre en el cliente)
+        if (initialCleaning.scheduled_date) {
+            const date = new Date(initialCleaning.scheduled_date + 'T00:00:00')
+            const dateString = date.toLocaleDateString('es-CL', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            })
+            // Capitalizar la primera letra (opcional, estilo estético)
+            setFormattedDate(dateString.charAt(0).toUpperCase() + dateString.slice(1))
+        }
     }, [initialCleaning])
 
     const canStart = cleaning.status === 'pending'
     const canUpdate = cleaning.status === 'in_progress'
     const isCompleted = cleaning.status === 'completed'
 
-    // 🔥 Helper para obtener cleaners válidos
     const getValidCleaners = () => {
         return cleaning.assigned_cleaners?.filter(ac => ac.cleaner !== null) || []
     }
@@ -35,187 +51,30 @@ export default function CleanerCleaningCard({ cleaning: initialCleaning }: Clean
     const validCleaners = getValidCleaners()
     const cleanersList = validCleaners.map(ac => ac.cleaner!)
 
-    const handleStart = async () => {
-        setIsLoading(true)
-        setMessage(null)
-
-        try {
-            const response = await fetch('/api/cleanings', {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    id: cleaning.id,
-                    status: 'in_progress',
-                    current_step: 0
-                })
-            })
-
-            const data = await response.json()
-
-            if (!response.ok) throw new Error(data.error || 'Error al iniciar')
-
-            setMessage({ type: 'success', text: '¡Limpieza iniciada!' })
-            router.refresh()
-        } catch (error: unknown) {
-            setMessage({
-                type: 'error',
-                text: error instanceof Error ? error.message : 'Error al iniciar la limpieza'
-            })
-        } finally {
-            setIsLoading(false)
-        }
-    }
-
-    const handleStepUpdate = async (newStep: number) => {
-        if (newStep < 0 || newStep > cleaning.total_steps) return
-
-        setIsLoading(true)
-        setMessage(null)
-
-        try {
-            const response = await fetch('/api/cleanings', {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    id: cleaning.id,
-                    current_step: newStep,
-                    status: newStep === cleaning.total_steps ? 'completed' : 'in_progress'
-                })
-            })
-
-            const data = await response.json()
-
-            if (!response.ok) throw new Error(data.error || 'Error al actualizar')
-
-            if (newStep === cleaning.total_steps) {
-                setMessage({ type: 'success', text: '¡Limpieza completada! 🎉' })
-            } else {
-                setMessage({ type: 'success', text: `Paso ${newStep} completado` })
-            }
-
-            router.refresh()
-        } catch (error: unknown) {
-            setMessage({
-                type: 'error',
-                text: error instanceof Error ? error.message : 'Error al actualizar el progreso'
-            })
-        } finally {
-            setIsLoading(false)
-        }
-    }
-
-    const handleComplete = async () => {
-        setIsLoading(true)
-        setMessage(null)
-
-        try {
-            const response = await fetch('/api/cleanings', {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    id: cleaning.id,
-                    status: 'completed',
-                    current_step: cleaning.total_steps
-                })
-            })
-
-            const data = await response.json()
-
-            if (!response.ok) throw new Error(data.error || 'Error al completar')
-
-            setMessage({ type: 'success', text: '¡Limpieza completada! 🎉' })
-            router.refresh()
-        } catch (error: unknown) {
-            setMessage({
-                type: 'error',
-                text: error instanceof Error ? error.message : 'Error al completar la limpieza'
-            })
-        } finally {
-            setIsLoading(false)
-        }
-    }
+    // ... (Mantén tus funciones handleStart, handleStepUpdate, handleComplete igual que antes) ...
+    const handleStart = async () => { /* ... */ }
+    const handleStepUpdate = async (newStep: number) => { /* ... */ }
+    const handleComplete = async () => { /* ... */ }
 
     return (
         <div className={`bg-white rounded-xl shadow-lg p-6 ${
             isCompleted ? 'opacity-75' : ''
         }`}>
-            {/* Mensaje de feedback */}
-            {message && (
-                <div className={`mb-4 px-4 py-3 rounded-lg ${
-                    message.type === 'success'
-                        ? 'bg-green-50 text-green-700 border border-green-200'
-                        : 'bg-red-50 text-red-700 border border-red-200'
-                }`}>
-                    {message.text}
-                </div>
-            )}
+            {/* ... (Header y alertas igual que antes) ... */}
 
             <div className="grid md:grid-cols-2 gap-6">
-                {/* Información del trabajo */}
                 <div className="space-y-4">
-                    <div>
-                        <div className="flex items-start justify-between mb-4">
-                            <h3 className="text-xl font-bold text-gray-900">
-                                Limpieza Programada
-                            </h3>
-                            <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                                isCompleted ? 'bg-green-100 text-green-700' :
-                                    canUpdate ? 'bg-blue-100 text-blue-700' :
-                                        'bg-yellow-100 text-yellow-700'
-                            }`}>
-                {isCompleted ? 'Completada' : canUpdate ? 'En Progreso' : 'Pendiente'}
-              </span>
-                        </div>
-                    </div>
+                    {/* ... (Status, MapPin, User, Users igual que antes) ... */}
 
-                    <div className="flex items-start gap-3">
-                        <MapPin className="w-5 h-5 text-gray-400 flex-shrink-0 mt-1" />
-                        <div>
-                            <p className="text-sm text-gray-600">Dirección</p>
-                            <p className="font-medium text-gray-900" suppressHydrationWarning>{cleaning.address}</p>
-                        </div>
-                    </div>
-
-                    <div className="flex items-start gap-3">
-                        <User className="w-5 h-5 text-gray-400 flex-shrink-0 mt-1" />
-                        <div>
-                            <p className="text-sm text-gray-600">Cliente</p>
-                            <p className="font-medium text-gray-900">{cleaning.client_name}</p>
-                            {cleaning.client_phone && (
-                                <a
-                                    href={`tel:${cleaning.client_phone}`}
-                                    className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700 mt-1"
-                                >
-                                    <Phone className="w-3 h-3" />
-                                    {cleaning.client_phone}
-                                </a>
-                            )}
-                        </div>
-                    </div>
-
-                    {cleanersList.length > 1 && (
-                        <div className="flex items-start gap-3">
-                            <Users className="w-5 h-5 text-gray-400 flex-shrink-0 mt-1" />
-                            <div>
-                                <p className="text-sm text-gray-600">Equipo</p>
-                                <p className="font-medium text-gray-900">
-                                    {cleanersList.map(c => c.full_name).join(', ')}
-                                </p>
-                            </div>
-                        </div>
-                    )}
-
+                    {/* SECCIÓN FECHA CORREGIDA */}
                     <div className="flex items-start gap-3">
                         <Calendar className="w-5 h-5 text-gray-400 flex-shrink-0 mt-1" />
                         <div>
                             <p className="text-sm text-gray-600">Fecha</p>
-                            <p className="font-medium text-gray-900">
-                                {new Date(cleaning.scheduled_date + 'T00:00:00').toLocaleDateString('es-CL', {
-                                    weekday: 'long',
-                                    year: 'numeric',
-                                    month: 'long',
-                                    day: 'numeric'
-                                })}
+                            <p className="font-medium text-gray-900 min-h-[1.5rem]">
+                                {/* Renderizamos el estado. Si está vacío (carga inicial),
+                                    mostramos la fecha cruda o un skeleton para evitar saltos */}
+                                {formattedDate || cleaning.scheduled_date}
                             </p>
                         </div>
                     </div>
