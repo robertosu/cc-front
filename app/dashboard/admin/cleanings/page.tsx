@@ -1,29 +1,30 @@
 // app/dashboard/admin/cleanings/page.tsx
-import {createClient} from '@/utils/supabase/server'
-import {redirect} from 'next/navigation'
-import {Plus} from 'lucide-react'
+import { createClient } from '@/utils/supabase/server'
+import { redirect } from 'next/navigation'
+import { Plus } from 'lucide-react'
 import CleaningsTable from '@/components/admin/CleaningsTable'
 import Link from 'next/link'
-import {Metadata} from "next";
+import { Metadata } from "next"
 
 export const metadata: Metadata = {
     title: 'Gestión de Limpiezas - Admin',
     description: 'Administrar limpiezas programadas'
 }
 
-
-export default async function AdminCleaningsPage({
-                                                     searchParams,
-                                                 }: {
-    searchParams?: {
+type Props = {
+    searchParams: Promise<{
         page?: string
         search?: string
         status?: string
         sortBy?: string
         sortOrder?: string
-    }
-}) {
-    const params = searchParams || {}
+    }>
+}
+
+export default async function AdminCleaningsPage({ searchParams }: Props) {
+    // 1. Esperamos a que se resuelvan los parámetros (Next.js 15 req)
+    const params = await searchParams
+
     const supabase = await createClient()
 
     const { data: { user } } = await supabase.auth.getUser()
