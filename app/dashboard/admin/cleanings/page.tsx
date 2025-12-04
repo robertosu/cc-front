@@ -11,19 +11,19 @@ export const metadata: Metadata = {
     description: 'Administrar limpiezas programadas'
 }
 
-interface PageProps {
-    searchParams: {
+
+export default async function AdminCleaningsPage({
+                                                     searchParams,
+                                                 }: {
+    searchParams?: {
         page?: string
         search?: string
         status?: string
         sortBy?: string
         sortOrder?: string
     }
-}
-
-export default async function AdminCleaningsPage({ searchParams }: PageProps) {
-    const params =  searchParams
-
+}) {
+    const params = searchParams || {}
     const supabase = await createClient()
 
     const { data: { user } } = await supabase.auth.getUser()
