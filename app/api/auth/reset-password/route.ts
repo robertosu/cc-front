@@ -31,11 +31,14 @@ export async function POST(request: Request) {
             message: 'Te hemos enviado un enlace para resetear tu contraseña. Revisa tu email.'
         })
 
-    } catch (error: any) {
-        console.error('Error en reset-password:', error)
-        return NextResponse.json(
-            { error: 'Error al enviar el correo' },
-            { status: 500 }
-        )
+    } catch (error: unknown) {
+        if (error instanceof Error) {
+            console.error('Error in PUT /api/cleanings:', error)
+            return NextResponse.json({ error: error.message }, { status: 500 })
+        } else {
+            console.error('Unknown error:', error)
+            return NextResponse.json({ error: 'Error desconocido' }, { status: 500 })
+        }
+
     }
 }

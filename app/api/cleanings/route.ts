@@ -3,6 +3,19 @@ import {createClient} from '@/utils/supabase/server'
 import {NextResponse} from 'next/server'
 import {checkAuth, unauthorizedResponse} from '@/utils/auth/roleCheck'
 
+type CleaningUpdate = Partial<{
+    client_id: string
+    address: string
+    total_steps: number
+    scheduled_date: string
+    start_time: string
+    end_time: string
+    status: 'pending' | 'in_progress' | 'completed' | 'cancelled'
+    current_step: number
+    notes: string
+}>
+
+
 // GET: Obtener limpiezas (según rol)
 export async function GET(request: Request) {
     const user = await checkAuth(['admin', 'cleaner', 'client'])
@@ -68,12 +81,14 @@ export async function GET(request: Request) {
 
         return NextResponse.json({ cleanings: [] })
 
-    } catch (error: any) {
-        console.error('Error in GET /api/cleanings:', error)
-        return NextResponse.json(
-            { error: error.message },
-            { status: 500 }
-        )
+    } catch (error: unknown) {
+        if (error instanceof Error) {
+            console.error('Error in PUT /api/cleanings:', error)
+            return NextResponse.json({ error: error.message }, { status: 500 })
+        } else {
+            console.error('Unknown error:', error)
+            return NextResponse.json({ error: 'Error desconocido' }, { status: 500 })
+        }
     }
 }
 
@@ -188,12 +203,14 @@ export async function POST(request: Request) {
 
         return NextResponse.json({ cleaning: fullCleaning }, { status: 201 })
 
-    } catch (error: any) {
-        console.error('Error in POST /api/cleanings:', error)
-        return NextResponse.json(
-            { error: error.message },
-            { status: 500 }
-        )
+    } catch (error: unknown) {
+        if (error instanceof Error) {
+            console.error('Error in PUT /api/cleanings:', error)
+            return NextResponse.json({ error: error.message }, { status: 500 })
+        } else {
+            console.error('Unknown error:', error)
+            return NextResponse.json({ error: 'Error desconocido' }, { status: 500 })
+        }
     }
 }
 
@@ -258,7 +275,7 @@ export async function PUT(request: Request) {
             }
         }
 
-        const updateData: any = {}
+        const updateData: CleaningUpdate = {}
 
         // Admin puede actualizar todo
         if (user.role === 'admin') {
@@ -335,12 +352,14 @@ export async function PUT(request: Request) {
 
         return NextResponse.json({ cleaning: updatedCleaning })
 
-    } catch (error: any) {
-        console.error('Error in PUT /api/cleanings:', error)
-        return NextResponse.json(
-            { error: error.message },
-            { status: 500 }
-        )
+    }catch (error: unknown) {
+        if (error instanceof Error) {
+            console.error('Error in PUT /api/cleanings:', error)
+            return NextResponse.json({ error: error.message }, { status: 500 })
+        } else {
+            console.error('Unknown error:', error)
+            return NextResponse.json({ error: 'Error desconocido' }, { status: 500 })
+        }
     }
 }
 
@@ -375,11 +394,13 @@ export async function DELETE(request: Request) {
 
         return NextResponse.json({ success: true })
 
-    } catch (error: any) {
-        console.error('Error in DELETE /api/cleanings:', error)
-        return NextResponse.json(
-            { error: error.message },
-            { status: 500 }
-        )
+    } catch (error: unknown) {
+        if (error instanceof Error) {
+            console.error('Error in PUT /api/cleanings:', error)
+            return NextResponse.json({ error: error.message }, { status: 500 })
+        } else {
+            console.error('Unknown error:', error)
+            return NextResponse.json({ error: 'Error desconocido' }, { status: 500 })
+        }
     }
 }

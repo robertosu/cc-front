@@ -29,8 +29,9 @@ export default function ResendConfirmationPage() {
 
             setMessage({ type: 'success', text: data.message })
             setEmail('')
-        } catch (error: any) {
-            setMessage({ type: 'error', text: error.message })
+        } catch (error: unknown) {
+            const errMsg = error instanceof Error ? error.message : 'Error desconocido'
+            setMessage({ type: 'error', text: errMsg })
         } finally {
             setIsLoading(false)
         }

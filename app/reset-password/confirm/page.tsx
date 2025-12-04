@@ -68,11 +68,9 @@ export default function ResetPasswordConfirmPage() {
                 router.push('/login')
             }, 2000)
 
-        } catch (error: any) {
-            setMessage({
-                type: 'error',
-                text: error.message || 'Error al actualizar la contraseña'
-            })
+        } catch (error: unknown) {
+            const errMsg = error instanceof Error ? error.message : 'Error desconocido'
+            setMessage({ type: 'error', text: errMsg })
         } finally {
             setIsLoading(false)
         }

@@ -4,6 +4,18 @@ import {redirect} from 'next/navigation'
 import {Briefcase, Shield, Users as UsersIcon} from 'lucide-react'
 import UsersList from '@/components/admin/UsersList'
 import {Metadata} from "next";
+import {Profile} from "@/types";
+
+type User = {
+    id: string
+    role: 'admin' | 'cleaner' | 'client'
+    full_name?: string
+    email?: string
+    phone?: string
+    created_at?: string
+    client_cleanings_count?: number
+    cleaner_cleanings_count?: number
+}
 
 export const metadata: Metadata = {
     title: 'Gestión de Usuarios - Admin',
@@ -33,10 +45,9 @@ export default async function AdminUsersPage() {
         .select('*')
         .order('created_at', { ascending: false })
 
-    let users = []
+    let users: Profile[] = []
 
     if (profiles && !profilesError) {
-        // Agregar contadores de limpiezas
         users = await Promise.all(
             profiles.map(async (profile) => {
                 // Contar limpiezas como cliente
@@ -53,16 +64,18 @@ export default async function AdminUsersPage() {
 
                 return {
                     ...profile,
+                    full_name: profile.full_name || 'Sin Nombre',   // ✅ obligatorio
+                    created_at: profile.created_at || new Date().toISOString(), // ✅ obligatorio
                     client_cleanings_count: clientCleaningsCount || 0,
                     cleaner_cleanings_count: cleanerCleaningsCount || 0
-                }
+                } as Profile
             })
         )
     }
 
-    const clients = users.filter((u: any) => u.role === 'client')
-    const cleaners = users.filter((u: any) => u.role === 'cleaner')
-    const admins = users.filter((u: any) => u.role === 'admin')
+    const clients = users.filter((u: User) => u.role === 'client')
+    const cleaners = users.filter((u: User) => u.role === 'cleaner')
+    const admins = users.filter((u: User) => u.role === 'admin')
 
     return (
         <div className="px-4 sm:px-6 lg:px-8">

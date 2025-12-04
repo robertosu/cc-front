@@ -46,12 +46,14 @@ export async function GET() {
             total: usersWithCounts.length
         })
 
-    } catch (error: any) {
-        console.error('Error in GET /api/users:', error)
-        return NextResponse.json(
-            { error: error.message || 'Error al obtener usuarios' },
-            { status: 500 }
-        )
+    } catch (error: unknown) {
+        if (error instanceof Error) {
+            console.error('Error in PUT /api/users:', error)
+            return NextResponse.json({ error: error.message }, { status: 500 })
+        } else {
+            console.error('Unknown error:', error)
+            return NextResponse.json({ error: 'Error desconocido' }, { status: 500 })
+        }
     }
 }
 

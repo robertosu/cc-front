@@ -98,9 +98,10 @@ export default function CreateCleaningForm({
                 router.push(redirectAfterSuccess)
                 router.refresh()
             }, 1500)
-        } catch (error: any) {
-            setMessage({ type: 'error', text: error.message })
-        } finally {
+        }  catch (error: unknown) {
+        const errMsg = error instanceof Error ? error.message : 'Error desconocido'
+        setMessage({ type: 'error', text: errMsg })
+    } finally {
             setIsLoading(false)
         }
     }
