@@ -3,6 +3,7 @@ import {createClient} from '@/utils/supabase/server'
 import {redirect} from 'next/navigation'
 import AdminSidebar from '@/components/admin/AdminSidebar'
 import AdminHeader from '@/components/admin/AdminHeader'
+import React from "react";
 
 export default async function AdminLayout({
                                               children,
@@ -27,7 +28,7 @@ export default async function AdminLayout({
         <div className="min-h-screen bg-gray-50">
             <AdminSidebar profile={profile} />
             <div className="lg:pl-64">
-                <AdminHeader profile={profile} />
+                <AdminHeader/>
                 <main className="py-6">
                     {children}
                 </main>

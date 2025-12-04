@@ -22,7 +22,7 @@ interface PageProps {
 }
 
 export default async function AdminCleaningsPage({ searchParams }: PageProps) {
-    const params = await searchParams
+    const params =  searchParams
 
     const supabase = await createClient()
 
