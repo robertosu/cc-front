@@ -21,6 +21,7 @@ import {
 } from 'lucide-react'
 import MultiSearchableSelect from '@/components/common/MultiSearchableSelect'
 import { formatTime } from "@/utils/formatTime"
+import {Option} from "@/types";
 
 // --- TIPOS ---
 interface Cleaner {
@@ -76,7 +77,7 @@ const CleaningEditForm = ({
                           }: {
     editData: Partial<EditData>,
     setEditData: (data: Partial<EditData>) => void,
-    cleanerOptions: any[],
+    cleanerOptions: Option[],
     isLoading: boolean,
     handleSave: () => void,
     handleCancel: () => void,
