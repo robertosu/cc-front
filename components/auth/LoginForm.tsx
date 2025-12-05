@@ -110,7 +110,7 @@ export default function LoginForm() {
                             name="email"
                             value={formData.email}
                             onChange={handleChange}
-                            className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
+                            className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-colors ${
                                 errors.email ? 'border-red-500' : 'border-gray-300'
                             }`}
                             placeholder="tu@email.com"
@@ -132,7 +132,7 @@ export default function LoginForm() {
                             name="password"
                             value={formData.password}
                             onChange={handleChange}
-                            className={`w-full pl-10 pr-12 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
+                            className={`w-full pl-10 pr-12 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-colors ${
                                 errors.password ? 'border-red-500' : 'border-gray-300'
                             }`}
                             placeholder="••••••••"
@@ -152,14 +152,14 @@ export default function LoginForm() {
                 <div className="flex items-center justify-between">
                     <a
                         href="/resend-confirmation"
-                        className="text-sm text-blue-600 hover:text-blue-700 transition-colors"
+                        className="text-sm text-teal-400 hover:text-teal-700 transition-colors"
                     >
                         ¿No recibiste el correo de confirmación?
                     </a>
 
                     <a
                         href="/reset-password"
-                        className="text-sm text-blue-600 hover:text-blue-700 transition-colors"
+                        className="text-sm text-teal-400 hover:text-teal-700 transition-colors"
                     >
                         ¿Olvidaste tu contraseña?
                     </a>
@@ -168,7 +168,7 @@ export default function LoginForm() {
                 <button
                     type="submit"
                     disabled={isLoading}
-                    className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center"
+                    className="w-full bg-teal-400 text-white py-3 rounded-lg font-semibold hover:bg-teal-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center"
                 >
                     {isLoading ? (
                         <>
@@ -183,7 +183,7 @@ export default function LoginForm() {
 
                 <p className="text-center text-sm text-gray-600">
                     ¿No tienes cuenta?{' '}
-                    <a href="/register" className="text-blue-600 hover:text-blue-700 font-semibold">
+                    <a href="/register" className="text-teal-400 hover:text-teal-700 font-semibold">
                         Regístrate
                     </a>
                 </p>

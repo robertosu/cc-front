@@ -26,7 +26,7 @@ export default function ServicesSection() {
                             className="bg-gray-50 rounded-xl p-3 md:p-6 lg:p-6 hover:shadow-lg transition-shadow border border-gray-200"
                         >
                             {/* Icono del servicio */}
-                            <div className="text-blue-600 mb-4">
+                            <div className="text-teal-400 mb-4">
                                 {service.icon}
                             </div>
 
@@ -51,7 +51,7 @@ export default function ServicesSection() {
                             </ul>
 
                             {/* Precio */}
-                            <div className="text-lg font-bold text-blue-600">
+                            <div className="text-lg font-bold text-teal-400">
                                 {service.price}
                             </div>
                         </div>
@@ -71,7 +71,7 @@ export default function ServicesSection() {
 ✅ Grid responsive: grid-cols-1 md:grid-cols-2 lg:grid-cols-3
 ✅ Hover effects: hover:shadow-lg
 ✅ Spacing consistente: py-20, mb-16, space-y-2
-✅ Color system: text-blue-600, text-gray-900, bg-gray-50
+✅ Color system: text-teal-400, text-gray-900, bg-gray-50
 ✅ Flex layout: flex items-center para alinear iconos
 ✅ Key prop en map() para performance de React
 

@@ -38,13 +38,13 @@ export default function ResendConfirmationPage() {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center py-12 px-4">
+        <div className="min-h-screen bg-gradient-to-br from-teal-50 to-teal-100 flex items-center justify-center py-12 px-4">
             <div className="w-full max-w-md">
                 <div className="bg-white rounded-xl shadow-lg p-8 space-y-6">
                     <div className="text-center">
                         <Link
                             href="/login"
-                            className="inline-flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700 mb-4"
+                            className="inline-flex items-center gap-2 text-sm text-teal-400 hover:text-teal-700 mb-4"
                         >
                             <ArrowLeft className="w-4 h-4" />
                             Volver al login
@@ -84,7 +84,7 @@ export default function ResendConfirmationPage() {
                                     onChange={(e) => setEmail(e.target.value)}
                                     required
                                     disabled={isLoading}
-                                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
+                                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent disabled:bg-gray-100"
                                     placeholder="tu@email.com"
                                 />
                             </div>
@@ -93,7 +93,7 @@ export default function ResendConfirmationPage() {
                         <button
                             type="submit"
                             disabled={isLoading}
-                            className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+                            className="w-full bg-teal-400 text-white py-3 rounded-lg font-semibold hover:bg-teal-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
                         >
                             {isLoading ? 'Enviando...' : 'Reenviar Confirmación'}
                         </button>

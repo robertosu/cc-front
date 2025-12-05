@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, Suspense } from 'react' // 1. Importar Suspense
+import { useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { AlertCircle, CheckCircle, Eye, EyeOff, Lock } from 'lucide-react'
 import { createClient } from '@/utils/supabase/client'
@@ -8,7 +8,7 @@ import PasswordStrength from '@/components/auth/PasswordStrength'
 
 // 2. Renombrar tu componente principal actual a algo interno (ej: ResetPasswordForm)
 // y quitar el 'export default' de aquí.
-function ResetPasswordForm() {
+export function ResetPasswordForm() {
     const router = useRouter()
     const searchParams = useSearchParams()
     const [password, setPassword] = useState('')
@@ -116,7 +116,7 @@ function ResetPasswordForm() {
                                 onChange={(e) => setPassword(e.target.value)}
                                 required
                                 disabled={isLoading}
-                                className="w-full pl-10 pr-12 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
+                                className="w-full pl-10 pr-12 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent disabled:bg-gray-100"
                                 placeholder="••••••••"
                             />
                             <button
@@ -143,7 +143,7 @@ function ResetPasswordForm() {
                                 onChange={(e) => setConfirmPassword(e.target.value)}
                                 required
                                 disabled={isLoading}
-                                className="w-full pl-10 pr-12 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
+                                className="w-full pl-10 pr-12 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent disabled:bg-gray-100"
                                 placeholder="••••••••"
                             />
                             <button
@@ -162,7 +162,7 @@ function ResetPasswordForm() {
                     <button
                         type="submit"
                         disabled={isLoading || message?.type === 'success'}
-                        className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+                        className="w-full bg-teal-400 text-white py-3 rounded-lg font-semibold hover:bg-teal-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
                     >
                         {isLoading ? 'Actualizando...' : 'Actualizar Contraseña'}
                     </button>

@@ -50,9 +50,9 @@ export default function AdminDashboardClient({
             <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 {/* Indicador de actualización */}
                 {isLoading && (
-                    <div className="mb-4 bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-center gap-2">
-                        <span className="animate-pulse text-blue-600">●</span>
-                        <span className="text-sm text-blue-700">Actualizando datos en tiempo real...</span>
+                    <div className="mb-4 bg-teal-50 border border-teal-200 rounded-lg p-3 flex items-center gap-2">
+                        <span className="animate-pulse text-teal-400">●</span>
+                        <span className="text-sm text-teal-700">Actualizando datos en tiempo real...</span>
                     </div>
                 )}
 
@@ -84,13 +84,13 @@ export default function AdminDashboardClient({
                         </div>
                     </Link>
 
-                    <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow p-6 text-white">
+                    <div className="bg-gradient-to-br from-teal-500 to-teal-400 rounded-xl shadow p-6 text-white">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-sm text-blue-100 mb-1">Total Limpiezas</p>
+                                <p className="text-sm text-teal-100 mb-1">Total Limpiezas</p>
                                 <p className="text-3xl font-bold">{statistics.total_cleanings}</p>
                             </div>
-                            <Briefcase className="w-10 h-10 text-blue-200" />
+                            <Briefcase className="w-10 h-10 text-teal-200" />
                         </div>
                     </div>
                 </div>
@@ -99,8 +99,8 @@ export default function AdminDashboardClient({
                 <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-8">
                     <div className="bg-white rounded-xl shadow p-4">
                         <div className="flex items-center gap-3">
-                            <div className="p-2 bg-blue-100 rounded-lg">
-                                <Users className="w-5 h-5 text-blue-600" />
+                            <div className="p-2 bg-teal-100 rounded-lg">
+                                <Users className="w-5 h-5 text-teal-400" />
                             </div>
                             <div>
                                 <p className="text-xs text-gray-600">Clientes</p>
@@ -123,8 +123,8 @@ export default function AdminDashboardClient({
 
                     <div className="bg-white rounded-xl shadow p-4">
                         <div className="flex items-center gap-3">
-                            <div className="p-2 bg-blue-100 rounded-lg">
-                                <Briefcase className="w-5 h-5 text-blue-600" />
+                            <div className="p-2 bg-teal-100 rounded-lg">
+                                <Briefcase className="w-5 h-5 text-teal-400" />
                             </div>
                             <div>
                                 <p className="text-xs text-gray-600">Activas</p>
@@ -197,13 +197,13 @@ export default function AdminDashboardClient({
                                                             </p>
                                                         )}
                                                     </div>
-                                                    <span className="text-sm font-medium text-blue-600">
+                                                    <span className="text-sm font-medium text-teal-400">
                             {cleaning.current_step}/{cleaning.total_steps}
                           </span>
                                                 </div>
                                                 <div className="w-full bg-gray-200 rounded-full h-2">
                                                     <div
-                                                        className="bg-blue-600 h-2 rounded-full transition-all"
+                                                        className="bg-teal-400 h-2 rounded-full transition-all"
                                                         style={{ width: `${progressPercentage}%` }}
                                                     />
                                                 </div>
