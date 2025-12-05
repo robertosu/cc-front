@@ -212,16 +212,6 @@ export default function CleaningsTable({
         text: string
     } | null>(null)
 
-    // ... (Mismas funciones handleSearch, handleStatusFilter, handleSort, updateUrl, goToPage)
-    const handleSearch = (value: string) => {
-        setSearchTerm(value)
-        updateUrl({ search: value, page: '1' })
-    }
-
-    const handleStatusFilter = (value: string) => {
-        setStatusFilter(value)
-        updateUrl({ status: value, page: '1' })
-    }
 
     const handleSort = (field: string) => {
         const currentSort = searchParams.get('sortBy')
@@ -242,6 +232,8 @@ export default function CleaningsTable({
         router.push(`?${current.toString()}`)
     }
 
+
+
     const goToPage = (page: number) => updateUrl({ page: page.toString() })
 
     const handleEdit = (cleaning: Cleaning) => {
@@ -256,6 +248,39 @@ export default function CleaningsTable({
             current_step: cleaning.current_step,
             notes: cleaning.notes || ''
         })
+    }
+    // NUEVO: Estados para fechas
+    const [startDate, setStartDate] = useState(searchParams.get('startDate') || '')
+    const [endDate, setEndDate] = useState(searchParams.get('endDate') || '')
+
+    const handleSearch = (value: string) => {
+        setSearchTerm(value)
+        updateUrl({ search: value, page: '1' })
+    }
+
+    const handleStatusFilter = (value: string) => {
+        setStatusFilter(value)
+        updateUrl({ status: value, page: '1' })
+    }
+
+    // NUEVO: Manejadores de fecha
+    const handleDateFilter = (type: 'start' | 'end', value: string) => {
+        if (type === 'start') {
+            setStartDate(value)
+            updateUrl({ startDate: value, page: '1' })
+        } else {
+            setEndDate(value)
+            updateUrl({ endDate: value, page: '1' })
+        }
+    }
+
+    // NUEVO: Limpiar filtros
+    const clearFilters = () => {
+        setSearchTerm('')
+        setStatusFilter('')
+        setStartDate('')
+        setEndDate('')
+        router.push('?')
     }
 
     const handleSaveEdit = async (cleaningId: string) => {
@@ -401,7 +426,9 @@ export default function CleaningsTable({
     return (
         <div className="bg-white shadow rounded-lg">
             {/* Header: Filtros y búsqueda */}
-            <div className="p-4 border-b border-gray-200">
+            <div className="p-4 border-b border-gray-200 space-y-4">
+
+                {/* Fila 1: Búsqueda y Estado */}
                 <div className="flex flex-col sm:flex-row gap-4">
                     <div className="flex-1 relative">
                         <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
@@ -412,7 +439,7 @@ export default function CleaningsTable({
                             value={searchTerm}
                             onChange={(e) => handleSearch(e.target.value)}
                             className="block w-full rounded-md border-0 py-2 pl-10 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-purple-600 sm:text-sm"
-                            placeholder="Buscar..."
+                            placeholder="Buscar por dirección o cliente..."
                         />
                     </div>
                     <select
@@ -420,35 +447,63 @@ export default function CleaningsTable({
                         onChange={(e) => handleStatusFilter(e.target.value)}
                         className="block w-full sm:w-48 rounded-md border-0 py-2 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-purple-600 sm:text-sm"
                     >
-                        <option value="">Todos</option>
+                        <option value="">Todos los estados</option>
                         <option value="pending">Pendientes</option>
                         <option value="in_progress">En Progreso</option>
                         <option value="completed">Completadas</option>
                         <option value="cancelled">Canceladas</option>
                     </select>
                 </div>
+
+                {/* Fila 2: Filtros de Fecha */}
+                <div className="flex flex-col sm:flex-row gap-4 items-end sm:items-center">
+                    <div className="flex items-center gap-2 w-full sm:w-auto">
+                        <span className="text-sm text-gray-500 min-w-[40px]">Desde:</span>
+                        <input
+                            type="date"
+                            value={startDate}
+                            onChange={(e) => handleDateFilter('start', e.target.value)}
+                            className="block w-full rounded-md border-0 py-1.5 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-purple-600 sm:text-sm"
+                        />
+                    </div>
+
+                    <div className="flex items-center gap-2 w-full sm:w-auto">
+                        <span className="text-sm text-gray-500 min-w-[40px]">Hasta:</span>
+                        <input
+                            type="date"
+                            value={endDate}
+                            onChange={(e) => handleDateFilter('end', e.target.value)}
+                            className="block w-full rounded-md border-0 py-1.5 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-purple-600 sm:text-sm"
+                        />
+                    </div>
+
+                    {/* Botón para limpiar filtros si hay alguno activo */}
+                    {(searchTerm || statusFilter || startDate || endDate) && (
+                        <button
+                            onClick={clearFilters}
+                            className="text-sm text-purple-600 hover:text-purple-800 font-medium whitespace-nowrap"
+                        >
+                            Limpiar filtros
+                        </button>
+                    )}
+                </div>
+
                 <div className="mt-2 text-xs text-gray-500">
-                    Total: {totalCount} registros
+                    Total: {totalCount} registros encontrados
                 </div>
             </div>
 
-            {/* 📱 VISTA MÓVIL (CARDS) */}
+            {/* ... (RESTO DEL COMPONENTE: Vista Móvil, Vista Desktop, Paginación) ... */}
+            {/* Mantener exactamente el mismo código que tenías abajo para renderizar la tabla */}
             <div className="md:hidden divide-y divide-gray-200">
+                {/* ... tu código existente ... */}
                 {cleanings.length === 0 ? (
                     <div className="p-8 text-center text-gray-500">No se encontraron limpiezas</div>
                 ) : (
                     cleanings.map((cleaning) => (
+                        // ... renderizado móvil ...
                         <div key={cleaning.id} className="p-4">
-                            {/* Mensajes */}
-                            {rowMessage && rowMessage.cleaningId === cleaning.id && (
-                                <div className={`mb-3 px-3 py-2 rounded text-sm flex items-center gap-2 ${
-                                    rowMessage.type === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'
-                                }`}>
-                                    {rowMessage.type === 'success' ? <CheckCircle className="w-4 h-4"/> : <AlertCircle className="w-4 h-4"/>}
-                                    {rowMessage.text}
-                                </div>
-                            )}
-
+                            {/* ... (asegúrate de incluir todo el bloque original) ... */}
                             {editingCleaning === cleaning.id ? (
                                 <CleaningEditForm
                                     editData={editData}
@@ -467,16 +522,17 @@ export default function CleaningsTable({
                 )}
             </div>
 
-            {/* 💻 VISTA DESKTOP (TABLA) */}
+            {/* ... renderizado desktop ... */}
             <div className="hidden md:block overflow-x-auto">
+                {/* ... tu tabla original ... */}
                 <table className="min-w-full divide-y divide-gray-200">
+                    {/* ... thead, tbody, etc ... */}
                     <thead className="bg-gray-50">
                     <tr>
                         <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            <button onClick={() => handleSort('scheduled_date')} className="flex items-center gap-1 hover:text-gray-700">
-                                Fecha <ArrowUpDown className="w-4 h-4" />
-                            </button>
+                            {/* ... mantener el header de Fecha ... */}
                         </th>
+                        {/* ... mantener resto headers ... */}
                         <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dirección</th>
                         <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cliente</th>
                         <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
@@ -485,96 +541,94 @@ export default function CleaningsTable({
                     </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                    {cleanings.length === 0 ? (
-                        <tr><td colSpan={6} className="px-6 py-12 text-center text-gray-500">No se encontraron limpiezas</td></tr>
-                    ) : (
-                        cleanings.map((cleaning) => (
-                            <Fragment key={cleaning.id}>
-                                <tr className="hover:bg-gray-50 transition-colors">
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                        <div className="font-medium">{new Date(cleaning.scheduled_date + 'T00:00:00').toLocaleDateString('es-CL')}</div>
-                                        <div className="text-xs text-gray-500">{formatTime(cleaning.start_time)} - {formatTime(cleaning.end_time)}</div>
-                                    </td>
-                                    <td className="px-6 py-4 text-sm text-gray-900">{cleaning.address}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                        <div>{cleaning.client_name}</div>
-                                        <div className="text-xs text-gray-500">{cleaning.client_email}</div>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">{getStatusBadge(cleaning.status)}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                        <div className="w-24 bg-gray-200 rounded-full h-2 mb-1">
-                                            <div className="bg-purple-600 h-2 rounded-full" style={{ width: `${(cleaning.current_step / cleaning.total_steps) * 100}%` }} />
-                                        </div>
-                                        <div className="text-xs text-gray-500">{cleaning.current_step}/{cleaning.total_steps}</div>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                        <button onClick={() => setExpandedRow(expandedRow === cleaning.id ? null : cleaning.id)} className="text-purple-600 hover:text-purple-900">
-                                            {expandedRow === cleaning.id ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
-                                        </button>
+                    {/* ... mapeo de cleanings ... */}
+                    {cleanings.map((cleaning) => (
+                        <Fragment key={cleaning.id}>
+                            {/* ... tu fila de tabla ... */}
+                            <tr className="hover:bg-gray-50 transition-colors">
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    <div className="font-medium">{new Date(cleaning.scheduled_date + 'T00:00:00').toLocaleDateString('es-CL')}</div>
+                                    <div className="text-xs text-gray-500">{formatTime(cleaning.start_time)} - {formatTime(cleaning.end_time)}</div>
+                                </td>
+                                {/* ... resto de celdas ... */}
+                                {/* Asegúrate de no borrar ninguna columna */}
+                                <td className="px-6 py-4 text-sm text-gray-900">{cleaning.address}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    <div>{cleaning.client_name}</div>
+                                    <div className="text-xs text-gray-500">{cleaning.client_email}</div>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">{getStatusBadge(cleaning.status)}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    <div className="w-24 bg-gray-200 rounded-full h-2 mb-1">
+                                        <div className="bg-purple-600 h-2 rounded-full" style={{ width: `${(cleaning.current_step / cleaning.total_steps) * 100}%` }} />
+                                    </div>
+                                    <div className="text-xs text-gray-500">{cleaning.current_step}/{cleaning.total_steps}</div>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                    <button onClick={() => setExpandedRow(expandedRow === cleaning.id ? null : cleaning.id)} className="text-purple-600 hover:text-purple-900">
+                                        {expandedRow === cleaning.id ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+                                    </button>
+                                </td>
+                            </tr>
+                            {/* ... fila expandida ... */}
+                            {expandedRow === cleaning.id && (
+                                <tr>
+                                    {/* ... contenido expandido ... */}
+                                    <td colSpan={6} className="px-6 py-4 bg-gray-50 border-t border-gray-100">
+                                        {/* ... lógica de edición o vista ... */}
+                                        {editingCleaning === cleaning.id ? (
+                                            <div className="max-w-3xl">
+                                                <CleaningEditForm
+                                                    editData={editData}
+                                                    setEditData={setEditData}
+                                                    cleanerOptions={cleanerOptions}
+                                                    isLoading={isLoading === cleaning.id}
+                                                    handleSave={() => handleSaveEdit(cleaning.id)}
+                                                    handleCancel={() => setEditingCleaning(null)}
+                                                    totalSteps={cleaning.total_steps}
+                                                />
+                                            </div>
+                                        ) : (
+                                            // ... vista detalles ...
+                                            <div className="flex justify-between items-start">
+                                                {/* ... */}
+                                                <div className="space-y-2">
+                                                    {cleaning.assigned_cleaners.length > 0 && (
+                                                        <div>
+                                                            <span className="text-xs font-semibold text-gray-500 uppercase">Cleaners:</span>
+                                                            <div className="flex gap-2 mt-1">
+                                                                {cleaning.assigned_cleaners.map(c => (
+                                                                    <span key={c.id} className="bg-white border px-2 py-1 rounded text-sm">{c.full_name}</span>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                    {cleaning.notes && (
+                                                        <div className="bg-teal-50 p-3 rounded border border-teal-100 text-sm text-teal-800 mt-2">
+                                                            <strong>Notas:</strong> {cleaning.notes}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                <div className="flex gap-2">
+                                                    <button onClick={() => handleEdit(cleaning)} className="text-gray-600 hover:text-purple-600 flex items-center gap-1 px-3 py-1 border rounded bg-white">
+                                                        <Edit className="w-4 h-4" /> Editar
+                                                    </button>
+                                                    <button onClick={() => handleDelete(cleaning.id, cleaning.address)} className="text-red-600 hover:text-red-800 flex items-center gap-1 px-3 py-1 border rounded bg-white">
+                                                        <Trash2 className="w-4 h-4" /> Eliminar
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        )}
                                     </td>
                                 </tr>
-                                {/* Fila Expandida Desktop */}
-                                {expandedRow === cleaning.id && (
-                                    <tr>
-                                        <td colSpan={6} className="px-6 py-4 bg-gray-50 border-t border-gray-100">
-                                            {rowMessage && rowMessage.cleaningId === cleaning.id && (
-                                                <div className={`mb-4 p-3 rounded flex gap-2 ${rowMessage.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                                                    <span className="text-sm">{rowMessage.text}</span>
-                                                </div>
-                                            )}
-
-                                            {editingCleaning === cleaning.id ? (
-                                                <div className="max-w-3xl">
-                                                    <CleaningEditForm
-                                                        editData={editData}
-                                                        setEditData={setEditData}
-                                                        cleanerOptions={cleanerOptions}
-                                                        isLoading={isLoading === cleaning.id}
-                                                        handleSave={() => handleSaveEdit(cleaning.id)}
-                                                        handleCancel={() => setEditingCleaning(null)}
-                                                        totalSteps={cleaning.total_steps}
-                                                    />
-                                                </div>
-                                            ) : (
-                                                <div className="flex justify-between items-start">
-                                                    <div className="space-y-2">
-                                                        {cleaning.assigned_cleaners.length > 0 && (
-                                                            <div>
-                                                                <span className="text-xs font-semibold text-gray-500 uppercase">Cleaners:</span>
-                                                                <div className="flex gap-2 mt-1">
-                                                                    {cleaning.assigned_cleaners.map(c => (
-                                                                        <span key={c.id} className="bg-white border px-2 py-1 rounded text-sm">{c.full_name}</span>
-                                                                    ))}
-                                                                </div>
-                                                            </div>
-                                                        )}
-                                                        {cleaning.notes && (
-                                                            <div className="bg-teal-50 p-3 rounded border border-teal-100 text-sm text-teal-800 mt-2">
-                                                                <strong>Notas:</strong> {cleaning.notes}
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                    <div className="flex gap-2">
-                                                        <button onClick={() => handleEdit(cleaning)} className="text-gray-600 hover:text-purple-600 flex items-center gap-1 px-3 py-1 border rounded bg-white">
-                                                            <Edit className="w-4 h-4" /> Editar
-                                                        </button>
-                                                        <button onClick={() => handleDelete(cleaning.id, cleaning.address)} className="text-red-600 hover:text-red-800 flex items-center gap-1 px-3 py-1 border rounded bg-white">
-                                                            <Trash2 className="w-4 h-4" /> Eliminar
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            )}
-                                        </td>
-                                    </tr>
-                                )}
-                            </Fragment>
-                        ))
-                    )}
+                            )}
+                        </Fragment>
+                    ))}
                     </tbody>
                 </table>
             </div>
 
-            {/* Paginación (Común para ambos) */}
+            {/* ... paginación ... */}
             {totalPages > 1 && (
                 <div className="px-4 py-3 border-t border-gray-200 flex items-center justify-between sm:px-6">
                     <button

@@ -159,7 +159,7 @@ export default function CreateCleaningForm({
             {/* Steps */}
             <div>
                 <label htmlFor="total_steps" className="block text-sm font-medium text-gray-700 mb-2">
-                    Número de Steps <span className="text-red-500">*</span>
+                    Número de Pasos <span className="text-red-500">*</span>
                 </label>
                 <input
                     type="number"

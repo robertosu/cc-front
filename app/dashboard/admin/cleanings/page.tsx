@@ -18,15 +18,19 @@ type Props = {
         status?: string
         sortBy?: string
         sortOrder?: string
+        // NUEVOS PARAMS
+        startDate?: string
+        endDate?: string
     }>
 }
 
 export default async function AdminCleaningsPage({ searchParams }: Props) {
-    // 1. Esperamos a que se resuelvan los parámetross (Next.js 15 req)
+    // 1. Esperamos a que se resuelvan los parámetros
     const params = await searchParams
 
     const supabase = await createClient()
 
+    // Verificación de Auth (Mismo código que tenías)
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) redirect('/login')
 
@@ -46,6 +50,10 @@ export default async function AdminCleaningsPage({ searchParams }: Props) {
     const sortBy = params.sortBy || 'scheduled_date'
     const sortOrder = (params.sortOrder || 'desc') as 'asc' | 'desc'
 
+    // NUEVO: Variables de fecha
+    const startDate = params.startDate
+    const endDate = params.endDate
+
     // Query base
     let query = supabase
         .from('cleanings_with_details')
@@ -58,6 +66,14 @@ export default async function AdminCleaningsPage({ searchParams }: Props) {
 
     if (status) {
         query = query.eq('status', status)
+    }
+
+    // NUEVO: Filtros de rango de fecha
+    if (startDate) {
+        query = query.gte('scheduled_date', startDate)
+    }
+    if (endDate) {
+        query = query.lte('scheduled_date', endDate)
     }
 
     // Ordenamiento
@@ -83,7 +99,7 @@ export default async function AdminCleaningsPage({ searchParams }: Props) {
         .eq('role', 'cleaner')
         .order('full_name', { ascending: true })
 
-    // Estadísticas rápidas
+    // Estadísticas rápidas (Mismo código que tenías)
     const { count: totalCount } = await supabase
         .from('cleanings')
         .select('*', { count: 'exact', head: true })
@@ -124,8 +140,9 @@ export default async function AdminCleaningsPage({ searchParams }: Props) {
                 </div>
             </div>
 
-            {/* Estadísticas rápidas */}
+            {/* Estadísticas rápidas (Mismo JSX) */}
             <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+                {/* ... Mantener tus tarjetas de estadísticas igual ... */}
                 <div className="bg-white overflow-hidden shadow rounded-lg">
                     <div className="p-5">
                         <div className="flex items-center">

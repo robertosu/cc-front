@@ -40,9 +40,19 @@ export default function AdminDashboardClient({
         .filter(c => c.status === 'pending' && c.scheduled_date >= today)
         .slice(0, 5)
 
-    // 🔥 Helper para obtener cleaners válidos
+    // 🔥 Helper CORREGIDO para obtener cleaners válidos
+    // Ahora soporta tanto la estructura directa (InitialData) como la anidada (Realtime)
     const getValidCleaners = (cleaning: Cleaning) => {
-        return cleaning.assigned_cleaners?.filter(ac => ac.cleaner != null) || []
+        const assigned = cleaning.assigned_cleaners || [];
+
+        return assigned.map((item: any) => {
+            // Caso 1: Estructura del Hook Realtime ({ cleaner: { ... } })
+            if (item.cleaner && typeof item.cleaner === 'object') {
+                return item.cleaner;
+            }
+            // Caso 2: Estructura directa de la Vista ({ id: ..., full_name: ... })
+            return item;
+        }).filter((cleaner: any) => cleaner && cleaner.full_name);
     }
 
     return (
@@ -193,7 +203,8 @@ export default function AdminDashboardClient({
                                                         </p>
                                                         {validCleaners.length > 0 && (
                                                             <p className="text-sm text-gray-600">
-                                                                Cleaners: {validCleaners.map(ac => ac.cleaner!.full_name).join(', ')}
+                                                                {/* CORREGIDO: Usamos cleaner directamente */}
+                                                                Cleaners: {validCleaners.map((c: any) => c.full_name).join(', ')}
                                                             </p>
                                                         )}
                                                     </div>
@@ -241,7 +252,8 @@ export default function AdminDashboardClient({
                                                         </p>
                                                         {validCleaners.length > 0 ? (
                                                             <p className="text-sm text-gray-600">
-                                                                Cleaners: {validCleaners.map(ac => ac.cleaner!.full_name).join(', ')}
+                                                                {/* CORREGIDO: Usamos cleaner directamente */}
+                                                                Cleaners: {validCleaners.map((c: any) => c.full_name).join(', ')}
                                                             </p>
                                                         ) : (
                                                             <p className="text-sm text-yellow-600">
