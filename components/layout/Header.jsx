@@ -67,7 +67,7 @@ export default function Header() {
                                 {/* Botón Azul */}
                                 <Link
                                     href="/register"
-                                    className="bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700 transition-colors font-medium"
+                                    className="bg-teal-400 text-white px-4 py-2 rounded-lg hover:bg-teal-600 transition-colors font-medium"
                                 >
                                     Registrarse
                                 </Link>
@@ -126,7 +126,7 @@ export default function Header() {
                             </Link>
                             <Link
                                 href="/register"
-                                className="text-center bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700 font-medium"
+                                className="text-center bg-teal-400 text-white px-4 py-2 rounded-lg hover:bg-teal-600 font-medium"
                                 onClick={() => setIsMobileMenuOpen(false)}
                             >
                                 Registrarse

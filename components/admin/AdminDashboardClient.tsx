@@ -4,7 +4,7 @@
 import { useCleaningsRealtime } from '@/hooks/useCleaningsRealtime'
 import { Briefcase, Calendar, CheckCircle, Clock, Users, XCircle } from 'lucide-react'
 import Link from 'next/link'
-import type { DashboardStats, Cleaning } from '@/types'
+import type { DashboardStats, Cleaning, AssignedCleaner, Cleaner } from '@/types'
 
 interface AdminDashboardClientProps {
     initialStats: DashboardStats
@@ -17,13 +17,11 @@ export default function AdminDashboardClient({
                                                  initialCurrentCleanings,
                                                  initialUpcomingCleanings
                                              }: AdminDashboardClientProps) {
-    // Hook de realtime para todas las cleanings (admin ve todo)
     const { cleanings, isLoading } = useCleaningsRealtime({
         role: 'admin',
         initialData: [...initialCurrentCleanings, ...initialUpcomingCleanings]
     })
 
-    // Calcular stats en tiempo real
     const statistics: DashboardStats = {
         total_cleanings: cleanings.length,
         pending_cleanings: cleanings.filter(c => c.status === 'pending').length,
@@ -40,25 +38,32 @@ export default function AdminDashboardClient({
         .filter(c => c.status === 'pending' && c.scheduled_date >= today)
         .slice(0, 5)
 
-    // 🔥 Helper CORREGIDO para obtener cleaners válidos
-    // Ahora soporta tanto la estructura directa (InitialData) como la anidada (Realtime)
-    const getValidCleaners = (cleaning: Cleaning) => {
+    // 🔥 Helper Tipado Correctamente
+    const getValidCleaners = (cleaning: Cleaning): Cleaner[] => {
         const assigned = cleaning.assigned_cleaners || [];
 
-        return assigned.map((item: any) => {
-            // Caso 1: Estructura del Hook Realtime ({ cleaner: { ... } })
-            if (item.cleaner && typeof item.cleaner === 'object') {
+        return assigned.map((item: AssignedCleaner) => {
+            // Caso 1: Estructura Realtime ({ cleaner: { ... } })
+            if (item.cleaner) {
                 return item.cleaner;
             }
-            // Caso 2: Estructura directa de la Vista ({ id: ..., full_name: ... })
-            return item;
-        }).filter((cleaner: any) => cleaner && cleaner.full_name);
+            // Caso 2: Estructura Vista SQL (propiedades directas en item)
+            // Verificamos si tiene las props mínimas de un Cleaner
+            if (item.id && item.full_name && item.email) {
+                return {
+                    id: item.id,
+                    full_name: item.full_name,
+                    email: item.email,
+                    // Si tienes phone en AssignedCleaner, agrégalo aquí
+                } as Cleaner;
+            }
+            return null;
+        }).filter((c): c is Cleaner => c !== null); // Predicado de tipo para eliminar nulls
     }
 
     return (
         <div className="min-h-screen bg-gray-50">
             <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                {/* Indicador de actualización */}
                 {isLoading && (
                     <div className="mb-4 bg-teal-50 border border-teal-200 rounded-lg p-3 flex items-center gap-2">
                         <span className="animate-pulse text-teal-400">●</span>
@@ -66,7 +71,6 @@ export default function AdminDashboardClient({
                     </div>
                 )}
 
-                {/* Acciones rápidas */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
                     <Link
                         href="/dashboard/admin/cleanings"
@@ -105,7 +109,6 @@ export default function AdminDashboardClient({
                     </div>
                 </div>
 
-                {/* Estadísticas */}
                 <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-8">
                     <div className="bg-white rounded-xl shadow p-4">
                         <div className="flex items-center gap-3">
@@ -181,7 +184,6 @@ export default function AdminDashboardClient({
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-8">
-                    {/* Limpiezas activas */}
                     <section>
                         <h2 className="text-xl font-bold text-gray-900 mb-4">🔄 Limpiezas en Progreso</h2>
                         <div className="bg-white rounded-xl shadow">
@@ -203,8 +205,7 @@ export default function AdminDashboardClient({
                                                         </p>
                                                         {validCleaners.length > 0 && (
                                                             <p className="text-sm text-gray-600">
-                                                                {/* CORREGIDO: Usamos cleaner directamente */}
-                                                                Cleaners: {validCleaners.map((c: any) => c.full_name).join(', ')}
+                                                                Cleaners: {validCleaners.map(c => c.full_name).join(', ')}
                                                             </p>
                                                         )}
                                                     </div>
@@ -230,7 +231,6 @@ export default function AdminDashboardClient({
                         </div>
                     </section>
 
-                    {/* Próximas limpiezas */}
                     <section>
                         <h2 className="text-xl font-bold text-gray-900 mb-4">📅 Próximas Limpiezas</h2>
                         <div className="bg-white rounded-xl shadow">
@@ -252,8 +252,7 @@ export default function AdminDashboardClient({
                                                         </p>
                                                         {validCleaners.length > 0 ? (
                                                             <p className="text-sm text-gray-600">
-                                                                {/* CORREGIDO: Usamos cleaner directamente */}
-                                                                Cleaners: {validCleaners.map((c: any) => c.full_name).join(', ')}
+                                                                Cleaners: {validCleaners.map(c => c.full_name).join(', ')}
                                                             </p>
                                                         ) : (
                                                             <p className="text-sm text-yellow-600">

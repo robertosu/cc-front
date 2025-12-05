@@ -27,11 +27,16 @@ export interface Cleaner {
     phone?: string
 }
 
+// Interfaz flexible para manejar la inconsistencia entre Realtime y Vista SQL
 export interface AssignedCleaner {
     assigned_at: string
-    cleaner: Cleaner | null
+    // En Realtime viene anidado: { cleaner: { full_name: ... } }
+    cleaner?: Cleaner | null
+    // En Vista SQL viene plano: { full_name: ... } (propiedades directas)
+    id?: string
+    full_name?: string
+    email?: string
 }
-
 // ==================== CLIENT ====================
 export interface Client {
     id: string
