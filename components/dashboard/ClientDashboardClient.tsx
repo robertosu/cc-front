@@ -44,8 +44,8 @@ export default function ClientDashboardClient({
                                 Mis Servicios de Limpieza
                                 {isLoading && (
                                     <span className="ml-2 inline-flex items-center text-sm">
-                    <span className="animate-pulse text-teal-400">●</span>
-                    <span className="ml-1 text-xs text-teal-400">actualizando...</span>
+                    <span className="animate-pulse text-cyan-400">●</span>
+                    <span className="ml-1 text-xs text-cyan-400">actualizando...</span>
                   </span>
                                 )}
                             </p>
@@ -67,7 +67,7 @@ export default function ClientDashboardClient({
                                 return (
                                     <div
                                         key={cleaning.id}
-                                        className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-teal-500"
+                                        className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-cyan-500"
                                     >
                                         <div className="grid md:grid-cols-2 gap-6">
                                             <div className="space-y-3">
@@ -234,7 +234,7 @@ export default function ClientDashboardClient({
                         </p>
                         <Link
                             href="/#services"
-                            className="inline-block bg-teal-400 text-white px-6 py-3 rounded-lg hover:bg-teal-700 transition-colors"
+                            className="inline-block bg-cyan-400 text-white px-6 py-3 rounded-lg hover:bg-cyan-700 transition-colors"
                         >
                             Ver Servicios
                         </Link>

@@ -142,7 +142,7 @@ export default function ServicesSection() {
 
                 {/* SECCIÓN 1: CONTADOR */}
                 <div className="flex justify-center mb-16">
-                    <div className="bg-teal-500 text-white rounded-3xl py-8 px-12 text-center shadow-xl transform hover:scale-105 transition-transform duration-300">
+                    <div className="bg-cyan-500 text-white rounded-3xl py-8 px-12 text-center shadow-xl transform hover:scale-105 transition-transform duration-300">
                         <div className="text-5xl md:text-6xl font-extrabold mb-2">
                             <AnimatedCounter end={10271} />
                         </div>
@@ -169,9 +169,9 @@ export default function ServicesSection() {
                         {spinnerServices.map((service, index) => (
                             <div
                                 key={`${index}-${service.title}`}
-                                className="min-w-[280px] md:min-w-[320px] bg-white rounded-2xl p-6 shadow-md border border-gray-100 flex-shrink-0 flex flex-col items-center text-center hover:shadow-xl hover:border-teal-200 transition-all duration-300 select-none"
+                                className="min-w-[280px] md:min-w-[320px] bg-white rounded-2xl p-6 shadow-md border border-gray-100 flex-shrink-0 flex flex-col items-center text-center hover:shadow-xl hover:border-cyan-200 transition-all duration-300 select-none"
                             >
-                                <div className="text-teal-500 bg-teal-50 p-4 rounded-full mb-4">
+                                <div className="text-cyan-500 bg-cyan-50 p-4 rounded-full mb-4">
                                     {service.icon}
                                 </div>
                                 <h3 className="text-xl font-bold text-gray-900 mb-2">
@@ -190,7 +190,7 @@ export default function ServicesSection() {
                     {homeSizes.map((home, index) => (
                         <div key={index} className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-gray-100 flex flex-col">
                             <div className="bg-gray-900 p-6 text-center">
-                                <div className="text-teal-400 mx-auto mb-3 flex justify-center">
+                                <div className="text-cyan-400 mx-auto mb-3 flex justify-center">
                                     {home.icon}
                                 </div>
                                 <h4 className="text-xl font-bold text-white tracking-wide">{home.title}</h4>
@@ -200,7 +200,7 @@ export default function ServicesSection() {
                                 <ul className="space-y-3 mb-6 flex-grow">
                                     {home.specs.map((spec, idx) => (
                                         <li key={idx} className="flex items-center text-gray-600 bg-gray-50 p-2 rounded-lg text-sm">
-                                            <CheckCircle className="w-4 h-4 text-teal-500 mr-2 flex-shrink-0" />
+                                            <CheckCircle className="w-4 h-4 text-cyan-500 mr-2 flex-shrink-0" />
                                             {spec}
                                         </li>
                                     ))}
@@ -225,7 +225,7 @@ export default function ServicesSection() {
                     <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
                         <div className="text-center md:text-left">
                             <div className="flex items-center justify-center md:justify-start gap-4 mb-4">
-                                <div className="p-3 bg-white/10 rounded-xl text-teal-400">
+                                <div className="p-3 bg-white/10 rounded-xl text-cyan-400">
                                     {corporateService.icon}
                                 </div>
                                 <h3 className="text-3xl font-bold">{corporateService.title}</h3>
@@ -238,24 +238,24 @@ export default function ServicesSection() {
                             href={corporateService.link}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex-shrink-0 bg-teal-500 hover:bg-teal-600 text-white font-bold py-4 px-8 rounded-full transition-all hover:scale-105 flex items-center gap-2 shadow-lg shadow-teal-500/20"
+                            className="flex-shrink-0 bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-4 px-8 rounded-full transition-all hover:scale-105 flex items-center gap-2 shadow-lg shadow-cyan-500/20"
                         >
                             Contáctanos
                             <ArrowRight className="w-5 h-5" />
                         </a>
                     </div>
-                    <div className="absolute top-0 right-0 -mt-10 -mr-10 w-64 h-64 bg-teal-500 opacity-10 rounded-full blur-3xl"></div>
+                    <div className="absolute top-0 right-0 -mt-10 -mr-10 w-64 h-64 bg-cyan-500 opacity-10 rounded-full blur-3xl"></div>
                 </div>
 
                 {/* SECCIÓN 5: INCLUSIONES */}
-                <div className="bg-teal-50 rounded-3xl p-8 md:p-12 border border-teal-100">
+                <div className="bg-cyan-50 rounded-3xl p-8 md:p-12 border border-cyan-100">
                     <h3 className="text-2xl font-bold text-gray-900 mb-8 text-center">
                         Todos nuestros servicios de limpieza a domicilio incluyen:
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-5xl mx-auto">
                         {serviceInclusions.map((inclusion, index) => (
-                            <div key={index} className="flex items-start bg-white p-4 rounded-xl shadow-sm border border-teal-100/50 hover:shadow-md transition-shadow">
-                                <CheckCircle className="w-5 h-5 text-teal-500 mr-3 flex-shrink-0 mt-0.5" />
+                            <div key={index} className="flex items-start bg-white p-4 rounded-xl shadow-sm border border-cyan-100/50 hover:shadow-md transition-shadow">
+                                <CheckCircle className="w-5 h-5 text-cyan-500 mr-3 flex-shrink-0 mt-0.5" />
                                 <span className="text-gray-700 font-medium">{inclusion}</span>
                             </div>
                         ))}

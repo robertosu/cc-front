@@ -25,7 +25,7 @@ export default function StickyNavbar() {
             {/* 🎯 ELEMENTO TRIGGER - Este es el que "observamos" */}
             <section
 
-                className="bg-teal-400 text-white py-16"
+                className="bg-cyan-400 text-white py-16"
             >
                 <div className="max-w-7xl mx-auto px-4 text-center">
 
@@ -36,10 +36,10 @@ export default function StickyNavbar() {
                     </p>
                     <div className="flex flex-col sm:flex-row gap-4 justify-center"
                          ref={triggerElementRef}>
-                        <button className="bg-white text-teal-400 px-6 py-2 rounded-lg font-semibold hover:bg-gray-100 transition-colors shadow-md">
+                        <button className="bg-white text-cyan-400 px-6 py-2 rounded-lg font-semibold hover:bg-gray-100 transition-colors shadow-md">
                             Ver Servicios
                         </button>
-                        <button className="border-2 border-white text-white px-6 py-2 rounded-lg font-semibold hover:bg-white hover:text-teal-400 transition-colors">
+                        <button className="border-2 border-white text-white px-6 py-2 rounded-lg font-semibold hover:bg-white hover:text-cyan-400 transition-colors">
                             Solicitar Presupuesto
                         </button>
                     </div>
@@ -50,7 +50,7 @@ export default function StickyNavbar() {
             {/* 🚀 NAVBAR STICKY - Aparece cuando el elemento trigger desaparece */}
             <nav className={`
                 fixed top-0 w-full z-50 
-                bg-teal-400/95 backdrop-blur-sm shadow-lg
+                bg-cyan-400/95 backdrop-blur-sm shadow-lg
                 transition-all duration-300 ease-in-out
                 ${isVisible
                 ? 'translate-y-0 opacity-100'
@@ -59,10 +59,10 @@ export default function StickyNavbar() {
             `}>
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex flex-row sm:flex-row gap-4 justify-center py-4">
-                        <button className="bg-white text-teal-400 px-6 py-2 rounded-lg font-semibold hover:bg-gray-100 transition-colors shadow-md">
+                        <button className="bg-white text-cyan-400 px-6 py-2 rounded-lg font-semibold hover:bg-gray-100 transition-colors shadow-md">
                             Ver Servicios
                         </button>
-                        <button className="border-2 border-white text-white px-6 py-2 rounded-lg font-semibold hover:bg-white hover:text-teal-400 transition-colors">
+                        <button className="border-2 border-white text-white px-6 py-2 rounded-lg font-semibold hover:bg-white hover:text-cyan-400 transition-colors">
                             Solicitar Presupuesto
                         </button>
                     </div>

@@ -29,7 +29,7 @@ export default function Footer() {
                     {/* Columna 1: Logo y descripción */}
                     <div>
                         <div className="flex items-center space-x-2 mb-4">
-                            <Sparkles className="text-teal-400"/>
+                            <Sparkles className="text-cyan-400"/>
                             <span className="text-2xl font-bold">CleanerClub</span>
                         </div>
                         <p className="text-gray-400 mb-6">
@@ -71,13 +71,13 @@ export default function Footer() {
 
                     {/* Columna 2: Información de Contacto */}
                     <div>
-                        <h3 className="text-lg font-semibold mb-6 text-teal-400">Información de contacto</h3>
+                        <h3 className="text-lg font-semibold mb-6 text-cyan-400">Información de contacto</h3>
                         <div className="space-y-4">
                             <div className="flex items-start space-x-3">
                                 <Phone className="w-5 h-5 text-gray-500 mt-1" />
                                 <div>
                                     <p className="text-sm text-gray-500">Teléfono</p>
-                                    <p className="font-medium hover:text-teal-400 transition-colors">
+                                    <p className="font-medium hover:text-cyan-400 transition-colors">
                                         <a href="tel:+56974851828">+56 9 7485 1828</a>
                                     </p>
                                 </div>
@@ -87,7 +87,7 @@ export default function Footer() {
                                 <Mail className="w-5 h-5 text-gray-500 mt-1" />
                                 <div>
                                     <p className="text-sm text-gray-500">E-mail</p>
-                                    <p className="font-medium hover:text-teal-400 transition-colors">
+                                    <p className="font-medium hover:text-cyan-400 transition-colors">
                                         <a href="mailto:Contacto@cleanerclub.cl">Contacto@cleanerclub.cl</a>
                                     </p>
                                 </div>
@@ -105,7 +105,7 @@ export default function Footer() {
 
                     {/* Columna 3: Enlaces rápidos (Opcional, o puede eliminarse si prefieres solo contacto) */}
                     <div>
-                        <h3 className="text-lg font-semibold mb-6 text-teal-400">Enlaces Rápidos</h3>
+                        <h3 className="text-lg font-semibold mb-6 text-cyan-400">Enlaces Rápidos</h3>
                         <ul className="space-y-3">
                             <li>
                                 <a href="#services" className="text-gray-400 hover:text-white transition-colors">

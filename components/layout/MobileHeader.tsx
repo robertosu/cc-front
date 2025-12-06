@@ -43,7 +43,7 @@ export default function MobileHeader({ user }: MobileHeaderProps) {
                     <div className="flex justify-between items-center h-16">
                         {/* Logo */}
                         <Link href="/" className="flex items-center space-x-2">
-                            <Sparkles className="w-6 h-6 text-teal-400" />
+                            <Sparkles className="w-6 h-6 text-cyan-400" />
                             <span className="text-xl font-bold text-gray-900">CleanerClub</span>
                         </Link>
 
@@ -83,21 +83,21 @@ export default function MobileHeader({ user }: MobileHeaderProps) {
                     <Link
                         href="/"
                         onClick={() => setIsMobileMenuOpen(false)}
-                        className="text-gray-700 hover:text-teal-400 transition-colors py-2 text-lg"
+                        className="text-gray-700 hover:text-cyan-400 transition-colors py-2 text-lg"
                     >
                         Inicio
                     </Link>
                     <Link
                         href="/#services"
                         onClick={() => setIsMobileMenuOpen(false)}
-                        className="text-gray-700 hover:text-teal-400 transition-colors py-2 text-lg"
+                        className="text-gray-700 hover:text-cyan-400 transition-colors py-2 text-lg"
                     >
                         Servicios
                     </Link>
                     <Link
                         href="/#testimonials"
                         onClick={() => setIsMobileMenuOpen(false)}
-                        className="text-gray-700 hover:text-teal-400 transition-colors py-2 text-lg"
+                        className="text-gray-700 hover:text-cyan-400 transition-colors py-2 text-lg"
                     >
                         Reseñas
                     </Link>
@@ -107,7 +107,7 @@ export default function MobileHeader({ user }: MobileHeaderProps) {
                             <Link
                                 href="/dashboard"
                                 onClick={() => setIsMobileMenuOpen(false)}
-                                className="flex items-center gap-2 text-gray-700 hover:text-teal-400 transition-colors py-2 text-lg"
+                                className="flex items-center gap-2 text-gray-700 hover:text-cyan-400 transition-colors py-2 text-lg"
                             >
                                 <User className="w-5 h-5" />
                                 Dashboard
@@ -124,7 +124,7 @@ export default function MobileHeader({ user }: MobileHeaderProps) {
                                 <Link
                                     href="/register"
                                     onClick={() => setIsMobileMenuOpen(false)}
-                                    className="block w-full text-center bg-teal-400 text-white px-4 py-2 rounded-lg hover:bg-teal-700 transition-colors text-lg font-semibold"
+                                    className="block w-full text-center bg-cyan-400 text-white px-4 py-2 rounded-lg hover:bg-cyan-700 transition-colors text-lg font-semibold"
                                 >
                                     Registrarse
                                 </Link>
