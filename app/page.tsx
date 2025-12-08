@@ -6,6 +6,7 @@ import TestimonialsSection from "@/components/sections/TestimonialsSection";
 import StickyNavbar from "@/components/sections/StickyNavbar";
 import ValuesSection from "@/components/sections/ValuesSection";
 
+
 export default function HomePage() {
     return (
         <>

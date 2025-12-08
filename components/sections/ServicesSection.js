@@ -140,21 +140,10 @@ export default function ServicesSection() {
                         Nuestros Servicios
                     </h2>
                     <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-                        Soluciones profesionales de limpieza adaptadas a tus necesidades.
+                        Un precio justo para el tamaño de cada hogar
                     </p>
                 </div>
 
-                {/* SECCIÓN 1: CONTADOR */}
-                <div className="flex justify-center mb-16">
-                    <div className="bg-ocean-500 text-white rounded-3xl py-8 px-12 text-center shadow-xl transform hover:scale-105 transition-transform duration-300">
-                        <div className="text-5xl md:text-6xl font-extrabold mb-2">
-                            <AnimatedCounter end={10271} />
-                        </div>
-                        <p className="text-lg md:text-xl font-medium opacity-90 tracking-wide">
-                            LIMPIEZAS REALIZADAS
-                        </p>
-                    </div>
-                </div>
 
                 {/* SECCIÓN 2: SPINNER HÍBRIDO */}
                 <div className="relative mb-20 group">
