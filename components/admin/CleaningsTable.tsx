@@ -335,7 +335,7 @@ export default function CleaningsTable({
     const getStatusBadge = (status: Cleaning['status']) => {
         const styles = {
             pending: 'bg-yellow-100 text-yellow-800',
-            in_progress: 'bg-cyan-100 text-cyan-800',
+            in_progress: 'bg-ocean-100 text-ocean-800',
             completed: 'bg-green-100 text-green-800',
             cancelled: 'bg-red-100 text-red-800'
         }
@@ -604,7 +604,7 @@ export default function CleaningsTable({
                                                         </div>
                                                     )}
                                                     {cleaning.notes && (
-                                                        <div className="bg-cyan-50 p-3 rounded border border-cyan-100 text-sm text-cyan-800 mt-2">
+                                                        <div className="bg-ocean-50 p-3 rounded border border-ocean-100 text-sm text-ocean-800 mt-2">
                                                             <strong>Notas:</strong> {cleaning.notes}
                                                         </div>
                                                     )}

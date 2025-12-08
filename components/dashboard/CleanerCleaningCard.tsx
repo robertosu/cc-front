@@ -160,7 +160,7 @@ export default function CleanerCleaningCard({ cleaning: initialCleaning }: Clean
                             </h3>
                             <span className={`px-3 py-1 rounded-full text-xs font-medium ${
                                 isCompleted ? 'bg-green-100 text-green-700' :
-                                    canUpdate ? 'bg-cyan-100 text-cyan-700' :
+                                    canUpdate ? 'bg-ocean-100 text-ocean-700' :
                                         'bg-yellow-100 text-yellow-700'
                             }`}>
                 {isCompleted ? 'Completada' : canUpdate ? 'En Progreso' : 'Pendiente'}
@@ -184,7 +184,7 @@ export default function CleanerCleaningCard({ cleaning: initialCleaning }: Clean
                             {cleaning.client_phone && (
                                 <a
                                     href={`tel:${cleaning.client_phone}`}
-                                    className="flex items-center gap-1 text-sm text-cyan-400 hover:text-cyan-700 mt-1"
+                                    className="flex items-center gap-1 text-sm text-ocean-400 hover:text-ocean-700 mt-1"
                                 >
                                     <Phone className="w-3 h-3" />
                                     {cleaning.client_phone}
@@ -231,8 +231,8 @@ export default function CleanerCleaningCard({ cleaning: initialCleaning }: Clean
                     </div>
 
                     {cleaning.notes && (
-                        <div className="bg-cyan-50 border border-cyan-200 rounded-lg p-3">
-                            <p className="text-sm text-cyan-900">
+                        <div className="bg-ocean-50 border border-ocean-200 rounded-lg p-3">
+                            <p className="text-sm text-ocean-900">
                                 <strong>Notas:</strong> {cleaning.notes}
                             </p>
                         </div>
@@ -253,7 +253,7 @@ export default function CleanerCleaningCard({ cleaning: initialCleaning }: Clean
                             <button
                                 onClick={handleStart}
                                 disabled={isLoading}
-                                className="w-full bg-cyan-400 text-white py-3 rounded-lg font-semibold hover:bg-cyan-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                className="w-full bg-ocean-400 text-white py-3 rounded-lg font-semibold hover:bg-ocean-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                             >
                                 {isLoading ? 'Iniciando...' : 'Iniciar Limpieza'}
                             </button>
@@ -274,7 +274,7 @@ export default function CleanerCleaningCard({ cleaning: initialCleaning }: Clean
                                     <button
                                         onClick={() => handleStepUpdate(cleaning.current_step + 1)}
                                         disabled={isLoading || cleaning.current_step >= cleaning.total_steps}
-                                        className="flex-1 bg-cyan-400 text-white py-3 rounded-lg font-semibold hover:bg-cyan-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                        className="flex-1 bg-ocean-400 text-white py-3 rounded-lg font-semibold hover:bg-ocean-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                                     >
                                         Siguiente
                                         <ChevronRight className="w-5 h-5" />

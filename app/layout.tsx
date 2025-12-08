@@ -21,7 +21,7 @@ export const metadata: {
     authors: { name: string }[]
     openGraph: { title: string; description: string; type: string; locale: string }
 } = {
-    title: 'CleanerClub - Limpieza Profesional a Domicilio',
+    title: 'CleanerClub - Limpieza a domicilio en La Serena',
     description: 'Servicios de limpieza profesional para tu hogar. Limpieza general, profunda, post-obra y más. Profesionales certificados y productos ecológicos.',
     keywords: 'limpieza, domicilio, profesional, hogar, limpieza profunda, post-obra',
     authors: [{ name: 'CleanerClub Team' }],
@@ -38,7 +38,6 @@ export const viewport = {
     initialScale: 1,
 }
 
-// ✨ Tipeo explícito de children
 export default function RootLayout({ children }: { children: React.ReactNode }) {
     return (
         <html lang="es" className={`${inter.variable} ${geistMono.variable}`}>

@@ -116,7 +116,7 @@ export function ResetPasswordForm() {
                                 onChange={(e) => setPassword(e.target.value)}
                                 required
                                 disabled={isLoading}
-                                className="w-full pl-10 pr-12 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent disabled:bg-gray-100"
+                                className="w-full pl-10 pr-12 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-ocean-500 focus:border-transparent disabled:bg-gray-100"
                                 placeholder="••••••••"
                             />
                             <button
@@ -143,7 +143,7 @@ export function ResetPasswordForm() {
                                 onChange={(e) => setConfirmPassword(e.target.value)}
                                 required
                                 disabled={isLoading}
-                                className="w-full pl-10 pr-12 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent disabled:bg-gray-100"
+                                className="w-full pl-10 pr-12 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-ocean-500 focus:border-transparent disabled:bg-gray-100"
                                 placeholder="••••••••"
                             />
                             <button
@@ -162,7 +162,7 @@ export function ResetPasswordForm() {
                     <button
                         type="submit"
                         disabled={isLoading || message?.type === 'success'}
-                        className="w-full bg-cyan-400 text-white py-3 rounded-lg font-semibold hover:bg-cyan-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+                        className="w-full bg-ocean-400 text-white py-3 rounded-lg font-semibold hover:bg-ocean-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
                     >
                         {isLoading ? 'Actualizando...' : 'Actualizar Contraseña'}
                     </button>

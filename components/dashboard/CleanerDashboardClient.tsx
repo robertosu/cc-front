@@ -31,14 +31,14 @@ export default function CleanerDashboardClient({
     return (
         <div className="min-h-screen bg-gray-50">
             {/* Header */}
-            <header className="bg-gradient-to-r from-cyan-400 to-cyan-700 text-white shadow-lg">
+            <header className="bg-gradient-to-r from-ocean-400 to-ocean-700 text-white shadow-lg">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
                     <div className="flex justify-between items-center">
                         <div>
                             <h1 className="text-3xl font-bold">
                                 Hola, {profile.full_name}
                             </h1>
-                            <p className="text-cyan-100 mt-1">
+                            <p className="text-ocean-100 mt-1">
                                 Tus trabajos del día
                                 {isLoading && (
                                     <span className="ml-2 inline-flex items-center">
@@ -58,8 +58,8 @@ export default function CleanerDashboardClient({
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                     <div className="bg-white rounded-xl shadow p-6">
                         <div className="flex items-center gap-4">
-                            <div className="p-3 bg-cyan-100 rounded-lg">
-                                <Briefcase className="w-6 h-6 text-cyan-400" />
+                            <div className="p-3 bg-ocean-100 rounded-lg">
+                                <Briefcase className="w-6 h-6 text-ocean-400" />
                             </div>
                             <div>
                                 <p className="text-sm text-gray-600">En Progreso</p>

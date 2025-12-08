@@ -199,7 +199,7 @@ export default function RegisterForm() {
                             value={formData.email}
                             onChange={handleChange}
                             disabled={isLoading}
-                            className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-colors disabled:bg-gray-100 disabled:cursor-not-allowed ${
+                            className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-ocean-500 focus:border-transparent transition-colors disabled:bg-gray-100 disabled:cursor-not-allowed ${
                                 errors.email ? 'border-red-500' : 'border-gray-300'
                             }`}
                             placeholder="tu@email.com"
@@ -225,7 +225,7 @@ export default function RegisterForm() {
                             value={formData.fullName}
                             onChange={handleChange}
                             disabled={isLoading}
-                            className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-colors disabled:bg-gray-100 disabled:cursor-not-allowed ${
+                            className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-ocean-500 focus:border-transparent transition-colors disabled:bg-gray-100 disabled:cursor-not-allowed ${
                                 errors.fullName ? 'border-red-500' : 'border-gray-300'
                             }`}
                             placeholder="Juan Pérez"
@@ -256,7 +256,7 @@ export default function RegisterForm() {
                                 value={formData.phone}
                                 onChange={handleChange}
                                 disabled={isLoading}
-                                className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-colors disabled:bg-gray-100 disabled:cursor-not-allowed ${
+                                className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-ocean-500 focus:border-transparent transition-colors disabled:bg-gray-100 disabled:cursor-not-allowed ${
                                     errors.phone ? 'border-red-500' : 'border-gray-300'
                                 }`}
                                 placeholder="9 1234 5678"
@@ -286,7 +286,7 @@ export default function RegisterForm() {
                             value={formData.password}
                             onChange={handleChange}
                             disabled={isLoading}
-                            className={`w-full pl-10 pr-12 py-2 border rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-colors disabled:bg-gray-100 disabled:cursor-not-allowed ${
+                            className={`w-full pl-10 pr-12 py-2 border rounded-lg focus:ring-2 focus:ring-ocean-500 focus:border-transparent transition-colors disabled:bg-gray-100 disabled:cursor-not-allowed ${
                                 errors.password ? 'border-red-500' : 'border-gray-300'
                             }`}
                             placeholder="••••••••"
@@ -323,7 +323,7 @@ export default function RegisterForm() {
                             value={formData.confirmPassword}
                             onChange={handleChange}
                             disabled={isLoading}
-                            className={`w-full pl-10 pr-12 py-2 border rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-colors disabled:bg-gray-100 disabled:cursor-not-allowed ${
+                            className={`w-full pl-10 pr-12 py-2 border rounded-lg focus:ring-2 focus:ring-ocean-500 focus:border-transparent transition-colors disabled:bg-gray-100 disabled:cursor-not-allowed ${
                                 errors.confirmPassword ? 'border-red-500' : 'border-gray-300'
                             }`}
                             placeholder="••••••••"
@@ -347,7 +347,7 @@ export default function RegisterForm() {
                 <button
                     type="submit"
                     disabled={isLoading || !!successMessage}
-                    className="w-full bg-cyan-400 text-white py-3 rounded-lg font-semibold hover:bg-cyan-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center"
+                    className="w-full bg-ocean-400 text-white py-3 rounded-lg font-semibold hover:bg-ocean-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center"
                 >
                     {isLoading ? (
                         <>
@@ -367,7 +367,7 @@ export default function RegisterForm() {
                 {/* Link a login */}
                 <p className="text-center text-sm text-gray-600">
                     ¿Ya tienes cuenta?{' '}
-                    <a href="/login" className="text-cyan-400 hover:text-cyan-700 font-semibold">
+                    <a href="/login" className="text-ocean-400 hover:text-ocean-700 font-semibold">
                         Inicia sesión
                     </a>
                 </p>
@@ -375,7 +375,7 @@ export default function RegisterForm() {
 
                 <p className="text-center text-sm text-gray-600">
                     ¿No recibiste correo de verificación?{' '}
-                    <a href="/login" className="text-cyan-400 hover:text-cyan-700 font-semibold">
+                    <a href="/login" className="text-ocean-400 hover:text-ocean-700 font-semibold">
                         Haz click aquí
                     </a>
                 </p>

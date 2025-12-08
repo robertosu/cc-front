@@ -111,7 +111,7 @@ export default async function AdminUsersPage() {
                     <div className="p-5">
                         <div className="flex items-center">
                             <div className="flex-shrink-0">
-                                <div className="rounded-md bg-cyan-500 p-3">
+                                <div className="rounded-md bg-ocean-500 p-3">
                                     <Briefcase className="h-6 w-6 text-white" />
                                 </div>
                             </div>

@@ -4,6 +4,17 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+    --color-ocean-50:  #eefefd;
+    --color-ocean-100: #cdfbf8;
+    --color-ocean-200: #9ff5f0;
+    --color-ocean-300: #63e9e7;
+    --color-ocean-400: #28d4d7; /* Color principal vibrante */
+    --color-ocean-500: #0db7bd; /* Color base equilibrado */
+    --color-ocean-600: #0b939d;
+    --color-ocean-700: #0e757f;
+    --color-ocean-800: #135e67;
+    --color-ocean-900: #154e57;
+    --color-ocean-950: #063139;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);

@@ -26,7 +26,7 @@ export default function UsersList({ users }: { users: Profile[] }) {
             case 'admin':
                 return 'bg-purple-100 text-purple-700 border-purple-200'
             case 'cleaner':
-                return 'bg-cyan-100 text-cyan-700 border-cyan-200'
+                return 'bg-ocean-100 text-ocean-700 border-ocean-200'
             case 'client':
                 return 'bg-green-100 text-green-700 border-green-200'
             default:
@@ -153,7 +153,7 @@ export default function UsersList({ users }: { users: Profile[] }) {
                                 {/* Información del usuario */}
                                 <div className="flex-1">
                                     <div className="flex items-center gap-3 mb-3">
-                                        <div className="w-12 h-12 bg-gradient-to-br from-cyan-400 to-cyan-400 rounded-full flex items-center justify-center text-white font-bold text-lg">
+                                        <div className="w-12 h-12 bg-gradient-to-br from-ocean-400 to-ocean-400 rounded-full flex items-center justify-center text-white font-bold text-lg">
                                             {user.full_name.charAt(0).toUpperCase()}
                                         </div>
                                         <div>
@@ -189,7 +189,7 @@ export default function UsersList({ users }: { users: Profile[] }) {
                                     {/* Estadísticas según rol */}
                                     {user.role === 'client' && user.client_cleanings_count !== undefined && (
                                         <div className="flex items-center gap-4 text-sm">
-                                            <div className="px-3 py-1 bg-cyan-50 text-cyan-700 rounded-lg">
+                                            <div className="px-3 py-1 bg-ocean-50 text-ocean-700 rounded-lg">
                                                 🏠 {user.client_cleanings_count} {user.client_cleanings_count === 1 ? 'limpieza' : 'limpiezas'}
                                             </div>
                                         </div>
@@ -241,8 +241,8 @@ export default function UsersList({ users }: { users: Profile[] }) {
                                                     disabled={isLoading === user.id || user.role === 'cleaner'}
                                                     className={`flex-1 px-4 py-2 rounded-lg font-medium transition-colors ${
                                                         user.role === 'cleaner'
-                                                            ? 'bg-cyan-100 text-cyan-700 cursor-not-allowed'
-                                                            : 'bg-gray-100 text-gray-700 hover:bg-cyan-100 hover:text-cyan-700'
+                                                            ? 'bg-ocean-100 text-ocean-700 cursor-not-allowed'
+                                                            : 'bg-gray-100 text-gray-700 hover:bg-ocean-100 hover:text-ocean-700'
                                                     }`}
                                                 >
                                                     Cleaner
@@ -275,7 +275,7 @@ export default function UsersList({ users }: { users: Profile[] }) {
 
                             {isLoading === user.id && (
                                 <div className="mt-3 flex items-center justify-center">
-                                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-cyan-400"></div>
+                                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-ocean-400"></div>
                                 </div>
                             )}
                         </div>

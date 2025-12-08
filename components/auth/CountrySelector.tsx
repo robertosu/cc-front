@@ -50,7 +50,7 @@ export default function CountrySelector({ selectedCountry, onSelect }: CountrySe
             <button
                 type="button"
                 onClick={() => setIsOpen(!isOpen)}
-                className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-lg hover:border-cyan-500 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500 focus:outline-none transition-colors bg-white"
+                className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-lg hover:border-ocean-500 focus:border-ocean-500 focus:ring-2 focus:ring-ocean-500 focus:outline-none transition-colors bg-white"
             >
                 <span className="text-xl">{selectedCountry.flag}</span>
                 <span className="font-medium text-gray-700">{selectedCountry.dialCode}</span>
@@ -69,7 +69,7 @@ export default function CountrySelector({ selectedCountry, onSelect }: CountrySe
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                                 placeholder="Buscar país..."
-                                className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500 focus:outline-none"
+                                className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:border-ocean-500 focus:ring-2 focus:ring-ocean-500 focus:outline-none"
                                 autoFocus
                             />
                         </div>
@@ -83,8 +83,8 @@ export default function CountrySelector({ selectedCountry, onSelect }: CountrySe
                                     key={country.code}
                                     type="button"
                                     onClick={() => handleSelect(country)}
-                                    className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-cyan-50 transition-colors text-left ${
-                                        selectedCountry.code === country.code ? 'bg-cyan-50' : ''
+                                    className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-ocean-50 transition-colors text-left ${
+                                        selectedCountry.code === country.code ? 'bg-ocean-50' : ''
                                     }`}
                                 >
                                     <span className="text-xl">{country.flag}</span>

@@ -38,13 +38,13 @@ export default function ResetPasswordPage() {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-cyan-50 to-cyan-100 flex items-center justify-center py-12 px-4">
+        <div className="min-h-screen bg-gradient-to-br from-ocean-50 to-ocean-100 flex items-center justify-center py-12 px-4">
             <div className="w-full max-w-md">
                 <div className="bg-white rounded-xl shadow-lg p-8 space-y-6">
                     <div className="text-center">
                         <Link
                             href="/login"
-                            className="inline-flex items-center gap-2 text-sm text-cyan-400 hover:text-cyan-700 mb-4"
+                            className="inline-flex items-center gap-2 text-sm text-ocean-400 hover:text-ocean-700 mb-4"
                         >
                             <ArrowLeft className="w-4 h-4" />
                             Volver al login
@@ -84,7 +84,7 @@ export default function ResetPasswordPage() {
                                     onChange={(e) => setEmail(e.target.value)}
                                     required
                                     disabled={isLoading}
-                                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent disabled:bg-gray-100"
+                                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-ocean-500 focus:border-transparent disabled:bg-gray-100"
                                     placeholder="tu@email.com"
                                 />
                             </div>
@@ -93,7 +93,7 @@ export default function ResetPasswordPage() {
                         <button
                             type="submit"
                             disabled={isLoading}
-                            className="w-full bg-cyan-400 text-white py-3 rounded-lg font-semibold hover:bg-cyan-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+                            className="w-full bg-ocean-400 text-white py-3 rounded-lg font-semibold hover:bg-ocean-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
                         >
                             {isLoading ? 'Enviando...' : 'Enviar enlace de reseteo'}
                         </button>

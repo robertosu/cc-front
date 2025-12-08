@@ -19,7 +19,7 @@ export default function CleaningProgressBar({
             case 'completed':
                 return 'bg-green-500'
             case 'in_progress':
-                return 'bg-cyan-500'
+                return 'bg-ocean-500'
             case 'pending':
                 return 'bg-gray-300'
             case 'cancelled':

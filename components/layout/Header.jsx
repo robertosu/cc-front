@@ -34,7 +34,7 @@ export default function Header() {
                     {/* Logo */}
                     <div className="flex items-center space-x-2">
                         {/* Estilo Azul */}
-                        {/*<Sparkles className="w-8 h-8 text-cyan-400" />*/}
+                        {/*<Sparkles className="w-8 h-8 text-ocean-400" />*/}
 
                         <Image
                             src="/color_sin_fondo.png"
@@ -51,10 +51,10 @@ export default function Header() {
 
                     {/* Desktop Navigation */}
                     <nav className="hidden md:flex items-center space-x-8">
-                        <Link href="/" className="text-gray-700 hover:text-cyan-600 transition-colors">
+                        <Link href="/" className="text-gray-700 hover:text-ocean-600 transition-colors">
                             Inicio
                         </Link>
-                        <Link href="/#services" className="text-gray-700 hover:text-cyan-600 transition-colors">
+                        <Link href="/#services" className="text-gray-700 hover:text-ocean-600 transition-colors">
                             Servicios
                         </Link>
 
@@ -62,7 +62,7 @@ export default function Header() {
                             // Estilo Link simple (tu versión anterior) en lugar de Botón morado
                             <Link
                                 href="/dashboard"
-                                className="flex items-center gap-2 text-gray-700 hover:text-cyan-600 transition-colors font-medium"
+                                className="flex items-center gap-2 text-gray-700 hover:text-ocean-600 transition-colors font-medium"
                             >
                                 <User className="w-5 h-5" /> Dashboard
                             </Link>
@@ -70,14 +70,14 @@ export default function Header() {
                             <div className="flex items-center gap-4">
                                 <Link
                                     href="/login"
-                                    className="text-gray-700 hover:text-cyan-600 transition-colors font-medium"
+                                    className="text-gray-700 hover:text-ocean-600 transition-colors font-medium"
                                 >
                                     Iniciar Sesión
                                 </Link>
                                 {/* Botón Azul */}
                                 <Link
                                     href="/register"
-                                    className="bg-cyan-400 text-white px-4 py-2 rounded-lg hover:bg-cyan-600 transition-colors font-medium"
+                                    className="bg-ocean-400 text-white px-4 py-2 rounded-lg hover:bg-ocean-600 transition-colors font-medium"
                                 >
                                     Registrarse
                                 </Link>
@@ -102,14 +102,14 @@ export default function Header() {
                 <div className="md:hidden absolute top-16 left-0 w-full bg-white border-t border-gray-100 shadow-lg py-4 px-4 flex flex-col space-y-4">
                     <Link
                         href="/"
-                        className="text-gray-700 py-2 hover:text-cyan-600 font-medium"
+                        className="text-gray-700 py-2 hover:text-ocean-600 font-medium"
                         onClick={() => setIsMobileMenuOpen(false)}
                     >
                         Inicio
                     </Link>
                     <Link
                         href="/#services"
-                        className="text-gray-700 py-2 hover:text-cyan-600 font-medium"
+                        className="text-gray-700 py-2 hover:text-ocean-600 font-medium"
                         onClick={() => setIsMobileMenuOpen(false)}
                     >
                         Servicios
@@ -120,7 +120,7 @@ export default function Header() {
                     {user ? (
                         <Link
                             href="/dashboard"
-                            className="flex items-center gap-2 text-gray-700 py-2 font-medium hover:text-cyan-600"
+                            className="flex items-center gap-2 text-gray-700 py-2 font-medium hover:text-ocean-600"
                             onClick={() => setIsMobileMenuOpen(false)}
                         >
                             <User className="w-5 h-5" /> Dashboard
@@ -136,7 +136,7 @@ export default function Header() {
                             </Link>
                             <Link
                                 href="/register"
-                                className="text-center bg-cyan-400 text-white px-4 py-2 rounded-lg hover:bg-cyan-600 font-medium"
+                                className="text-center bg-ocean-400 text-white px-4 py-2 rounded-lg hover:bg-ocean-600 font-medium"
                                 onClick={() => setIsMobileMenuOpen(false)}
                             >
                                 Registrarse
