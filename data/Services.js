@@ -64,33 +64,12 @@ export const corporateService = {
     link: WHATSAPP_LINKS.empresas
 };
 
-// Tamaños de Casa (Ahora con botón de presupuesto)
-export const homeSizes = [
-    {
-        title: "Estándar Home",
-        specs: ["Hasta 1 Baño", "Hasta 2 Dormitorios"],
-        icon: <Home className="w-6 h-6" />
-    },
-    {
-        title: "Comfort Home",
-        specs: ["Hasta 2 Baños", "Hasta 2 Dormitorios"],
-        icon: <Maximize className="w-6 h-6" />
-    },
-    {
-        title: "Big Home",
-        specs: ["Hasta 2 Baños", "Hasta 3 Dormitorios"],
-        icon: <Building className="w-6 h-6" />
-    },
-    {
-        title: "Deluxe Home",
-        specs: ["Hasta 3 Baños", "Hasta 4 Dormitorios"],
-        icon: <Building className="w-6 h-6" />
-    }
-];
+
 
 // Inclusiones
 export const serviceInclusions = [
-    "Limpieza de comedor, living, dormitorios y cocina",
+    "Insumos y Maquinaria industrial",
+    "Personal calificado",
     "Limpieza de electrodomésticos",
     "Barrido, trapeado y aspirado de pisos",
     "Cambio de sábanas y arreglo de camas",
