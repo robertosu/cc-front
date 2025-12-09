@@ -124,7 +124,7 @@ export default function StickyNavbar() {
                             <div className="flex flex-col items-center group">
                                 <Star className="w-8 h-8 text-ocean-200 mb-2 group-hover:text-white transition-colors" />
                                 <div className="text-4xl font-bold mb-1 tracking-tight">
-                                    4.9/5
+                                    5/5
                                 </div>
                                 <p className="text-ocean-100 text-sm font-medium uppercase tracking-wider">
                                     Calificación

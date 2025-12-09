@@ -45,7 +45,7 @@ export default function Header() {
                         />
 
                         <Link href="/" className="text-2xl font-bold text-gray-900">
-                            CleanerClub
+                            Cleaner Club
                         </Link>
                     </div>
 

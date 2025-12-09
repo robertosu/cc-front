@@ -1,58 +1,26 @@
 'use client'
 import { useState, useEffect, useRef } from 'react'
-import { CheckCircle, MessageCircle, ArrowRight } from 'lucide-react'
+import { CheckCircle, ArrowRight } from 'lucide-react'
 import { services, corporateService, serviceInclusions, WHATSAPP_LINKS } from '@/data/Services'
 
-// Componente de Contador Animado (Sin cambios)
-const AnimatedCounter = ({ end, duration = 2000 }) => {
-    const [count, setCount] = useState(0);
-    const countRef = useRef(null);
-    const [isVisible, setIsVisible] = useState(false);
-
-    useEffect(() => {
-        const observer = new IntersectionObserver(
-            ([entry]) => {
-                if (entry.isIntersecting) {
-                    setIsVisible(true);
-                    observer.disconnect();
-                }
-            },
-            { threshold: 0.1 }
-        );
-
-        if (countRef.current) observer.observe(countRef.current);
-        return () => observer.disconnect();
-    }, []);
-
-    useEffect(() => {
-        if (!isVisible) return;
-        let startTime = null;
-        const animate = (currentTime) => {
-            if (!startTime) startTime = currentTime;
-            const progress = currentTime - startTime;
-            if (progress < duration) {
-                const rate = progress / duration;
-                const ease = 1 - Math.pow(1 - rate, 4);
-                setCount(Math.floor(end * ease));
-                requestAnimationFrame(animate);
-            } else {
-                setCount(end);
-            }
-        };
-        requestAnimationFrame(animate);
-    }, [isVisible, end, duration]);
-
-    return <span ref={countRef} className="tabular-nums">+{count.toLocaleString()}</span>;
-};
+// Icono Oficial de WhatsApp SVG
+const WhatsAppIcon = ({ className }) => (
+    <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        fill="currentColor"
+        className={className}
+    >
+        <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.711 2.592 2.654-.694c.93.533 1.656.823 2.809.823 3.183 0 5.769-2.586 5.769-5.766 0-3.181-2.585-5.767-5.766-5.767zm0 10.605c-1.026 0-1.748-.28-2.618-.752l-.187-.101-1.57.411.419-1.531-.11-.192c-.524-.913-.804-1.72-.804-2.673 0-2.668 2.171-4.839 4.842-4.839 2.669 0 4.841 2.17 4.841 4.839 0 2.669-2.172 4.839-4.842 4.839h.029zm3.554-3.626c-.195-.098-1.155-.57-1.334-.634-.179-.065-.309-.098-.439.097-.13.195-.504.634-.618.764-.114.13-.228.146-.423.049-.195-.097-.822-.303-1.566-.966-.576-.513-.965-1.146-1.079-1.341-.114-.195-.012-.3.085-.397.088-.087.195-.227.293-.341.098-.114.13-.195.195-.325.065-.13.033-.244-.016-.341-.049-.098-.439-1.057-.602-1.447-.159-.383-.321-.33-.439-.336-.11-.006-.236-.006-.362-.006-.126 0-.33.048-.504.238-.175.19-0.667.65-0.667 1.585 0 .935.683 1.837.777 1.967.094.13 1.345 2.053 3.259 2.879.455.197.81.315 1.086.403.454.144.868.124 1.196.075.367-.055 1.155-.472 1.318-.927.163-.455.163-.845.114-.927-.049-.082-.179-.13-.374-.228z"/>
+    </svg>
+);
 
 export default function ServicesSection() {
     const scrollContainerRef = useRef(null);
     const [isPaused, setIsPaused] = useState(false);
-
-    // Referencia para acumular decimales (sub-píxeles)
     const scrollAccumulator = useRef(0);
 
-    // Duplicamos servicios para el efecto bucle
+    // Duplicamos servicios para el efecto bucle infinito
     const spinnerServices = [...services, ...services];
 
     useEffect(() => {
@@ -61,30 +29,24 @@ export default function ServicesSection() {
 
         let animationFrameId;
         let lastTimestamp = 0;
-
-        // --- CONFIGURACIÓN DE VELOCIDAD ---
-        const PIXELS_PER_SECOND = 60;
+        const PIXELS_PER_SECOND = 50; // Velocidad ajustada para apreciar mejor las imágenes
 
         const scroll = (timestamp) => {
             if (!lastTimestamp) lastTimestamp = timestamp;
-
             const deltaTime = timestamp - lastTimestamp;
             lastTimestamp = timestamp;
 
             if (!isPaused && container) {
                 const pixelsToMove = (PIXELS_PER_SECOND * deltaTime) / 1000;
-
                 scrollAccumulator.current += pixelsToMove;
 
                 if (scrollAccumulator.current >= 1) {
                     const pixelsInteger = Math.floor(scrollAccumulator.current);
-
                     if (container.scrollLeft >= container.scrollWidth / 2) {
                         container.scrollLeft = 0;
                     } else {
                         container.scrollLeft += pixelsInteger;
                     }
-
                     scrollAccumulator.current -= pixelsInteger;
                 }
             }
@@ -92,145 +54,149 @@ export default function ServicesSection() {
         };
 
         animationFrameId = requestAnimationFrame(scroll);
-
         return () => cancelAnimationFrame(animationFrameId);
     }, [isPaused]);
 
     return (
-        <section id="services" className="py-20 bg-white overflow-hidden">
-            {/* Estilos CSS: Scrollbar personalizada en Desktop, Oculta en Móvil */}
-            <style jsx>{`
-                /* Estilos base para la scrollbar (Desktop) */
-                .custom-scrollbar::-webkit-scrollbar {
-                    height: 8px;
-                }
-                .custom-scrollbar::-webkit-scrollbar-track {
-                    background: #F3F4F6;
-                    border-radius: 10px;
-                }
-                .custom-scrollbar::-webkit-scrollbar-thumb {
-                    background-color: #14B8A6;
-                    border-radius: 10px;
-                    border: 2px solid #F3F4F6;
-                }
-                .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-                    background-color: #0D9488;
-                }
-                .custom-scrollbar {
-                    scrollbar-width: thin;
-                    scrollbar-color: #14B8A6 #F3F4F6;
-                }
+        <section id="services" className="py-24 bg-gray-50 overflow-hidden relative">
 
-                /* Media query para ocultar scrollbar solo en móviles (max-width: 768px) */
-                @media (max-width: 768px) {
-                    .custom-scrollbar {
-                        scrollbar-width: none; /* Firefox */
-                        -ms-overflow-style: none; /* IE/Edge */
-                    }
-                    .custom-scrollbar::-webkit-scrollbar {
-                        display: none; /* Chrome/Safari */
-                    }
-                }
+            {/* CSS para ocultar Scrollbar */}
+            <style jsx>{`
+                
             `}</style>
 
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-16">
 
-                <div className="text-center mb-12">
-                    <h2 className="text-4xl font-bold text-gray-900 mb-4">
-                        Nuestros Servicios
-                    </h2>
-                    <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-                        Un precio justo para el tamaño de cada hogar
-                    </p>
-                </div>
+                {/* HEADER + EMPRESAS (Layout Híbrido para optimizar espacio) */}
+                <div className="flex flex-col lg:flex-row items-end justify-between gap-8 md:gap-12">
 
-
-                {/* SECCIÓN 2: SPINNER HÍBRIDO */}
-                <div className="relative mb-20 group">
-                    <div
-                        ref={scrollContainerRef}
-                        // Volvemos a usar la clase 'custom-scrollbar'
-                        className="custom-scrollbar flex overflow-x-auto space-x-8 pb-8 px-4"
-                        onMouseEnter={() => setIsPaused(true)}
-                        onMouseLeave={() => setIsPaused(false)}
-                        onTouchStart={() => setIsPaused(true)}
-                        onTouchEnd={() => {
-                            setTimeout(() => setIsPaused(false), 1500);
-                        }}
-                    >
-                        {spinnerServices.map((service, index) => (
-                            <div
-                                key={`${index}-${service.title}`}
-                                // Mantenemos el ancho fijo w-[...]
-                                className="w-[340px] md:w-[400px] flex-shrink-0 bg-white rounded-2xl p-8 shadow-md border border-gray-100 flex flex-col items-center text-center hover:shadow-xl hover:border-ocean-200 transition-all duration-300 select-none h-full"
-                            >
-                                <div className="text-ocean-500 bg-ocean-50 p-5 rounded-full mb-6">
-                                    {service.icon}
-                                </div>
-                                <h3 className="text-2xl font-bold text-gray-900 mb-3">
-                                    {service.title}
-                                </h3>
-                                <p className="text-gray-600 text-base leading-relaxed mb-8 flex-grow">
-                                    {service.description}
-                                </p>
-
-                                <a
-                                    href={WHATSAPP_LINKS.general}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="w-full bg-[#25D366] hover:bg-[#20bd5a] text-white font-bold py-3 px-4 rounded-xl transition-colors duration-300 flex items-center justify-center gap-2 shadow-sm hover:shadow-md mt-auto"
-                                >
-                                    <MessageCircle className="w-5 h-5" />
-                                    Solicitar Presupuesto
-                                </a>
-                            </div>
-                        ))}
+                    {/* Texto Introductorio */}
+                    <div className="lg:w-1/2 text-center lg:text-left">
+                        <h2 className="text-ocean-600 font-bold tracking-wide uppercase text-sm mb-3">
+                            Nuestros Servicios
+                        </h2>
+                        <h3 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+                            Soluciones de limpieza para cada necesidad
+                        </h3>
+                        <p className="text-xl text-gray-600 leading-relaxed">
+                            Desde el mantenimiento diario hasta limpiezas profundas especializadas.
+                            Un precio justo para cada hogar.
+                        </p>
                     </div>
-                </div>
 
-                {/* SECCIÓN 4: BANNER EMPRESAS */}
-                <div className="bg-gradient-to-r from-gray-900 to-gray-800 rounded-3xl p-8 md:p-12 mb-20 text-white shadow-2xl relative overflow-hidden">
-                    <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
-                        <div className="text-center md:text-left">
-                            <div className="flex items-center justify-center md:justify-start gap-4 mb-4">
-                                <div className="p-3 bg-white/10 rounded-xl text-ocean-400">
+                    {/* Tarjeta Compacta de Empresas (Destacada) */}
+                    <div className="lg:w-1/2 w-full">
+                        <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-6 md:p-8 text-white shadow-xl flex flex-col sm:flex-row items-center justify-between gap-6 relative overflow-hidden group">
+
+                            {/* Efecto decorativo de fondo */}
+                            <div className="absolute top-0 right-0 w-64 h-64 bg-ocean-500/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
+
+                            <div className="relative z-10 flex items-center gap-4 text-center sm:text-left">
+                                <div className="p-3 bg-white/10 rounded-xl text-ocean-400 shrink-0">
                                     {corporateService.icon}
                                 </div>
-                                <h3 className="text-3xl font-bold">{corporateService.title}</h3>
+                                <div>
+                                    <h4 className="text-2xl font-bold text-white">{corporateService.title}</h4>
+                                    <p className="text-gray-300 text-sm mt-1 max-w-xs mx-auto sm:mx-0">
+                                        {corporateService.description}
+                                    </p>
+                                </div>
                             </div>
-                            <p className="text-xl text-gray-300 max-w-2xl">
-                                {corporateService.description}
-                            </p>
-                        </div>
-                        <a
-                            href={corporateService.link}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex-shrink-0 bg-ocean-500 hover:bg-ocean-600 text-white font-bold py-4 px-8 rounded-full transition-all hover:scale-105 flex items-center gap-2 shadow-lg shadow-ocean-500/20"
-                        >
-                            Contáctanos
-                            <ArrowRight className="w-5 h-5" />
-                        </a>
-                    </div>
-                    <div className="absolute top-0 right-0 -mt-10 -mr-10 w-64 h-64 bg-ocean-500 opacity-10 rounded-full blur-3xl"></div>
-                </div>
 
-                {/* SECCIÓN 5: INCLUSIONES */}
-                <div className="bg-ocean-50 rounded-3xl p-8 md:p-12 border border-ocean-100">
-                    <h3 className="text-2xl font-bold text-gray-900 mb-8 text-center">
-                        Todos nuestros servicios de limpieza a domicilio incluyen:
+                            <a
+                                href={corporateService.link}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="relative z-10 shrink-0 bg-ocean-500 hover:bg-ocean-400 text-white font-bold py-3 px-6 rounded-xl transition-all shadow-lg shadow-ocean-900/50 flex items-center gap-2 group-hover:scale-105"
+                            >
+                                Contactar por WhatSapp
+                                <ArrowRight className="w-5 h-5" />
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* CARRUSEL DE SERVICIOS (Estilo ValuesSection) */}
+            <div className="relative mb-20">
+                <div
+                    ref={scrollContainerRef}
+                    className="no-scrollbar flex overflow-x-auto space-x-6 pb-4 px-4"
+                    onMouseEnter={() => setIsPaused(true)}
+                    onMouseLeave={() => setIsPaused(false)}
+                    onTouchStart={() => setIsPaused(true)}
+                    onTouchEnd={() => setTimeout(() => setIsPaused(false), 1500)}
+                >
+                    {spinnerServices.map((service, index) => (
+                        <div
+                            key={`${index}-${service.title}`}
+                            className="relative w-[340px] md:w-[380px] h-[500px] flex-shrink-0 rounded-3xl overflow-hidden shadow-lg group select-none cursor-pointer"
+                        >
+                            {/* 1. IMAGEN DE FONDO con Zoom Hover */}
+                            <div
+                                className="absolute inset-0 bg-cover bg-center transition-transform duration-700 ease-out group-hover:scale-110"
+                                style={{ backgroundImage: `url('${service.image || '/cleanroom.jpg'}')` }}
+                            />
+
+                            {/* 2. OVERLAY OSCURO */}
+                            <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/40 to-transparent opacity-80 group-hover:opacity-70 transition-opacity duration-300" />
+
+                            {/* 3. CONTENIDO GLASSMORPHISM */}
+                            <div className="absolute inset-0 flex flex-col justify-end p-6">
+                                <div className="relative overflow-hidden rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 p-6 transition-all duration-300 group-hover:bg-white/20 group-hover:border-white/40 flex flex-col h-full justify-between">
+
+                                    <div>
+                                        {/* Icono */}
+                                        <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-ocean-500 text-white shadow-lg mb-4">
+                                            {service.icon}
+                                        </div>
+
+                                        {/* Texto */}
+                                        <h3 className="text-2xl font-bold text-white mb-2 leading-tight">
+                                            {service.title}
+                                        </h3>
+                                        <p className="text-gray-200 text-sm leading-relaxed mb-6 line-clamp-3">
+                                            {service.description}
+                                        </p>
+                                    </div>
+
+                                    {/* Botón WhatsApp */}
+                                    <a
+                                        href={WHATSAPP_LINKS.general}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="w-full bg-[#25D366] hover:bg-[#20bd5a] text-white font-semibold py-3 px-4 rounded-xl transition-colors duration-300 flex items-center justify-center gap-2 shadow-lg"
+                                        onClick={(e) => e.stopPropagation()}
+                                    >
+                                        <WhatsAppIcon className="w-10 h-10 fill-current" />
+                                        Solicitar Presupuesto
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            {/* SECCIÓN INCLUSIONES (Simplificada y limpia) */}
+            <div className="max-w-6xl mx-auto px-4 sm:px-6">
+                <div className="bg-white rounded-3xl p-8 md:p-12 shadow-sm border border-gray-100">
+                    <h3 className="text-xl md:text-2xl font-bold text-center text-gray-800 mb-8">
+                        Estándar <span className="text-ocean-600">Cleaner Club</span> incluido en cada visita:
                     </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-5xl mx-auto">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-4">
                         {serviceInclusions.map((inclusion, index) => (
-                            <div key={index} className="flex items-start bg-white p-4 rounded-xl shadow-sm border border-ocean-100/50 hover:shadow-md transition-shadow">
-                                <CheckCircle className="w-5 h-5 text-ocean-500 mr-3 flex-shrink-0 mt-0.5" />
-                                <span className="text-gray-700 font-medium">{inclusion}</span>
+                            <div key={index} className="flex items-start gap-3">
+                                <CheckCircle className="w-5 h-5 text-ocean-500 shrink-0 mt-0.5" />
+                                <span className="text-gray-600 text-sm font-medium leading-tight">
+                                    {inclusion}
+                                </span>
                             </div>
                         ))}
                     </div>
                 </div>
-
             </div>
+
         </section>
     )
 }
