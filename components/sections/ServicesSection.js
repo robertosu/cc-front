@@ -188,7 +188,7 @@ export default function ServicesSection() {
             <div className="max-w-6xl mx-auto px-4 sm:px-6">
                 <div className="bg-white rounded-3xl p-8 md:p-12 shadow-sm border border-gray-100">
                     <h3 className="text-xl md:text-2xl font-bold text-center text-gray-800 mb-8">
-                        Estándar <span className="text-ocean-600">Cleaner Club</span> incluido en cada visita:
+                        Todos nuestros servicios de <span className="text-ocean-600">Limpieza a domicilio</span> incluyen:
                     </h3>
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-4">
                         {serviceInclusions.map((inclusion, index) => (

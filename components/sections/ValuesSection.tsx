@@ -12,7 +12,7 @@ const features = [
     },
     {
         name: 'Disciplina',
-        description: 'La puntualidad y el detalle no son negociables. Mantenemos un estándar suizo en cada visita.',
+        description: 'La puntualidad y el detalle no son negociables. Mantenemos un estándar alto en cada visita.',
         icon: Clock,
         image: '/cleanroom.jpg'
     },

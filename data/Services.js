@@ -28,37 +28,37 @@ export const services = [
         icon: <Utensils className="w-6 h-6" />,
         title: "Limpieza de Cocina",
         description: "Desengrasado y limpieza profunda.",
-        image: "/dedication.jpg"
+        image: "/limpieza_de_cocina.jpg"
     },
     {
         icon: <Building className="w-6 h-6" />,
         title: "Limpieza de Fachada",
         description: "Renueva la imagen exterior de tu edificio.",
-        image: "/hero-bg.jpg"
+        image: "/limpieza_de_fachada.jpg"
     },
     {
         icon: <Flame className="w-6 h-6" />,
         title: "Limpieza de Quincho",
         description: "Tu zona de asados siempre lista.",
-        image: "/responsability.jpg"
+        image: "/limpieza_de_quincho.jpg"
     },
     {
         icon: <Sun className="w-6 h-6" />,
         title: "Limpieza de Terraza",
         description: "Limpieza de pisos exteriores.",
-        image: "/cleanroom.jpg"
+        image: "/limpieza_de_terraza.jpg"
     },
     {
         icon: <Calendar className="w-6 h-6" />,
         title: "Limpieza Mensual",
         description: "Planes programados para constancia.",
-        image: "/dedication.jpg"
+        image: "/limpieza_mensual.jpg"
     },
     {
         icon: <Briefcase className="w-6 h-6" />,
         title: "Limpieza de Oficina",
         description: "Ambientes productivos y limpios.",
-        image: "/hero-bg.jpg"
+        image: "/limpieza_de_oficina.jpg"
     }
 ];
 
