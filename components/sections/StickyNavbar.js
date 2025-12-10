@@ -2,6 +2,9 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { Users, Star, Home } from 'lucide-react'
+import Link from 'next/link'
+import {WhatsAppIcon} from "@/components/sections/ServicesSection";
+import {WHATSAPP_LINKS} from "@/data/Services"; // 1. Importamos Link
 
 // 🔢 Componente contador (Animación suave)
 function AnimatedCounter({ end, duration = 2000 }) {
@@ -45,16 +48,14 @@ function AnimatedCounter({ end, duration = 2000 }) {
 
 export default function StickyNavbar() {
     const [isVisible, setIsVisible] = useState(false)
-    const sectionRef = useRef(null) // 1. Cambiamos la referencia para apuntar a la SECCIÓN completa
+    const sectionRef = useRef(null)
+
+
 
     useEffect(() => {
         const handleScroll = () => {
             if (sectionRef.current) {
                 const elementRect = sectionRef.current.getBoundingClientRect()
-
-                // 2. Lógica ajustada:
-                // Solo mostrar la barra cuando el borde INFERIOR de la hero section (< 0)
-                // haya pasado completamente hacia arriba de la pantalla.
                 setIsVisible(elementRect.bottom < 0)
             }
         }
@@ -65,7 +66,6 @@ export default function StickyNavbar() {
 
     return (
         <>
-            {/* 3. Asignamos la ref aquí, al contenedor padre */}
             <section
                 ref={sectionRef}
                 className="relative text-white min-h-[90vh] flex flex-col justify-center overflow-hidden pt-20 pb-12"
@@ -90,26 +90,35 @@ export default function StickyNavbar() {
                         </h2>
                         <p className="text-lg md:text-xl mb-10 max-w-2xl mx-auto text-ocean-50 font-light drop-shadow-md">
                             Servicios de limpieza a domicilio en La Serena, Coquimbo y alrededores.
-
                             Limpieza profesional para hogares o negocios.
                         </p>
 
-                        {/* Botones de Acción */}
-                        <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                            <button className="bg-white text-ocean-600 px-8 py-3 rounded-xl font-bold hover:bg-ocean-50 transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5">
+                        {/* Botones de Acción HERO */}
+                        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                            {/* Botón Ver Servicios */}
+                            <Link
+                                href="#services"
+                                className="bg-white text-ocean-600 px-8 py-3 rounded-xl font-bold hover:bg-ocean-50 transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 inline-block"
+                            >
                                 Ver Servicios
-                            </button>
-                            <button className="border-2 border-white text-white px-8 py-3 rounded-xl font-bold hover:bg-white/10 transition-all backdrop-blur-sm hover:-translate-y-0.5">
-                                Solicitar Presupuesto
-                            </button>
+                            </Link>
+
+                            {/* Botón WhatsApp */}
+                            <a
+                                href={WHATSAPP_LINKS.empresas}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="border-2 border-white text-white px-8 py-0.5 rounded-xl font-bold hover:bg-white/10 transition-all backdrop-blur-sm hover:-translate-y-0.5 inline-flex items-center gap-2"
+                            >
+                                <WhatsAppIcon className="w-10 h-10 fill-current" />
+                                <span>Solicitar Presupuesto</span>
+                            </a>
                         </div>
                     </div>
 
-                    {/* 📊 STATS FUSIONADOS (Parte de la Hero) */}
+                    {/* 📊 STATS FUSIONADOS */}
                     <div className="mt-8 pt-10 border-t border-white/20">
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
-
-                            {/* Stat 1 */}
                             <div className="flex flex-col items-center group">
                                 <Users className="w-8 h-8 text-ocean-200 mb-2 group-hover:text-white transition-colors" />
                                 <div className="text-4xl font-bold mb-1 tracking-tight">
@@ -119,8 +128,6 @@ export default function StickyNavbar() {
                                     Clientes Felices
                                 </p>
                             </div>
-
-                            {/* Stat 2 */}
                             <div className="flex flex-col items-center group">
                                 <Star className="w-8 h-8 text-ocean-200 mb-2 group-hover:text-white transition-colors" />
                                 <div className="text-4xl font-bold mb-1 tracking-tight">
@@ -130,8 +137,6 @@ export default function StickyNavbar() {
                                     Calificación
                                 </p>
                             </div>
-
-                            {/* Stat 3 */}
                             <div className="flex flex-col items-center group">
                                 <Home className="w-8 h-8 text-ocean-200 mb-2 group-hover:text-white transition-colors" />
                                 <div className="text-4xl font-bold mb-1 tracking-tight">
@@ -141,14 +146,12 @@ export default function StickyNavbar() {
                                     Limpiezas Totales
                                 </p>
                             </div>
-
                         </div>
                     </div>
-
                 </div>
             </section>
 
-            {/* 🚀 NAVBAR STICKY (Aparece solo después de que la Hero se va completa) */}
+            {/* 🚀 NAVBAR STICKY */}
             <nav className={`
                 fixed top-0 w-full z-50 
                 shadow-xl border-b border-white/10 overflow-hidden
@@ -165,13 +168,25 @@ export default function StickyNavbar() {
                 <div className="absolute inset-0 z-0 bg-ocean-900/90 backdrop-blur-md"></div>
 
                 <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex flex-row gap-4 justify-center py-3">
-                        <button className="bg-white text-ocean-600 px-5 py-2 rounded-lg font-bold hover:bg-gray-50 transition-colors shadow-sm text-sm">
+                    <div className="flex flex-row gap-4 justify-center py-3 items-center">
+                        {/* Botón Ver Servicios (Sticky) */}
+                        <Link
+                            href="#services"
+                            className="bg-white text-ocean-600 px-5 py-2 rounded-lg font-bold hover:bg-gray-50 transition-colors shadow-sm text-sm inline-block"
+                        >
                             Ver Servicios
-                        </button>
-                        <button className="border-2 border-white text-white px-5 py-2 rounded-lg font-bold hover:bg-white hover:text-ocean-600 transition-colors text-sm">
-                            Solicitar Presupuesto
-                        </button>
+                        </Link>
+
+                        {/* Botón WhatsApp (Sticky) */}
+                        <a
+                            href={WHATSAPP_LINKS.empresas}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="border-2 border-white text-white px-5 py-0.5 rounded-lg font-bold hover:bg-white hover:text-ocean-600 transition-colors text-sm inline-flex items-center gap-2"
+                        >
+                            <WhatsAppIcon className="w-8 h-8 fill-current" />
+                            <span>Solicitar Presupuesto</span>
+                        </a>
                     </div>
                 </div>
             </nav>

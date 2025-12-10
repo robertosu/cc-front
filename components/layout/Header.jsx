@@ -90,7 +90,9 @@ export default function Header() {
                         <button
                             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                             className="p-2 text-gray-600 hover:text-gray-900"
+                            aria-label={isMobileMenuOpen ? "Cerrar menú" : "Abrir menú"}
                         >
+
                             {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
                         </button>
                     </div>

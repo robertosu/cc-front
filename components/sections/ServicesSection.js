@@ -4,7 +4,7 @@ import { CheckCircle, ArrowRight } from 'lucide-react'
 import { services, corporateService, serviceInclusions, WHATSAPP_LINKS } from '@/data/Services'
 
 // Icono Oficial de WhatsApp SVG
-const WhatsAppIcon = ({ className }) => (
+export const WhatsAppIcon = ({ className }) => (
     <svg
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 24 24"
