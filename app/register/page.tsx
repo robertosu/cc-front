@@ -2,6 +2,7 @@
 import RegisterForm from '@/components/auth/RegisterForm'
 import {Suspense} from "react";
 import {Metadata} from "next";
+import Header from "@/components/layout/Header";
 
 export const metadata: Metadata = {
     title: 'Registro - CleanerClub',
@@ -10,10 +11,15 @@ export const metadata: Metadata = {
 
 export default function RegisterPage() {
     return (
-        <div className="min-h-screen bg-gradient-to-br from-ocean-50 to-ocean-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-            <Suspense>
-                <RegisterForm />
-            </Suspense>
-        </div>
+        <><Header>
+
+        </Header>
+            <div
+                className="min-h-screen bg-gradient-to-br from-ocean-50 to-ocean-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+                <Suspense>
+                    <RegisterForm/>
+                </Suspense>
+            </div>
+        </>
     )
 }

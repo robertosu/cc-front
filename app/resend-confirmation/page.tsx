@@ -3,6 +3,7 @@
 import {useState} from 'react'
 import {AlertCircle, ArrowLeft, CheckCircle, Mail} from 'lucide-react'
 import Link from 'next/link'
+import Header from "@/components/layout/Header";
 
 export default function ResendConfirmationPage() {
     const [email, setEmail] = useState('')
@@ -38,68 +39,71 @@ export default function ResendConfirmationPage() {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-ocean-50 to-ocean-100 flex items-center justify-center py-12 px-4">
-            <div className="w-full max-w-md">
-                <div className="bg-white rounded-xl shadow-lg p-8 space-y-6">
-                    <div className="text-center">
-                        <Link
-                            href="/login"
-                            className="inline-flex items-center gap-2 text-sm text-ocean-400 hover:text-ocean-700 mb-4"
-                        >
-                            <ArrowLeft className="w-4 h-4" />
-                            Volver al login
-                        </Link>
-                        <h2 className="text-3xl font-bold text-gray-900 mt-2">Reenviar Confirmación</h2>
-                        <p className="text-gray-600 mt-2">
-                            Ingresa tu email para recibir un nuevo correo de confirmación
-                        </p>
-                    </div>
+        <><Header>
 
-                    {message && (
-                        <div className={`px-4 py-3 rounded-lg flex items-start gap-2 ${
-                            message.type === 'success'
+        </Header>
+            <div
+                className="min-h-screen bg-gradient-to-br from-ocean-50 to-ocean-100 flex items-center justify-center py-12 px-4">
+                <div className="w-full max-w-md">
+                    <div className="bg-white rounded-xl shadow-lg p-8 space-y-6">
+                        <div className="text-center">
+                            <Link
+                                href="/login"
+                                className="inline-flex items-center gap-2 text-sm text-ocean-400 hover:text-ocean-700 mb-4"
+                            >
+                                <ArrowLeft className="w-4 h-4"/>
+                                Volver al login
+                            </Link>
+                            <h2 className="text-3xl font-bold text-gray-900 mt-2">Reenviar Confirmación</h2>
+                            <p className="text-gray-600 mt-2">
+                                Ingresa tu email para recibir un nuevo correo de confirmación
+                            </p>
+                        </div>
+
+                        {message && (
+                            <div className={`px-4 py-3 rounded-lg flex items-start gap-2 ${message.type === 'success'
                                 ? 'bg-green-50 text-green-700 border border-green-200'
-                                : 'bg-red-50 text-red-700 border border-red-200'
-                        }`}>
-                            {message.type === 'success' ? (
-                                <CheckCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
-                            ) : (
-                                <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
-                            )}
-                            <span className="text-sm">{message.text}</span>
-                        </div>
-                    )}
-
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                        <div>
-                            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                                Correo Electrónico
-                            </label>
-                            <div className="relative">
-                                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                                <input
-                                    type="email"
-                                    id="email"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    required
-                                    disabled={isLoading}
-                                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-ocean-500 focus:border-transparent disabled:bg-gray-100"
-                                    placeholder="tu@email.com"
-                                />
+                                : 'bg-red-50 text-red-700 border border-red-200'}`}>
+                                {message.type === 'success' ? (
+                                    <CheckCircle className="w-5 h-5 flex-shrink-0 mt-0.5"/>
+                                ) : (
+                                    <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5"/>
+                                )}
+                                <span className="text-sm">{message.text}</span>
                             </div>
-                        </div>
+                        )}
 
-                        <button
-                            type="submit"
-                            disabled={isLoading}
-                            className="w-full bg-ocean-400 text-white py-3 rounded-lg font-semibold hover:bg-ocean-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
-                        >
-                            {isLoading ? 'Enviando...' : 'Reenviar Confirmación'}
-                        </button>
-                    </form>
+                        <form onSubmit={handleSubmit} className="space-y-4">
+                            <div>
+                                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                                    Correo Electrónico
+                                </label>
+                                <div className="relative">
+                                    <Mail
+                                        className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5"/>
+                                    <input
+                                        type="email"
+                                        id="email"
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                        required
+                                        disabled={isLoading}
+                                        className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-ocean-500 focus:border-transparent disabled:bg-gray-100"
+                                        placeholder="tu@email.com"/>
+                                </div>
+                            </div>
+
+                            <button
+                                type="submit"
+                                disabled={isLoading}
+                                className="w-full bg-ocean-400 text-white py-3 rounded-lg font-semibold hover:bg-ocean-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+                            >
+                                {isLoading ? 'Enviando...' : 'Reenviar Confirmación'}
+                            </button>
+                        </form>
+                    </div>
                 </div>
             </div>
-        </div>
+        </>
     )
 }

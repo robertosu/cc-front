@@ -2,7 +2,7 @@
 
 import {useEffect, useRef, useState} from 'react'
 import {ChevronDown, Search} from 'lucide-react'
-import {countries, type Country} from '@/data/Countries'
+import {countries, type Country, getFlagUrl} from '@/data/Countries' // Importamos getFlagUrl
 
 interface CountrySelectorProps {
     selectedCountry: Country
@@ -50,9 +50,16 @@ export default function CountrySelector({ selectedCountry, onSelect }: CountrySe
             <button
                 type="button"
                 onClick={() => setIsOpen(!isOpen)}
-                className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-lg hover:border-ocean-500 focus:border-ocean-500 focus:ring-2 focus:ring-ocean-500 focus:outline-none transition-colors bg-white"
+                className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-lg hover:border-ocean-500 focus:border-ocean-500 focus:ring-2 focus:ring-ocean-500 focus:outline-none transition-colors bg-white w-full sm:w-auto"
             >
-                <span className="text-xl">{selectedCountry.flag}</span>
+                <div className="flex-shrink-0 w-6 h-6 relative flex items-center justify-center">
+                    <img
+                        src={getFlagUrl(selectedCountry.code)}
+                        alt={`Bandera de ${selectedCountry.name}`}
+                        className="w-full h-full object-contain"
+                        loading="lazy"
+                    />
+                </div>
                 <span className="font-medium text-gray-700">{selectedCountry.dialCode}</span>
                 <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
             </button>
@@ -83,13 +90,20 @@ export default function CountrySelector({ selectedCountry, onSelect }: CountrySe
                                     key={country.code}
                                     type="button"
                                     onClick={() => handleSelect(country)}
-                                    className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-ocean-50 transition-colors text-left ${
+                                    className={`w-full flex items-center gap-3 px-4 py-2 hover:bg-ocean-50 transition-colors text-left ${
                                         selectedCountry.code === country.code ? 'bg-ocean-50' : ''
                                     }`}
                                 >
-                                    <span className="text-xl">{country.flag}</span>
-                                    <span className="flex-1 font-medium text-gray-900">{country.name}</span>
-                                    <span className="text-gray-600">{country.dialCode}</span>
+                                    <div className="flex-shrink-0 w-8 h-8 relative flex items-center justify-center">
+                                        <img
+                                            src={getFlagUrl(country.code)}
+                                            alt={`Bandera de ${country.name}`}
+                                            className="w-full h-full object-contain"
+                                            loading="lazy"
+                                        />
+                                    </div>
+                                    <span className="flex-1 font-medium text-gray-900 text-sm">{country.name}</span>
+                                    <span className="text-gray-500 text-sm">{country.dialCode}</span>
                                 </button>
                             ))
                         ) : (
@@ -103,13 +117,3 @@ export default function CountrySelector({ selectedCountry, onSelect }: CountrySe
         </div>
     )
 }
-
-/*
-📝 CARACTERÍSTICAS:
-✅ Búsqueda en tiempo real
-✅ Banderas emoji
-✅ Cierre automático al hacer clic fuera
-✅ Indicador visual del país seleccionado
-✅ Diseño responsive
-✅ Accesibilidad con focus states
-*/
