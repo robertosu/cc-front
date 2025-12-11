@@ -6,23 +6,18 @@ import { createClient } from '@/utils/supabase/client'
 import Link from "next/link";
 import Image from "next/image";
 
-
-
-
 export default function Header() {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
     const [user, setUser] = useState(null)
     const supabase = createClient()
 
     useEffect(() => {
-        // 1. Verificar usuario al cargar
         const checkUser = async () => {
             const { data: { user } } = await supabase.auth.getUser()
             setUser(user)
         }
         checkUser()
 
-        // 2. Escuchar cambios de sesión en tiempo real
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
             setUser(session?.user ?? null)
         })
@@ -36,19 +31,14 @@ export default function Header() {
                 <div className="flex justify-between items-center h-16">
                     {/* Logo */}
                     <div className="flex items-center space-x-2">
-                        {/* Estilo Azul */}
-                        {/*<Sparkles className="w-8 h-8 text-ocean-400" />*/}
-
-                        <Image
-                            src="/color_sin_fondo.png"
-                            alt="CleanerClub Logo"
-                            width={128}   // equivalentes a w-8 h-8
-                            height={128}
-                            className="rounded"   // opcional si lo quieres redondeado
-                        />
-
-                        <Link href="/" className="text-2xl font-bold text-gray-900">
-                            Cleaner Club
+                        <Link href="/">
+                            <Image
+                                src="/logo3.png"
+                                alt="CleanerClub Logo"
+                                width={256}
+                                height={256}
+                                className="rounded cursor-pointer"
+                            />
                         </Link>
                     </div>
 
@@ -57,14 +47,20 @@ export default function Header() {
                         <Link href="/" className="text-gray-700 hover:text-ocean-600 transition-colors">
                             Inicio
                         </Link>
+
+                        {/* NUEVO LINK AGREGADO */}
+                        <Link href="/quienes-somos" className="text-gray-700 hover:text-ocean-600 transition-colors">
+                            Quienes somos
+                        </Link>
+
                         <Link href="/#services" className="text-gray-700 hover:text-ocean-600 transition-colors">
                             Servicios
                         </Link>
 
                         {user ? (
-                            // Estilo Link simple (tu versión anterior) en lugar de Botón morado
                             <Link
-                                href="/dashboard"
+                                // Optimización de ruta directa si tienes el rol en metadata
+                                href={user.user_metadata?.role ? `/dashboard/${user.user_metadata.role}` : '/dashboard'}
                                 className="flex items-center gap-2 text-gray-700 hover:text-ocean-600 transition-colors font-medium"
                             >
                                 <User className="w-5 h-5" /> Dashboard
@@ -77,7 +73,6 @@ export default function Header() {
                                 >
                                     Iniciar Sesión
                                 </Link>
-                                {/* Botón Azul */}
                                 <Link
                                     href="/register"
                                     className="bg-ocean-400 text-white px-4 py-2 rounded-lg hover:bg-ocean-600 transition-colors font-medium"
@@ -95,7 +90,6 @@ export default function Header() {
                             className="p-2 text-gray-600 hover:text-gray-900"
                             aria-label={isMobileMenuOpen ? "Cerrar menú" : "Abrir menú"}
                         >
-
                             {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
                         </button>
                     </div>
@@ -112,6 +106,16 @@ export default function Header() {
                     >
                         Inicio
                     </Link>
+
+                    {/* NUEVO LINK EN MÓVIL */}
+                    <Link
+                        href="/about"
+                        className="text-gray-700 py-2 hover:text-ocean-600 font-medium"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                        Quienes somos
+                    </Link>
+
                     <Link
                         href="/#services"
                         className="text-gray-700 py-2 hover:text-ocean-600 font-medium"
@@ -124,7 +128,7 @@ export default function Header() {
 
                     {user ? (
                         <Link
-                            href="/dashboard"
+                            href={user.user_metadata?.role ? `/dashboard/${user.user_metadata.role}` : '/dashboard'}
                             className="flex items-center gap-2 text-gray-700 py-2 font-medium hover:text-ocean-600"
                             onClick={() => setIsMobileMenuOpen(false)}
                         >
