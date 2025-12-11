@@ -1,7 +1,8 @@
 'use client'
 
-import React, {Fragment, useRef, useState} from 'react'
+import React, {Fragment, useRef, useState, useTransition} from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+
 import {
     AlertCircle,
     ArrowUpDown,
@@ -22,6 +23,9 @@ import {
 import MultiSearchableSelect from '@/components/common/MultiSearchableSelect'
 import { formatTime } from "@/utils/formatTime"
 import {Option} from "@/types";
+
+
+
 
 // --- TIPOS ---
 interface Cleaner {
@@ -198,6 +202,7 @@ export default function CleaningsTable({
                                            totalCount
                                        }: CleaningsTableProps) {
 
+    const [isPending, startTransition] = useTransition(); // 2. Hook de transición
     const router = useRouter()
     const searchParams = useSearchParams()
     const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '')
@@ -229,9 +234,12 @@ export default function CleaningsTable({
             if (value) current.set(key, value)
             else current.delete(key)
         })
-        router.push(`?${current.toString()}`)
-    }
 
+        // Envolver el push en startTransition
+        startTransition(() => {
+            router.push(`?${current.toString()}`)
+        });
+    }
 
 
     const goToPage = (page: number) => updateUrl({ page: page.toString() })
@@ -474,7 +482,7 @@ export default function CleaningsTable({
                             type="date"
                             value={startDate}
                             onChange={(e) => handleDateFilter('start', e.target.value)}
-                            className="block w-full rounded-md border-0 py-1.5 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-purple-600 sm:text-sm"
+                            className="px-4 block w-full rounded-md border-0 py-1.5 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-purple-600 sm:text-sm"
                         />
                     </div>
 
@@ -484,7 +492,7 @@ export default function CleaningsTable({
                             type="date"
                             value={endDate}
                             onChange={(e) => handleDateFilter('end', e.target.value)}
-                            className="block w-full rounded-md border-0 py-1.5 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-purple-600 sm:text-sm"
+                            className="px-4 block w-full rounded-md border-0 py-1.5 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-purple-600 sm:text-sm"
                         />
                     </div>
 
@@ -540,15 +548,44 @@ export default function CleaningsTable({
                     {/* ... thead, tbody, etc ... */}
                     <thead className="bg-gray-50">
                     <tr>
-                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            {/* ... mantener el header de Fecha ... */}
+                        {/* Columna Fecha con Ordenamiento */}
+                        <th
+                            scope="col"
+                            onClick={() => !isPending && handleSort('scheduled_date')} // Evita clic si está cargando
+                            className={`px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider transition-colors group select-none ${isPending ? 'opacity-50 cursor-wait' : 'cursor-pointer hover:bg-gray-100'}`}
+                        >
+                            <div className="flex items-center gap-2">
+                                <span>Fecha</span>
+                                {/* Lógica visual de las flechas */}
+                                {searchParams.get('sortBy') === 'scheduled_date' ? (
+                                    searchParams.get('sortOrder') === 'asc' ? (
+                                        <ChevronUp className="w-4 h-4 text-purple-600" />
+                                    ) : (
+                                        <ChevronDown className="w-4 h-4 text-purple-600" />
+                                    )
+                                ) : (
+                                    // Flecha neutra que se oscurece al pasar el mouse
+                                    <ArrowUpDown className="w-4 h-4 text-gray-400 group-hover:text-gray-600" />
+                                )}
+                            </div>
                         </th>
-                        {/* ... mantener resto headers ... */}
-                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dirección</th>
-                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cliente</th>
-                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
-                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Progreso</th>
-                        <th scope="col" className="relative px-6 py-3"><span className="sr-only">Acciones</span></th>
+
+                        {/* Resto de columnas (sin cambios en su lógica) */}
+                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Dirección
+                        </th>
+                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Cliente
+                        </th>
+                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Estado
+                        </th>
+                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Progreso
+                        </th>
+                        <th scope="col" className="relative px-6 py-3">
+                            <span className="sr-only">Acciones</span>
+                        </th>
                     </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
