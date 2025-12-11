@@ -152,14 +152,14 @@ export default function LoginForm() {
                 <div className="flex items-center justify-between">
                     <a
                         href="/resend-confirmation"
-                        className="text-sm text-ocean-400 hover:text-ocean-700 transition-colors"
+                        className="text-sm text-ocean-500 hover:text-ocean-700 transition-colors"
                     >
                         ¿No recibiste el correo de confirmación?
                     </a>
 
                     <a
                         href="/reset-password"
-                        className="text-sm text-ocean-400 hover:text-ocean-700 transition-colors"
+                        className="text-sm text-ocean-500 hover:text-ocean-700 transition-colors"
                     >
                         ¿Olvidaste tu contraseña?
                     </a>
@@ -183,7 +183,7 @@ export default function LoginForm() {
 
                 <p className="text-center text-sm text-gray-600">
                     ¿No tienes cuenta?{' '}
-                    <a href="/register" className="text-ocean-400 hover:text-ocean-700 font-semibold">
+                    <a href="/register" className="text-ocean-500 hover:text-ocean-700 font-semibold">
                         Regístrate
                     </a>
                 </p>

@@ -6,6 +6,9 @@ import { createClient } from '@/utils/supabase/client'
 import Link from "next/link";
 import Image from "next/image";
 
+
+
+
 export default function Header() {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
     const [user, setUser] = useState(null)
