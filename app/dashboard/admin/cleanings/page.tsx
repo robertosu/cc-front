@@ -30,7 +30,7 @@ export default async function AdminCleaningsPage({ searchParams }: Props) {
 
     const supabase = await createClient()
 
-    // Verificación de Auth (Mismo código que tenías)
+    // Verificación de Auth
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) redirect('/login')
 

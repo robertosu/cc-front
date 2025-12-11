@@ -5,6 +5,7 @@ export async function POST(request: Request) {
     try {
         const body = await request.json()
         const { email, password, fullName, phone } = body
+        const supabase = await createClient()
 
         if (!email || !password) {
             return NextResponse.json(
@@ -20,7 +21,6 @@ export async function POST(request: Request) {
             )
         }
 
-        const supabase = await createClient()
 
         const { data, error } = await supabase.auth.signUp({
             email,

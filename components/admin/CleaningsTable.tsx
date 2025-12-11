@@ -1,6 +1,6 @@
 'use client'
 
-import React, { Fragment, useState } from 'react'
+import React, {Fragment, useRef, useState} from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import {
     AlertCircle,
@@ -252,10 +252,21 @@ export default function CleaningsTable({
     // NUEVO: Estados para fechas
     const [startDate, setStartDate] = useState(searchParams.get('startDate') || '')
     const [endDate, setEndDate] = useState(searchParams.get('endDate') || '')
+    const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
     const handleSearch = (value: string) => {
+        // A. Actualizar el input visual INMEDIATAMENTE (para que no se sienta lento)
         setSearchTerm(value)
-        updateUrl({ search: value, page: '1' })
+
+        // B. Limpiar el temporizador anterior si el usuario sigue escribiendo
+        if (searchTimeoutRef.current) {
+            clearTimeout(searchTimeoutRef.current)
+        }
+
+        // C. Configurar un nuevo temporizador para actualizar la URL en 500ms
+        searchTimeoutRef.current = setTimeout(() => {
+            updateUrl({ search: value, page: '1' })
+        }, 500)
     }
 
     const handleStatusFilter = (value: string) => {

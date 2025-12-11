@@ -120,7 +120,7 @@ export default function RegisterForm() {
 
             // ✅ CAMBIO CLAVE: Si todo sale bien, vamos a la página de verificar
             // Pasamos el email por URL para que el usuario no tenga que escribirlo de nuevo
-            await router.push(`/verify?email=${encodeURIComponent(formData.email)}`)
+            router.push(`/verify?email=${encodeURIComponent(formData.email)}`)
 
         } catch (error) {
             console.error(error)
