@@ -7,8 +7,10 @@ import {AlertCircle, CheckCircle, Eye, EyeOff, Lock, Mail, Phone, User} from 'lu
 import CountrySelector from './CountrySelector'
 import PasswordStrength, {validatePassword} from './PasswordStrength'
 import {type Country, defaultCountry} from '@/data/Countries'
+import { useRouter } from 'next/navigation'
 
 export default function RegisterForm() {
+    const router = useRouter()
     const [formData, setFormData] = useState({
         email: '',
         fullName: '',
@@ -86,27 +88,19 @@ export default function RegisterForm() {
             })
         }
     }
-
-    // Manejar el envío del formulario
+    //manejar envio del formulario
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         setSuccessMessage('')
         setErrors({})
 
-        // Validación en el cliente primero
-        if (!validateForm()) {
-            return
-        }
-
+        if (!validateForm()) return
         setIsLoading(true)
 
         try {
-            // ✅ Llamada a TU BACKEND (Route Handler)
             const response = await fetch('/api/auth/register', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     email: formData.email,
                     password: formData.password,
@@ -118,40 +112,19 @@ export default function RegisterForm() {
 
             const data = await response.json()
 
-            // Manejar errores del backend
             if (!response.ok) {
-                if (data.field) {
-                    // Error específico de un campo
-                    setErrors({ [data.field]: data.error })
-                } else {
-                    // Error general
-                    setErrors({ general: data.error })
-                }
+                // ... manejo de errores igual que antes ...
+                setErrors({ general: data.error || 'Error en el registro' })
                 return
             }
 
-            // ✅ Registro exitoso
-            setSuccessMessage(data.message)
+            // ✅ CAMBIO CLAVE: Si todo sale bien, vamos a la página de verificar
+            // Pasamos el email por URL para que el usuario no tenga que escribirlo de nuevo
+            await router.push(`/verify?email=${encodeURIComponent(formData.email)}`)
 
-            // Limpiar formulario
-            setFormData({
-                email: '',
-                fullName: '',
-                phone: '',
-                password: '',
-                confirmPassword: ''
-            })
-
-            // Opcional: Redirigir después de unos segundos
-          /*  setTimeout(() => {
-                router.push('/login')
-            }, 3000)
-*/
         } catch (error) {
-            console.error('Error en registro:', error)
-            setErrors({
-                general: 'Error de conexión. Por favor verifica tu internet e intenta nuevamente.'
-            })
+            console.error(error)
+            setErrors({ general: 'Error de conexión' })
         } finally {
             setIsLoading(false)
         }

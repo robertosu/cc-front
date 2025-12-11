@@ -22,9 +22,6 @@ export async function POST(request: Request) {
 
         const supabase = await createClient()
 
-        // Obtener la URL base del request
-        const origin = request.headers.get('origin') || 'http://localhost:3000'
-
         const { data, error } = await supabase.auth.signUp({
             email,
             password,
@@ -32,28 +29,26 @@ export async function POST(request: Request) {
                 data: {
                     full_name: fullName,
                     phone: phone,
-                    role: 'client' // Agrega esto si quieres especificar el rol
+                    role: 'client'
                 },
-                emailRedirectTo: `${origin}/auth/callback`
+                // ⚠️ CAMBIO: Quitamos emailRedirectTo para no depender de links
             }
         })
 
         if (error) {
-            return NextResponse.json(
-                { error: error.message },
-                { status: 400 }
-            )
+            return NextResponse.json({ error: error.message }, { status: 400 })
         }
 
+        // ⚠️ CAMBIO: La respuesta ahora indica que vamos a verificar código
         return NextResponse.json({
             success: true,
-            message: 'Revisa tu correo para confirmar tu cuenta',
-            user: data.user
+            message: 'Código enviado',
+            email: email // Devolvemos el email para pre-llenar la siguiente pantalla
         })
 
-    } catch {
+    } catch (error) {
         return NextResponse.json(
-            { error: 'Error al intentar registrar, por favor intentelo nuevamente' },
+            { error: 'Error interno del servidor' },
             { status: 500 }
         )
     }
