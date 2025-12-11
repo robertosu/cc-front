@@ -4,17 +4,17 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-    --color-ocean-50:  #eefefd;
-    --color-ocean-100: #cdfbf8;
-    --color-ocean-200: #9ff5f0;
-    --color-ocean-300: #63e9e7;
-    --color-ocean-400: #28d4d7; /* Color principal vibrante */
-    --color-ocean-500: #0db7bd; /* Color base equilibrado */
-    --color-ocean-600: #0b939d;
-    --color-ocean-700: #0e757f;
-    --color-ocean-800: #135e67;
-    --color-ocean-900: #154e57;
-    --color-ocean-950: #063139;
+    --color-ocean-50:  #eefefd;   /* G: FE → FE (límite) */
+    --color-ocean-100: #cffefb;   /* cd → d0 */
+    --color-ocean-200: #a4fef1;   /* 9f → a4 */
+    --color-ocean-300: #69f0e8;   /* 63 → 69 */
+    --color-ocean-400: #2cddd8;   /* 28 → 2c */
+    --color-ocean-500: #0fbebe;   /* 0d → 0f */
+    --color-ocean-600: #0d9c9e;   /* 0b → 0d */
+    --color-ocean-700: #0f7e80;   /* 0e → 0f */
+    --color-ocean-800: #146768;   /* 13 → 14 */
+    --color-ocean-900: #16585a;   /* 15 → 16 */
+    --color-ocean-950: #06343a;   /* 31 → 34 */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
