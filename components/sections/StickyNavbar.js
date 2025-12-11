@@ -125,7 +125,7 @@ export default function StickyNavbar() {
                                     +<AnimatedCounter end={1000} />
                                 </div>
                                 <p className="text-ocean-100 text-sm font-medium uppercase tracking-wider">
-                                    Clientes Felices
+                                    Usuarios Felices
                                 </p>
                             </div>
                             <div className="flex flex-col items-center group">
@@ -140,7 +140,7 @@ export default function StickyNavbar() {
                             <div className="flex flex-col items-center group">
                                 <Home className="w-8 h-8 text-ocean-200 mb-2 group-hover:text-white transition-colors" />
                                 <div className="text-4xl font-bold mb-1 tracking-tight">
-                                    +<AnimatedCounter end={5000} />
+                                    +<AnimatedCounter end={500} />
                                 </div>
                                 <p className="text-ocean-100 text-sm font-medium uppercase tracking-wider">
                                     Limpiezas Totales

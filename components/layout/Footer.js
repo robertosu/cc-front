@@ -1,5 +1,6 @@
 // app/components/layout/Footer.js
-import { Sparkles, Facebook, Instagram, Phone, Mail, MapPin } from "lucide-react";
+import { Sparkles, Facebook, Instagram, Linkedin, Phone, Mail, MapPin } from "lucide-react";
+import Image from "next/image";
 
 // Icono personalizado de WhatsApp simple para el footer
 const WhatsAppIcon = ({ className }) => (
@@ -29,8 +30,13 @@ export default function Footer() {
                     {/* Columna 1: Logo y descripción */}
                     <div>
                         <div className="flex items-center space-x-2 mb-4">
-                            <Sparkles className="text-ocean-400"/>
-                            <span className="text-2xl font-bold">CleanerClub</span>
+                            <Image
+                                src="/logo3.png"
+                                alt="CleanerClub Logo"
+                                width={256}
+                                height={256}
+                                className="rounded cursor-pointer"
+                            />
                         </div>
                         <p className="text-gray-400 mb-6">
                             En Cleaner Club, nuestra misión es crear hogares impecables con servicios de limpieza
@@ -56,6 +62,15 @@ export default function Footer() {
                                 aria-label="Instagram"
                             >
                                 <Instagram size={20} />
+                            </a>
+                            <a
+                                href="https://www.linkedin.com/company/cleanerclub/"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="bg-gray-800 p-2 rounded-full hover:bg-[#0077B5] transition-colors"
+                                aria-label="LinkedIn"
+                            >
+                                <Linkedin size={20} />
                             </a>
                             <a
                                 href="https://wa.me/message/EXZVVF7WM2F6N1"
@@ -103,7 +118,7 @@ export default function Footer() {
                         </div>
                     </div>
 
-                    {/* Columna 3: Enlaces rápidos (Opcional, o puede eliminarse si prefieres solo contacto) */}
+                    {/* Columna 3: Enlaces rápidos */}
                     <div>
                         <h3 className="text-lg font-semibold mb-6 text-ocean-400">Enlaces Rápidos</h3>
                         <ul className="space-y-3">
