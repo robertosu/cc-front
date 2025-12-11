@@ -74,7 +74,7 @@ export default function StickyNavbar() {
                 {/* Capa 1: Imagen Fondo */}
                 <div
                     className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat transform scale-105"
-                    style={{ backgroundImage: "url('/hero-bg.jpg')" }}
+                    style={{ backgroundImage: "url('/hero-bg2.jpg')" }}
                 />
 
                 {/* Capa 2: Overlay */}
@@ -163,7 +163,7 @@ export default function StickyNavbar() {
             `}>
                 <div
                     className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat"
-                    style={{ backgroundImage: "url('/hero-bg.jpg')" }}
+                    style={{ backgroundImage: "url('/hero-bg2.jpg')" }}
                 />
                 <div className="absolute inset-0 z-0 bg-ocean-900/90 backdrop-blur-md"></div>
 
