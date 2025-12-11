@@ -1,14 +1,17 @@
+// app/dashboard/admin/layout.tsx
 import AdminSidebar from '@/components/admin/AdminSidebar'
 import AdminHeader from '@/components/admin/AdminHeader'
-import React from "react";
-import { requireAdmin } from "@/app/dashboard/admin/page";
-import { SidebarProvider } from '@/components/providers/SidebarContext' // Importar el provider
+import React from "react"
+import { SidebarProvider } from '@/components/providers/SidebarContext'
+// CAMBIO AQUÍ: Importar desde utils, no desde page
+import { requireProfile } from '@/utils/supabase/cached-queries'
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-    const { profile } = await requireAdmin()
+    // CAMBIO AQUÍ: Usamos requireProfile directametne
+    const { profile } = await requireProfile(['admin'])
 
     return (
-        <SidebarProvider> {/* Envolver todo */}
+        <SidebarProvider>
             <div className="min-h-screen bg-gray-50">
                 <AdminSidebar profile={profile} />
                 <div className="lg:pl-64">

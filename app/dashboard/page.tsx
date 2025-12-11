@@ -1,48 +1,19 @@
-// app/dashboard/page.tsx
-import {createClient} from '@/utils/supabase/server'
-import {redirect} from 'next/navigation'
+// app/dashboard/page.tsx (Versión Optimizada)
+import { requireProfile } from '@/utils/supabase/cached-queries'
+import { redirect } from 'next/navigation'
+import {Metadata} from "next";
 
-export const metadata: { title: string; description: string } = {
-    title: 'Dashboard - CleanerClub',
-    description: 'Panel de control de usuario'
-}
+export const metadata:Metadata = { title: 'Dashboard - CleanerClub', description: 'Panel de control' }
 
 export default async function DashboardPage() {
+    // Esta llamada es rápida y se cachea
+    const { profile } = await requireProfile()
 
-    const supabase = await createClient()
-
-    // Obtener el usuario actual
-    const {
-        data: { user },
-    } = await supabase.auth.getUser()
-
-    // Si no hay usuario, redirigir a login
-    if (!user) {
-        redirect('/login')
-    }
-
-    // Obtener el perfil del usuario con su rol
-    const { data: profile, error } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single()
-
-    // Si hay error o no hay perfil, redirigir a login
-    if (error || !profile) {
-        console.error('Error obteniendo perfil:', error)
-        redirect('/login')
-    }
-
-    // Redirigir según el rol del usuario
-    if (profile.role === 'admin') {
-        redirect('/dashboard/admin')
-    } else if (profile.role === 'cleaner') {
-        redirect('/dashboard/cleaner')
-    } else if (profile.role === 'client') {
-        redirect('/dashboard/client')
-    } else {
-        // Rol desconocido, redirigir a login
-        redirect('/login')
+    // Redirección instantánea
+    switch (profile.role) {
+        case 'admin': redirect('/dashboard/admin'); break
+        case 'cleaner': redirect('/dashboard/cleaner'); break
+        case 'client': redirect('/dashboard/client'); break
+        default: redirect('/login');
     }
 }

@@ -1,6 +1,5 @@
 // app/dashboard/cleaner/page.tsx
-import {createClient} from '@/utils/supabase/server'
-import {redirect} from 'next/navigation'
+import { requireProfile } from '@/utils/supabase/cached-queries'
 import CleanerDashboardClient from '@/components/dashboard/CleanerDashboardClient'
 import {Metadata} from "next";
 
@@ -10,20 +9,8 @@ export const metadata: Metadata = {
 }
 
 export default async function CleanerDashboard() {
-    const supabase = await createClient()
 
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) redirect('/login')
-
-    const { data: profile } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single()
-
-    if (!profile || profile.role !== 'cleaner') {
-        redirect('/login')
-    }
+    const { user, profile, supabase } = await requireProfile(['cleaner'])
 
     // Obtener IDs de limpiezas asignadas
     const { data: assignments } = await supabase

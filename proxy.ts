@@ -1,12 +1,14 @@
-// middleware.ts
-import {createServerClient} from "@supabase/ssr"
-import {type NextRequest, NextResponse} from "next/server"
+// proxy.ts (o middleware.ts)
+import { createServerClient } from "@supabase/ssr"
+import { type NextRequest, NextResponse } from "next/server"
 
 export default async function proxy(request: NextRequest) {
+    // 1. Preparar respuesta base
     let supabaseResponse = NextResponse.next({
         request,
     })
 
+    // 2. Configurar cliente Supabase (Solo para manejo de cookies)
     const supabase = createServerClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -30,105 +32,49 @@ export default async function proxy(request: NextRequest) {
         }
     )
 
-    // IMPORTANTE: Refrescar la sesión antes de cualquier validación
+    // 3. REFRESCAR SESIÓN (Crucial: no borrar)
+    // Esto actualiza el token si ha expirado. No consultamos la DB de perfiles aquí.
     const {
         data: { user },
     } = await supabase.auth.getUser()
 
     const path = request.nextUrl.pathname
 
-    // ========================================
-    // 1. RUTAS PÚBLICAS (permitidas sin auth)
-    // ========================================
-    const publicRoutes = ['/', '/login', '/register', '/auth/callback']
+    // 4. DEFINIR RUTAS PÚBLICAS
+    const publicRoutes = ['/', '/login', '/register', '/auth/callback', '/verify', '/reset-password']
     const isPublicRoute = publicRoutes.some(route => path === route || path.startsWith(route))
 
-    // Si es ruta pública, permitir acceso
+    // CASO A: Ruta Pública
     if (isPublicRoute) {
-        // Si está autenticado e intenta acceder a login/register, redirigir a dashboard
+        // Si el usuario ya está logueado y entra al Login, lo mandamos al Dashboard
         if (user && (path === '/login' || path === '/register')) {
             return NextResponse.redirect(new URL('/dashboard', request.url))
         }
         return supabaseResponse
     }
 
-    // ========================================
-    // 2. VALIDAR AUTENTICACIÓN
-    // ========================================
+    // CASO B: Ruta Protegida (Todo lo demás)
     if (!user) {
+        // Si no hay usuario, guardar la ruta intento y mandar a Login
         const redirectUrl = new URL('/login', request.url)
         redirectUrl.searchParams.set('redirectedFrom', path)
         return NextResponse.redirect(redirectUrl)
     }
 
-    // ========================================
-    // 3. OBTENER ROL DEL USUARIO
-    // ========================================
-
-    // Dashboard principal - dejar que el componente maneje la redirección
-    if (path === '/dashboard') {
-        return supabaseResponse
-    }
-
-    // Para otras rutas protegidas, verificar el rol
-    const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single()
-
-    // Si hay error obteniendo el perfil, redirigir a login
-    if (profileError || !profile) {
-        console.error('Error obteniendo perfil:', profileError)
-        return NextResponse.redirect(new URL('/login', request.url))
-    }
-
-    const userRole = profile.role
-
-    // ========================================
-    // 4. PROTECCIÓN POR ROLES
-    // ========================================
-
-    // RUTAS SOLO PARA ADMIN
-    if (path.startsWith('/dashboard/admin')) {
-        if (userRole !== 'admin') {
-            return NextResponse.redirect(new URL('/dashboard', request.url))
-        }
-        return supabaseResponse
-    }
-
-    // RUTAS SOLO PARA CLEANER
-    if (path.startsWith('/dashboard/cleaner')) {
-        if (userRole !== 'cleaner') {
-            return NextResponse.redirect(new URL('/dashboard', request.url))
-        }
-        return supabaseResponse
-    }
-
-    // RUTAS SOLO PARA CLIENTE
-    if (path.startsWith('/dashboard/client')) {
-        if (userRole !== 'client') {
-            return NextResponse.redirect(new URL('/dashboard', request.url))
-        }
-        return supabaseResponse
-    }
-
-    // API Routes - las API routes manejan su propia autorización
-    if (path.startsWith('/api/')) {
-        return supabaseResponse
-    }
-
+    // ¡LISTO! No hacemos nada más.
+    // La validación de si es 'admin', 'client' o 'cleaner'
+    // se hace en app/dashboard/page.tsx o en el layout, usando requireProfile().
     return supabaseResponse
 }
 
 export const config = {
     matcher: [
         /*
-         * Aplicar middleware a todas las rutas excepto:
-         * - _next/static (archivos estáticos)
-         * - _next/image (optimización de imágenes)
-         * - favicon.ico
-         * - archivos públicos (imágenes, etc)
+         * Match all request paths except for the ones starting with:
+         * - _next/static (static files)
+         * - _next/image (image optimization files)
+         * - favicon.ico (favicon file)
+         * - public folder
          */
         '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
     ],

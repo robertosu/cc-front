@@ -3,6 +3,7 @@ import {createClient} from '@/utils/supabase/server'
 import {redirect} from 'next/navigation'
 import ClientDashboardClient from '@/components/dashboard/ClientDashboardClient'
 import {Metadata} from "next";
+import { requireProfile } from '@/utils/supabase/cached-queries'
 
 
 export const metadata: Metadata = {
@@ -11,20 +12,8 @@ export const metadata: Metadata = {
 }
 
 export default async function ClientDashboard() {
-    const supabase = await createClient()
 
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) redirect('/login')
-
-    const { data: profile } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single()
-
-    if (!profile || profile.role !== 'client') {
-        redirect('/login')
-    }
+    const { user, profile, supabase } = await requireProfile(['client'])
 
     const { data: cleanings } = await supabase
         .from('cleanings')

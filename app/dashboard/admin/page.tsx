@@ -1,8 +1,8 @@
 // app/dashboard/admin/page.tsx
-import {createClient} from '@/utils/supabase/server'
-import {redirect} from 'next/navigation'
+
 import AdminDashboardClient from '@/components/admin/AdminDashboardClient'
 import {Metadata} from "next";
+import {requireProfile} from "@/utils/supabase/cached-queries";
 
 export const metadata: Metadata = {
     title: 'Admin Dashboard - CleanerClub',
@@ -19,29 +19,10 @@ interface DashboardStats {
     total_cleaners: number
 }
 
-export async function requireAdmin() {
-    const supabase = await createClient()
-
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) redirect('/login')
-
-    const { data: profile } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single()
-
-    if (!profile || profile.role !== 'admin') {
-        redirect('/login')
-    }
-
-    return { supabase, user, profile }
-}
-
 
 export default async function AdminDashboard() {
 
-    const { supabase } = await requireAdmin()
+    const { supabase } = await requireProfile(['admin'])
 
     // Estadísticas
     const [

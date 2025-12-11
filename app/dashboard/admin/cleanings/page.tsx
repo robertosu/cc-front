@@ -1,6 +1,5 @@
 // app/dashboard/admin/cleanings/page.tsx
-import { createClient } from '@/utils/supabase/server'
-import { redirect } from 'next/navigation'
+import { requireProfile } from '@/utils/supabase/cached-queries' // <--- Importamos la utilidad
 import { Plus } from 'lucide-react'
 import CleaningsTable from '@/components/admin/CleaningsTable'
 import Link from 'next/link'
@@ -18,29 +17,18 @@ type Props = {
         status?: string
         sortBy?: string
         sortOrder?: string
-        // NUEVOS PARAMS
         startDate?: string
         endDate?: string
     }>
 }
 
 export default async function AdminCleaningsPage({ searchParams }: Props) {
-    // 1. Esperamos a que se resuelvan los parámetros
+    // 1. REEMPLAZO: Verificación de Auth y Perfil Admin cacheada
+    // requireProfile nos devuelve el cliente 'supabase' ya configurado
+    const { supabase } = await requireProfile(['admin'])
+
+    // 2. Esperamos a que se resuelvan los parámetros
     const params = await searchParams
-
-    const supabase = await createClient()
-
-    // Verificación de Auth
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) redirect('/login')
-
-    const { data: profile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single()
-
-    if (!profile || profile.role !== 'admin') redirect('/login')
 
     // Parámetros
     const page = parseInt(params.page || '1')
@@ -49,8 +37,6 @@ export default async function AdminCleaningsPage({ searchParams }: Props) {
     const status = params.status || ''
     const sortBy = params.sortBy || 'scheduled_date'
     const sortOrder = (params.sortOrder || 'desc') as 'asc' | 'desc'
-
-    // NUEVO: Variables de fecha
     const startDate = params.startDate
     const endDate = params.endDate
 
@@ -68,7 +54,6 @@ export default async function AdminCleaningsPage({ searchParams }: Props) {
         query = query.eq('status', status)
     }
 
-    // NUEVO: Filtros de rango de fecha
     if (startDate) {
         query = query.gte('scheduled_date', startDate)
     }
@@ -92,32 +77,26 @@ export default async function AdminCleaningsPage({ searchParams }: Props) {
 
     const totalPages = count ? Math.ceil(count / pageSize) : 0
 
-    // Obtener cleaners para el formulario de edición
+    // Obtener cleaners para el formulario de edición (Select)
     const { data: cleaners } = await supabase
         .from('profiles')
         .select('id, full_name, email, phone')
         .eq('role', 'cleaner')
         .order('full_name', { ascending: true })
 
-    // Estadísticas rápidas (Mismo código que tenías)
-    const { count: totalCount } = await supabase
-        .from('cleanings')
-        .select('*', { count: 'exact', head: true })
-
-    const { count: pendingCount } = await supabase
-        .from('cleanings')
-        .select('*', { count: 'exact', head: true })
-        .eq('status', 'pending')
-
-    const { count: inProgressCount } = await supabase
-        .from('cleanings')
-        .select('*', { count: 'exact', head: true })
-        .eq('status', 'in_progress')
-
-    const { count: completedCount } = await supabase
-        .from('cleanings')
-        .select('*', { count: 'exact', head: true })
-        .eq('status', 'completed')
+    // Estadísticas rápidas
+    // NOTA: Podrías optimizar esto usando Promise.all para que corran en paralelo
+    const [
+        { count: totalCount },
+        { count: pendingCount },
+        { count: inProgressCount },
+        { count: completedCount }
+    ] = await Promise.all([
+        supabase.from('cleanings').select('*', { count: 'exact', head: true }),
+        supabase.from('cleanings').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
+        supabase.from('cleanings').select('*', { count: 'exact', head: true }).eq('status', 'in_progress'),
+        supabase.from('cleanings').select('*', { count: 'exact', head: true }).eq('status', 'completed')
+    ])
 
     return (
         <div className="px-4 sm:px-6 lg:px-8">
@@ -140,88 +119,12 @@ export default async function AdminCleaningsPage({ searchParams }: Props) {
                 </div>
             </div>
 
-            {/* Estadísticas rápidas (Mismo JSX) */}
+            {/* Estadísticas rápidas */}
             <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-                {/* ... Mantener tus tarjetas de estadísticas igual ... */}
-                <div className="bg-white overflow-hidden shadow rounded-lg">
-                    <div className="p-5">
-                        <div className="flex items-center">
-                            <div className="flex-shrink-0">
-                                <div className="rounded-md bg-ocean-500 p-3">
-                                    <svg className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                                    </svg>
-                                </div>
-                            </div>
-                            <div className="ml-5 w-0 flex-1">
-                                <dl>
-                                    <dt className="text-sm font-medium text-gray-500 truncate">Total</dt>
-                                    <dd className="text-2xl font-semibold text-gray-900">{totalCount || 0}</dd>
-                                </dl>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="bg-white overflow-hidden shadow rounded-lg">
-                    <div className="p-5">
-                        <div className="flex items-center">
-                            <div className="flex-shrink-0">
-                                <div className="rounded-md bg-yellow-500 p-3">
-                                    <svg className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                    </svg>
-                                </div>
-                            </div>
-                            <div className="ml-5 w-0 flex-1">
-                                <dl>
-                                    <dt className="text-sm font-medium text-gray-500 truncate">Pendientes</dt>
-                                    <dd className="text-2xl font-semibold text-gray-900">{pendingCount || 0}</dd>
-                                </dl>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="bg-white overflow-hidden shadow rounded-lg">
-                    <div className="p-5">
-                        <div className="flex items-center">
-                            <div className="flex-shrink-0">
-                                <div className="rounded-md bg-ocean-500 p-3">
-                                    <svg className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                                    </svg>
-                                </div>
-                            </div>
-                            <div className="ml-5 w-0 flex-1">
-                                <dl>
-                                    <dt className="text-sm font-medium text-gray-500 truncate">En Progreso</dt>
-                                    <dd className="text-2xl font-semibold text-gray-900">{inProgressCount || 0}</dd>
-                                </dl>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="bg-white overflow-hidden shadow rounded-lg">
-                    <div className="p-5">
-                        <div className="flex items-center">
-                            <div className="flex-shrink-0">
-                                <div className="rounded-md bg-green-500 p-3">
-                                    <svg className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                    </svg>
-                                </div>
-                            </div>
-                            <div className="ml-5 w-0 flex-1">
-                                <dl>
-                                    <dt className="text-sm font-medium text-gray-500 truncate">Completadas</dt>
-                                    <dd className="text-2xl font-semibold text-gray-900">{completedCount || 0}</dd>
-                                </dl>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <StatCard title="Total" value={totalCount || 0} color="bg-ocean-500" iconPath="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                <StatCard title="Pendientes" value={pendingCount || 0} color="bg-yellow-500" iconPath="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <StatCard title="En Progreso" value={inProgressCount || 0} color="bg-ocean-500" iconPath="M13 10V3L4 14h7v7l9-11h-7z" />
+                <StatCard title="Completadas" value={completedCount || 0} color="bg-green-500" iconPath="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </div>
 
             {/* Tabla con filtros */}
@@ -232,6 +135,31 @@ export default async function AdminCleaningsPage({ searchParams }: Props) {
                 totalPages={totalPages}
                 totalCount={count || 0}
             />
+        </div>
+    )
+}
+
+// Pequeño componente auxiliar para no repetir código HTML en las cards
+function StatCard({ title, value, color, iconPath }: { title: string, value: number, color: string, iconPath: string }) {
+    return (
+        <div className="bg-white overflow-hidden shadow rounded-lg">
+            <div className="p-5">
+                <div className="flex items-center">
+                    <div className="flex-shrink-0">
+                        <div className={`rounded-md ${color} p-3`}>
+                            <svg className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={iconPath} />
+                            </svg>
+                        </div>
+                    </div>
+                    <div className="ml-5 w-0 flex-1">
+                        <dl>
+                            <dt className="text-sm font-medium text-gray-500 truncate">{title}</dt>
+                            <dd className="text-2xl font-semibold text-gray-900">{value}</dd>
+                        </dl>
+                    </div>
+                </div>
+            </div>
         </div>
     )
 }

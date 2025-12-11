@@ -1,10 +1,9 @@
 // app/dashboard/admin/cleanings/create/page.tsx
-import {createClient} from '@/utils/supabase/server'
-import {redirect} from 'next/navigation'
+import { requireProfile } from '@/utils/supabase/cached-queries' // <--- Importamos la utilidad
 import Link from 'next/link'
-import {ArrowLeft} from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 import CreateCleaningForm from '@/components/admin/CreateCleaningForm'
-import {Metadata} from "next";
+import { Metadata } from "next"
 
 export const metadata: Metadata = {
     title: 'Nueva Limpieza - Admin',
@@ -12,20 +11,10 @@ export const metadata: Metadata = {
 }
 
 export default async function CreateCleaningPage() {
-    const supabase = await createClient()
+    // 1. REEMPLAZO: Una sola línea hace Auth + Verificación de Rol + Cliente DB
+    const { supabase } = await requireProfile(['admin'])
 
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) redirect('/login')
-
-    const { data: profile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single()
-
-    if (!profile || profile.role !== 'admin') redirect('/login')
-
-    // Obtener clientes y cleaners para el formulario
+    // 2. Consultas de datos (Usando el cliente que nos devolvió requireProfile)
     const { data: clients } = await supabase
         .from('profiles')
         .select('id, full_name, email')
