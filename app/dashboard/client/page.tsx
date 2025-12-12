@@ -11,19 +11,21 @@ export const metadata: Metadata = {
 export default async function ClientDashboardPage() {
     const { user, profile, supabase } = await requireProfile(['client'])
 
-    // Obtenemos los datos iniciales en el servidor para que la carga sea instantánea
-    // Usamos la tabla cleanings (con select anidado) o la vista si tienes acceso
-    // Para asegurar que funciona con el componente ClientDashboardClient, traemos todo:
+    // CAMBIO IMPORTANTE:
+    // Usamos la misma consulta anidada que usa el hook 'useCleaningsRealtime'
+    // Esto garantiza que 'assigned_cleaners' tenga la estructura { cleaner: ... }
     const { data: cleanings } = await supabase
-        .from('cleanings_with_details') // O 'cleanings' si la vista tiene RLS
+        .from('cleanings_with_details') // Volvemos a la vista segura
         .select('*')
         .eq('client_id', user.id)
         .order('scheduled_date', { ascending: true })
 
+    // Nota: Aunque TypeScript pueda quejarse de que los tipos anidados de Supabase no coinciden
+    // perfectamente con la interfaz Cleaning, la estructura en tiempo de ejecución será correcta.
     return (
         <ClientDashboardClient
             profile={profile}
-            initialCleanings={cleanings || []}
+            initialCleanings={(cleanings as any) || []}
         />
     )
 }

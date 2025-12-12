@@ -1,10 +1,10 @@
 'use client'
 
+import { useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { useCleaningsRealtime } from '@/hooks/useCleaningsRealtime'
-import { Calendar, Clock, MapPin, Users } from 'lucide-react'
-import LogoutButton from '@/components/auth/LogoutButton'
+import { Calendar, Clock, MapPin, Users, ChevronLeft, ChevronRight, PlayCircle, CalendarClock, History } from 'lucide-react'
 import CleaningProgressBar from '@/components/dashboard/CleaningProgressBar'
-import Link from 'next/link'
 import type { Profile, Cleaning, Cleaner } from '@/types'
 
 interface ClientDashboardClientProps {
@@ -16,223 +16,228 @@ export default function ClientDashboardClient({
                                                   profile,
                                                   initialCleanings
                                               }: ClientDashboardClientProps) {
-    // 1. Hook de Realtime: Gestiona estado, carga y suscripciones
-    // Se inicializa con los datos del servidor para que la carga inicial sea instantánea
     const { cleanings, isLoading } = useCleaningsRealtime({
         userId: profile.id,
         role: 'client',
         initialData: initialCleanings
     })
 
-    // 2. Derivamos las listas filtradas directamente del estado del hook
-    const activeCleanings = cleanings.filter(c => c.status === 'in_progress')
-    const upcomingCleanings = cleanings.filter(c => c.status === 'pending')
-    const completedCleanings = cleanings.filter(c => c.status === 'completed').slice(0, 3)
+    const searchParams = useSearchParams()
+    const currentView = searchParams.get('view') || 'in_progress'
 
-    // 3. Helper para extraer cleaners de forma segura (maneja la estructura anidada del hook)
+    // Paginación
+    const [currentPage, setCurrentPage] = useState(1)
+    const itemsPerPage = 6
+
+    // Lógica de Filtrado Estricta
+    const inProgressCleanings = cleanings.filter(c => c.status === 'in_progress')
+    const scheduledCleanings = cleanings.filter(c => c.status === 'pending')
+    const historyCleanings = cleanings.filter(c => ['completed', 'cancelled'].includes(c.status))
+
+    // Selección de lista según vista
+    let listToDisplay: Cleaning[] = []
+    let title = ''
+    let subtitle = ''
+    let icon = null
+
+    switch (currentView) {
+        case 'scheduled':
+            listToDisplay = scheduledCleanings
+            title = 'Próximos Servicios Agendados'
+            subtitle = 'Gestiona tus reservas futuras'
+            icon = <CalendarClock className="w-6 h-6 text-ocean-600" />
+            break
+        case 'history':
+            listToDisplay = historyCleanings
+            title = 'Historial de Servicios'
+            subtitle = 'Registro de limpiezas completadas'
+            icon = <History className="w-6 h-6 text-purple-600" />
+            break
+        case 'in_progress':
+        default:
+            listToDisplay = inProgressCleanings
+            title = 'Servicios En Curso'
+            subtitle = 'Monitorea el progreso en tiempo real'
+            icon = <PlayCircle className="w-6 h-6 text-green-600" />
+            break
+    }
+
+    // Paginación lógica
+    const totalPages = Math.ceil(listToDisplay.length / itemsPerPage)
+    const safeCurrentPage = Math.min(Math.max(1, currentPage), Math.max(1, totalPages)) || 1
+
+    const paginatedData = listToDisplay.slice(
+        (safeCurrentPage - 1) * itemsPerPage,
+        safeCurrentPage * itemsPerPage
+    )
+
+    const handlePageChange = (newPage: number) => {
+        setCurrentPage(newPage)
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+
     const getValidCleaners = (cleaning: Cleaning): Cleaner[] => {
         const assigned = cleaning.assigned_cleaners || []
-        // El hook para 'client' devuelve assigned_cleaners como: { cleaner: { ... } }
-        // Filtramos y extraemos el objeto cleaner real
-        return assigned
-            .filter((ac: any) => ac.cleaner)
-            .map((ac: any) => ac.cleaner as Cleaner)
+
+        return assigned.map((ac: any) => {
+            // CASO 1: Formato Realtime (Anidado) -> { cleaner: { full_name: "..." } }
+            if (ac.cleaner) return ac.cleaner as Cleaner
+
+            // CASO 2: Formato Vista SQL (Plano) -> { full_name: "...", id: "..." }
+            // Verificamos si tiene campos de cleaner directamente
+            if (ac.full_name || ac.email) return ac as Cleaner
+
+            return null
+        }).filter((c): c is Cleaner => c !== null)
     }
 
     return (
-        <div className="min-h-screen bg-gray-50">
-            {/* Header */}
-            <header className="bg-white shadow">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-                    <div className="flex justify-between items-center">
-                        <div>
-                            <h1 className="text-3xl font-bold text-gray-900">
-                                Bienvenido, {profile.full_name}
-                            </h1>
-                            <div className="flex items-center gap-2 mt-1">
-                                <p className="text-gray-600">Mis Servicios de Limpieza</p>
-                                {isLoading && (
-                                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-700 animate-pulse">
-                                        <span className="w-1.5 h-1.5 mr-1 bg-blue-500 rounded-full"></span>
-                                        Sincronizando...
-                                    </span>
-                                )}
-                            </div>
-                        </div>
-                        <LogoutButton />
+        <div className="p-6 max-w-7xl mx-auto space-y-6">
+            {/* Header Dinámico */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-gray-200 pb-4 bg-white p-6 rounded-xl shadow-sm">
+                <div className="flex items-center gap-4">
+                    <div className="p-3 bg-gray-50 rounded-lg">
+                        {icon}
+                    </div>
+                    <div>
+                        <h1 className="text-2xl font-bold text-gray-900">{title}</h1>
+                        <p className="text-gray-500 text-sm">{subtitle}</p>
                     </div>
                 </div>
-            </header>
-
-            <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-
-                {/* 1. SECCIÓN: Limpiezas en Progreso */}
-                {activeCleanings.length > 0 && (
-                    <section className="mb-8">
-                        <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                            🔄 Limpiezas en Progreso
-                        </h2>
-                        <div className="grid grid-cols-1 gap-6">
-                            {activeCleanings.map((cleaning) => {
-                                const validCleaners = getValidCleaners(cleaning)
-                                return (
-                                    <div key={cleaning.id} className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-ocean-500">
-                                        <div className="grid md:grid-cols-2 gap-6">
-                                            <div className="space-y-3">
-                                                <div className="flex items-start gap-3">
-                                                    <MapPin className="w-5 h-5 text-gray-400 flex-shrink-0 mt-1" />
-                                                    <div>
-                                                        <p className="text-sm text-gray-600">Dirección</p>
-                                                        <p className="font-medium text-gray-900">{cleaning.address}</p>
-                                                    </div>
-                                                </div>
-
-                                                {validCleaners.length > 0 && (
-                                                    <div className="flex items-start gap-3">
-                                                        <Users className="w-5 h-5 text-gray-400 flex-shrink-0 mt-1" />
-                                                        <div>
-                                                            <p className="text-sm text-gray-600">
-                                                                {validCleaners.length === 1 ? 'Cleaner Asignado' : 'Equipo Asignado'}
-                                                            </p>
-                                                            <p className="font-medium text-gray-900">
-                                                                {validCleaners.map(c => c.full_name).join(', ')}
-                                                            </p>
-                                                        </div>
-                                                    </div>
-                                                )}
-
-                                                <div className="flex items-start gap-3">
-                                                    <Calendar className="w-5 h-5 text-gray-400 flex-shrink-0 mt-1" />
-                                                    <div>
-                                                        <p className="text-sm text-gray-600">Fecha</p>
-                                                        <p className="font-medium text-gray-900">
-                                                            {new Date(cleaning.scheduled_date + 'T00:00:00').toLocaleDateString('es-CL', {
-                                                                weekday: 'long',
-                                                                year: 'numeric',
-                                                                month: 'long',
-                                                                day: 'numeric'
-                                                            })}
-                                                        </p>
-                                                    </div>
-                                                </div>
-
-                                                <div className="flex items-start gap-3">
-                                                    <Clock className="w-5 h-5 text-gray-400 flex-shrink-0 mt-1" />
-                                                    <div>
-                                                        <p className="text-sm text-gray-600">Horario</p>
-                                                        <p className="font-medium text-gray-900">
-                                                            {cleaning.start_time} - {cleaning.end_time}
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <div>
-                                                <CleaningProgressBar
-                                                    currentStep={cleaning.current_step}
-                                                    totalSteps={cleaning.total_steps}
-                                                    status={cleaning.status}
-                                                />
-                                            </div>
-                                        </div>
-                                    </div>
-                                )
-                            })}
-                        </div>
-                    </section>
+                {isLoading && (
+                    <span className="text-xs font-medium text-ocean-600 animate-pulse bg-ocean-50 px-3 py-1 rounded-full border border-ocean-100">
+                        Sincronizando...
+                    </span>
                 )}
+            </div>
 
-                {/* 2. SECCIÓN: Próximas Limpiezas */}
-                {upcomingCleanings.length > 0 && (
-                    <section className="mb-8">
-                        <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                            📅 Próximas Limpiezas
-                        </h2>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            {upcomingCleanings.map((cleaning) => {
-                                const validCleaners = getValidCleaners(cleaning)
-                                return (
-                                    <div key={cleaning.id} className="bg-white rounded-xl shadow p-6 hover:shadow-md transition-shadow">
-                                        <div className="flex items-start justify-between mb-4">
-                                            <div>
-                                                <h3 className="font-semibold text-gray-900">{cleaning.address}</h3>
-                                                <p className="text-sm text-gray-600">{cleaning.total_steps} pasos estimados</p>
-                                            </div>
-                                            <span className="px-3 py-1 bg-yellow-100 text-yellow-700 text-xs font-medium rounded-full">
-                                                Pendiente
-                                            </span>
-                                        </div>
+            {/* Grid de Tarjetas */}
+            {paginatedData.length > 0 ? (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {paginatedData.map((cleaning) => {
+                        const validCleaners = getValidCleaners(cleaning)
+                        const isProgress = cleaning.status === 'in_progress'
 
-                                        <div className="space-y-2 text-sm">
-                                            <div className="flex items-center gap-2 text-gray-600">
-                                                <Calendar className="w-4 h-4" />
-                                                {new Date(cleaning.scheduled_date + 'T00:00:00').toLocaleDateString('es-CL')}
-                                            </div>
-                                            <div className="flex items-center gap-2 text-gray-600">
-                                                <Clock className="w-4 h-4" />
-                                                {cleaning.start_time} - {cleaning.end_time}
-                                            </div>
-                                            {validCleaners.length > 0 && (
-                                                <div className="flex items-center gap-2 text-gray-600">
-                                                    <Users className="w-4 h-4" />
-                                                    {validCleaners.map(c => c.full_name).join(', ')}
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                )
-                            })}
-                        </div>
-                    </section>
-                )}
-
-                {/* 3. SECCIÓN: Completadas */}
-                {completedCleanings.length > 0 && (
-                    <section>
-                        <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                            ✅ Limpiezas Completadas Recientemente
-                        </h2>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            {completedCleanings.map((cleaning) => {
-                                const validCleaners = getValidCleaners(cleaning)
-                                return (
-                                    <div key={cleaning.id} className="bg-white rounded-xl shadow p-6 opacity-75 hover:opacity-100 transition-opacity">
-                                        <div className="flex items-start justify-between mb-3">
-                                            <h3 className="font-semibold text-gray-900">{cleaning.address}</h3>
-                                            <span className="px-2 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full">
-                                                Completada
-                                            </span>
-                                        </div>
-                                        <p className="text-sm text-gray-600 mb-2">
-                                            {new Date(cleaning.scheduled_date + 'T00:00:00').toLocaleDateString('es-CL')}
+                        return (
+                            <div
+                                key={cleaning.id}
+                                className={`bg-white rounded-xl shadow-sm border p-6 transition-all hover:shadow-md ${
+                                    isProgress ? 'border-ocean-300 ring-1 ring-ocean-100 shadow-ocean-100' : 'border-gray-100'
+                                }`}
+                            >
+                                <div className="flex justify-between items-start mb-4">
+                                    <div>
+                                        <h3 className="font-semibold text-lg text-gray-900 line-clamp-1">
+                                            {cleaning.address}
+                                        </h3>
+                                        <p className="text-sm text-gray-500 capitalize">
+                                            {new Date(cleaning.scheduled_date + 'T00:00:00').toLocaleDateString('es-CL', {
+                                                weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+                                            })}
                                         </p>
-                                        {validCleaners.length > 0 && (
-                                            <p className="text-xs text-gray-500">
-                                                Realizada por: {validCleaners.map(c => c.full_name).join(', ')}
-                                            </p>
+                                    </div>
+                                    <div className={`p-2 rounded-lg ${isProgress ? 'bg-ocean-50' : 'bg-gray-50'}`}>
+                                        <MapPin className={`w-5 h-5 ${isProgress ? 'text-ocean-500' : 'text-gray-400'}`} />
+                                    </div>
+                                </div>
+
+                                <div className="space-y-4">
+                                    {/* Mostrar Barra solo si es necesario (no en agendados puros a menos que quieras ver 0%) */}
+                                    {(currentView === 'in_progress' || currentView === 'history') && (
+                                        <div className="mb-4">
+                                            <CleaningProgressBar
+                                                currentStep={cleaning.current_step}
+                                                totalSteps={cleaning.total_steps}
+                                                status={cleaning.status}
+                                            />
+                                        </div>
+                                    )}
+
+                                    {/* Si es agendado mostramos un badge simple */}
+                                    {currentView === 'scheduled' && (
+                                        <div className="mb-4">
+                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                                Pendiente de inicio
+                                            </span>
+                                        </div>
+                                    )}
+
+                                    <div className="grid grid-cols-2 gap-4 text-sm pt-2 border-t border-gray-50">
+                                        <div className="flex items-center gap-2 text-gray-600">
+                                            <Clock className="w-4 h-4 text-gray-400" />
+                                            <span>{cleaning.start_time} - {cleaning.end_time}</span>
+                                        </div>
+                                        {validCleaners.length > 0 ? (
+                                            <div className="flex items-center gap-2 text-gray-600">
+                                                <Users className="w-4 h-4 text-gray-400" />
+                                                <span className="truncate font-medium">
+                                                    {validCleaners[0].full_name}
+                                                    {validCleaners.length > 1 && ` +${validCleaners.length - 1}`}
+                                                </span>
+                                            </div>
+                                        ) : (
+                                            <div className="flex items-center gap-2 text-gray-400 italic">
+                                                <Users className="w-4 h-4" />
+                                                <span>Por asignar</span>
+                                            </div>
                                         )}
                                     </div>
-                                )
-                            })}
-                        </div>
-                    </section>
-                )}
-
-                {/* Empty State */}
-                {cleanings.length === 0 && (
-                    <div className="bg-white rounded-xl shadow p-12 text-center">
-                        <p className="text-gray-600 text-lg mb-4">
-                            Aún no tienes limpiezas programadas
-                        </p>
-                        <Link
-                            href="/#services"
-                            className="inline-block bg-ocean-400 text-white px-6 py-3 rounded-lg hover:bg-ocean-700 transition-colors"
-                        >
-                            Ver Servicios
-                        </Link>
+                                </div>
+                            </div>
+                        )
+                    })}
+                </div>
+            ) : (
+                <div className="text-center py-20 bg-white rounded-xl border border-dashed border-gray-300">
+                    <div className="mx-auto w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4">
+                        {currentView === 'in_progress' ? (
+                            <PlayCircle className="w-8 h-8 text-gray-300" />
+                        ) : (
+                            <Calendar className="w-8 h-8 text-gray-300" />
+                        )}
                     </div>
-                )}
-            </main>
+                    <h3 className="text-lg font-medium text-gray-900">
+                        {currentView === 'in_progress'
+                            ? 'No tienes servicios activos ahora'
+                            : currentView === 'scheduled'
+                                ? 'No tienes servicios agendados'
+                                : 'No hay historial disponible'}
+                    </h3>
+                    <p className="text-gray-500 mt-1 max-w-sm mx-auto">
+                        {currentView === 'in_progress'
+                            ? 'Tus próximos servicios aparecerán aquí cuando comiencen.'
+                            : 'Reserva un nuevo servicio para verlo aquí.'}
+                    </p>
+                </div>
+            )}
+
+            {/* Paginación */}
+            {totalPages > 1 && (
+                <div className="flex items-center justify-between border-t border-gray-200 pt-4 mt-6">
+                    <p className="text-sm text-gray-700 hidden sm:block">
+                        Página <span className="font-medium">{safeCurrentPage}</span> de <span className="font-medium">{totalPages}</span>
+                    </p>
+                    <div className="flex gap-2 mx-auto sm:mx-0">
+                        <button
+                            onClick={() => handlePageChange(safeCurrentPage - 1)}
+                            disabled={safeCurrentPage === 1}
+                            className="p-2 border rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed bg-white"
+                        >
+                            <ChevronLeft className="w-4 h-4" />
+                        </button>
+                        <span className="flex items-center px-4 text-sm font-medium text-gray-700 sm:hidden">
+                            {safeCurrentPage} / {totalPages}
+                        </span>
+                        <button
+                            onClick={() => handlePageChange(safeCurrentPage + 1)}
+                            disabled={safeCurrentPage === totalPages}
+                            className="p-2 border rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed bg-white"
+                        >
+                            <ChevronRight className="w-4 h-4" />
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     )
 }

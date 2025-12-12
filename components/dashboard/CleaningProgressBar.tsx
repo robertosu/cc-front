@@ -1,6 +1,6 @@
 'use client'
 
-import {CheckCircle, Circle} from 'lucide-react'
+import { CheckCircle, Circle } from 'lucide-react'
 
 interface CleaningProgressBarProps {
     currentStep: number
@@ -14,92 +14,84 @@ export default function CleaningProgressBar({
                                                 status
                                             }: CleaningProgressBarProps) {
 
-    const getStatusColor = () => {
+    const getStatusInfo = () => {
         switch (status) {
             case 'completed':
-                return 'bg-green-500'
+                return { text: 'Completada', color: 'bg-green-500', striped: false }
             case 'in_progress':
-                return 'bg-ocean-500'
+                return { text: 'En progreso', color: 'bg-ocean-500', striped: true }
             case 'pending':
-                return 'bg-gray-300'
+                return { text: 'Pendiente', color: 'bg-gray-400', striped: false }
             case 'cancelled':
-                return 'bg-red-500'
+                return { text: 'Cancelada', color: 'bg-red-500', striped: false }
             default:
-                return 'bg-gray-300'
+                return { text: 'Desconocido', color: 'bg-gray-300', striped: false }
         }
     }
 
-    const getStatusText = () => {
-        switch (status) {
-            case 'completed':
-                return 'Completada'
-            case 'in_progress':
-                return 'En progreso'
-            case 'pending':
-                return 'Pendiente'
-            case 'cancelled':
-                return 'Cancelada'
-            default:
-                return 'Desconocido'
-        }
-    }
-
+    const { text, color, striped } = getStatusInfo()
     const progress = totalSteps > 0 ? (currentStep / totalSteps) * 100 : 0
 
     return (
         <div className="space-y-3">
-            {/* Estado y progreso */}
-            <div className="flex justify-between items-center">
-                <span className="text-sm font-medium text-gray-700">
-                    {getStatusText()}
+            {/* Estilos para la animación striped */}
+            <style jsx>{`
+                @keyframes progress-stripes {
+                    from { background-position: 1rem 0; }
+                    to { background-position: 0 0; }
+                }
+                .progress-bar-striped {
+                    background-image: linear-gradient(
+                        45deg,
+                        rgba(255, 255, 255, 0.15) 25%,
+                        transparent 25%,
+                        transparent 50%,
+                        rgba(255, 255, 255, 0.15) 50%,
+                        rgba(255, 255, 255, 0.15) 75%,
+                        transparent 75%,
+                        transparent
+                    );
+                    background-size: 1rem 1rem;
+                }
+                .animate-stripes {
+                    animation: progress-stripes 1s linear infinite;
+                }
+            `}</style>
+
+            <div className="flex justify-between items-center text-sm">
+                <span className={`font-semibold px-2 py-0.5 rounded-full text-xs ${
+                    status === 'in_progress' ? 'bg-ocean-100 text-ocean-700' : 'text-gray-600 bg-gray-100'
+                }`}>
+                    {text}
                 </span>
-                <span className="text-sm text-gray-600">
-                    {currentStep} de {totalSteps} pasos
-                </span>
-            </div>
-
-            {/* Barra de progreso */}
-            <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
-                <div
-                    className={`h-full ${getStatusColor()} transition-all duration-500 ease-out`}
-                    style={{ width: `${progress}%` }}
-                />
-            </div>
-
-            {/* Steps individuales */}
-            <div className="flex gap-2 flex-wrap">
-                {Array.from({ length: totalSteps }, (_, i) => {
-                    const stepNumber = i + 1
-                    const isCompleted = stepNumber <= currentStep
-
-                    return (
-                        <div
-                            key={i}
-                            className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium transition-colors ${
-                                isCompleted
-                                    ? 'bg-green-100 text-green-700'
-                                    : 'bg-gray-100 text-gray-600'
-                            }`}
-                        >
-                            {isCompleted ? (
-                                <CheckCircle className="w-3 h-3" />
-                            ) : (
-                                <Circle className="w-3 h-3" />
-                            )}
-                            Paso {stepNumber}
-                        </div>
-                    )
-                })}
-            </div>
-
-            {/* Porcentaje */}
-            <div className="text-center">
-                <span className="text-2xl font-bold text-gray-900">
+                <span className="text-gray-500 font-medium">
                     {Math.round(progress)}%
                 </span>
-                <span className="text-sm text-gray-600 ml-2">
-                    completado
-                </span>
+            </div>
+
+            {/* Barra contenedora */}
+            <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden shadow-inner relative">
+                <div
+                    className={`h-full ${color} transition-all duration-700 ease-in-out flex items-center justify-end pr-2 ${
+                        striped ? 'progress-bar-striped animate-stripes' : ''
+                    }`}
+                    style={{ width: `${progress}%` }}
+                >
+                </div>
+            </div>
+
+            {/* Pasos */}
+            <div className="flex justify-between items-center pt-1">
+                <span className="text-xs text-gray-500">{currentStep} de {totalSteps} pasos</span>
+                <div className="flex gap-1">
+                    {Array.from({ length: totalSteps }, (_, i) => {
+                        const stepNumber = i + 1
+                        const isCompleted = stepNumber <= currentStep
+                        return (
+                            <div key={i} title={`Paso ${stepNumber}`} className={`w-2 h-2 rounded-full ${isCompleted ? 'bg-ocean-500' : 'bg-gray-300'}`} />
+                        )
+                    })}
+                </div>
             </div>
         </div>
     )
