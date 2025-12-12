@@ -1,13 +1,14 @@
 'use client'
 
-import React, {Fragment, useRef, useState, useTransition} from 'react'
+import React, {Fragment, useRef, useState, useTransition, useEffect} from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+// 👇 IMPORTANTE: Esta es la línea que te faltaba
+import { createClient } from '@/utils/supabase/client'
 
 import {
     AlertCircle,
     ArrowUpDown,
     Calendar,
-    CheckCircle,
     ChevronDown,
     ChevronLeft,
     ChevronRight,
@@ -16,18 +17,13 @@ import {
     Edit,
     MapPin,
     Search,
-    Trash2,
-    User,
-    X
+    Trash2
 } from 'lucide-react'
 import MultiSearchableSelect from '@/components/common/MultiSearchableSelect'
 import { formatTime } from "@/utils/formatTime"
-import {Option} from "@/types";
+import { Option } from "@/types"
 
-
-
-
-// --- TIPOS ---
+// --- TIPOS (Sin cambios) ---
 interface Cleaner {
     id: string
     full_name: string
@@ -68,8 +64,7 @@ interface EditData {
     notes: string
 }
 
-// --- COMPONENTE DE FORMULARIO REUTILIZABLE ---
-// Extraemos esto para usarlo tanto en la fila de la tabla (Desktop) como en la tarjeta (Mobile)
+// --- FORMULARIO DE EDICIÓN (Sin cambios) ---
 const CleaningEditForm = ({
                               editData,
                               setEditData,
@@ -90,7 +85,6 @@ const CleaningEditForm = ({
     return (
         <div className="space-y-4 p-2">
             <div className="grid grid-cols-1 gap-4">
-                {/* Selector de cleaners */}
                 <div>
                     <MultiSearchableSelect
                         options={cleanerOptions}
@@ -202,11 +196,18 @@ export default function CleaningsTable({
                                            totalCount
                                        }: CleaningsTableProps) {
 
-    const [isPending, startTransition] = useTransition(); // 2. Hook de transición
+    const [isPending, startTransition] = useTransition();
     const router = useRouter()
     const searchParams = useSearchParams()
+    const supabase = createClient() // ✅ Inicializamos el cliente
+
+    // Estados
     const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '')
     const [statusFilter, setStatusFilter] = useState(searchParams.get('status') || '')
+    const [startDate, setStartDate] = useState(searchParams.get('startDate') || '')
+    const [endDate, setEndDate] = useState(searchParams.get('endDate') || '')
+    const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+
     const [expandedRow, setExpandedRow] = useState<string | null>(null)
     const [editingCleaning, setEditingCleaning] = useState<string | null>(null)
     const [editData, setEditData] = useState<Partial<EditData>>({})
@@ -217,6 +218,26 @@ export default function CleaningsTable({
         text: string
     } | null>(null)
 
+    // 🔥 SUSCRIPCIÓN REALTIME
+    useEffect(() => {
+        const channel = supabase
+            .channel('admin-cleanings-table')
+            .on(
+                'postgres_changes',
+                { event: '*', schema: 'public', table: 'cleanings' },
+                () => {
+                    console.log('Cambio detectado en tabla cleanings, refrescando...')
+                    startTransition(() => {
+                        router.refresh()
+                    })
+                }
+            )
+            .subscribe()
+
+        return () => {
+            supabase.removeChannel(channel)
+        }
+    }, [supabase, router])
 
     const handleSort = (field: string) => {
         const currentSort = searchParams.get('sortBy')
@@ -234,13 +255,10 @@ export default function CleaningsTable({
             if (value) current.set(key, value)
             else current.delete(key)
         })
-
-        // Envolver el push en startTransition
         startTransition(() => {
             router.push(`?${current.toString()}`)
         });
     }
-
 
     const goToPage = (page: number) => updateUrl({ page: page.toString() })
 
@@ -257,21 +275,10 @@ export default function CleaningsTable({
             notes: cleaning.notes || ''
         })
     }
-    // NUEVO: Estados para fechas
-    const [startDate, setStartDate] = useState(searchParams.get('startDate') || '')
-    const [endDate, setEndDate] = useState(searchParams.get('endDate') || '')
-    const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
     const handleSearch = (value: string) => {
-        // A. Actualizar el input visual INMEDIATAMENTE (para que no se sienta lento)
         setSearchTerm(value)
-
-        // B. Limpiar el temporizador anterior si el usuario sigue escribiendo
-        if (searchTimeoutRef.current) {
-            clearTimeout(searchTimeoutRef.current)
-        }
-
-        // C. Configurar un nuevo temporizador para actualizar la URL en 500ms
+        if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current)
         searchTimeoutRef.current = setTimeout(() => {
             updateUrl({ search: value, page: '1' })
         }, 500)
@@ -282,7 +289,6 @@ export default function CleaningsTable({
         updateUrl({ status: value, page: '1' })
     }
 
-    // NUEVO: Manejadores de fecha
     const handleDateFilter = (type: 'start' | 'end', value: string) => {
         if (type === 'start') {
             setStartDate(value)
@@ -293,7 +299,6 @@ export default function CleaningsTable({
         }
     }
 
-    // NUEVO: Limpiar filtros
     const clearFilters = () => {
         setSearchTerm('')
         setStatusFilter('')
@@ -322,8 +327,11 @@ export default function CleaningsTable({
 
             setRowMessage({ cleaningId, type: 'success', text: 'Actualizado correctamente' })
             setEditingCleaning(null)
-            setTimeout(() => setRowMessage(null), 5000)
+
+            // Forzar refresco inmediato (aunque el realtime lo hará después)
             router.refresh()
+
+            setTimeout(() => setRowMessage(null), 5000)
         } catch (error: unknown) {
             const msg = error instanceof Error ? error.message : 'Error desconocido'
             setRowMessage({ cleaningId, type: 'error', text: msg })
@@ -339,10 +347,12 @@ export default function CleaningsTable({
             const response = await fetch(`/api/cleanings?id=${cleaningId}`, { method: 'DELETE' })
             if (!response.ok) throw new Error()
             setRowMessage({ cleaningId, type: 'success', text: 'Eliminado correctamente' })
+
+            router.refresh()
+
             setTimeout(() => {
                 setExpandedRow(null)
                 setRowMessage(null)
-                router.refresh()
             }, 1000)
         } catch {
             setRowMessage({ cleaningId, type: 'error', text: 'Error al eliminar' })
@@ -377,7 +387,6 @@ export default function CleaningsTable({
         sublabel: `${cleaner.email}`
     }))
 
-    // Función para renderizar el contenido "normal" (no edición) de una fila/tarjeta
     const renderCleaningDetails = (cleaning: Cleaning) => (
         <div className="space-y-3 text-sm">
             <div className="flex justify-between items-start">
@@ -399,7 +408,6 @@ export default function CleaningsTable({
                 </div>
             </div>
 
-            {/* Cleaners */}
             {cleaning.assigned_cleaners && cleaning.assigned_cleaners.length > 0 && (
                 <div className="flex flex-wrap gap-2">
                     {cleaning.assigned_cleaners.map((cleaner) => (
@@ -410,7 +418,6 @@ export default function CleaningsTable({
                 </div>
             )}
 
-            {/* Progreso */}
             <div>
                 <div className="flex justify-between text-xs mb-1">
                     <span>Progreso</span>
@@ -424,7 +431,6 @@ export default function CleaningsTable({
                 </div>
             </div>
 
-            {/* Botones Acciones */}
             <div className="flex gap-2 pt-2 border-t border-gray-100 mt-2">
                 <button
                     onClick={() => handleEdit(cleaning)}
@@ -444,10 +450,7 @@ export default function CleaningsTable({
 
     return (
         <div className="bg-white shadow rounded-lg">
-            {/* Header: Filtros y búsqueda */}
             <div className="p-4 border-b border-gray-200 space-y-4">
-
-                {/* Fila 1: Búsqueda y Estado */}
                 <div className="flex flex-col sm:flex-row gap-4">
                     <div className="flex-1 relative">
                         <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
@@ -474,7 +477,6 @@ export default function CleaningsTable({
                     </select>
                 </div>
 
-                {/* Fila 2: Filtros de Fecha */}
                 <div className="flex flex-col sm:flex-row gap-4 items-end sm:items-center">
                     <div className="flex items-center gap-2 w-full sm:w-auto">
                         <span className="text-sm text-gray-500 min-w-[40px]">Desde:</span>
@@ -496,7 +498,6 @@ export default function CleaningsTable({
                         />
                     </div>
 
-                    {/* Botón para limpiar filtros si hay alguno activo */}
                     {(searchTerm || statusFilter || startDate || endDate) && (
                         <button
                             onClick={clearFilters}
@@ -507,22 +508,25 @@ export default function CleaningsTable({
                     )}
                 </div>
 
-                <div className="mt-2 text-xs text-gray-500">
-                    Total: {totalCount} registros encontrados
+                <div className="mt-2 text-xs text-gray-500 flex justify-between items-center">
+                    <span>Total: {totalCount} registros encontrados</span>
+                    <span className="text-green-600 flex items-center gap-1">
+                        <span className="relative flex h-2 w-2">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                        </span>
+                        Realtime activo
+                    </span>
                 </div>
             </div>
 
-            {/* ... (RESTO DEL COMPONENTE: Vista Móvil, Vista Desktop, Paginación) ... */}
-            {/* Mantener exactamente el mismo código que tenías abajo para renderizar la tabla */}
+            {/* TABLA MOBILE */}
             <div className="md:hidden divide-y divide-gray-200">
-                {/* ... tu código existente ... */}
                 {cleanings.length === 0 ? (
                     <div className="p-8 text-center text-gray-500">No se encontraron limpiezas</div>
                 ) : (
                     cleanings.map((cleaning) => (
-                        // ... renderizado móvil ...
                         <div key={cleaning.id} className="p-4">
-                            {/* ... (asegúrate de incluir todo el bloque original) ... */}
                             {editingCleaning === cleaning.id ? (
                                 <CleaningEditForm
                                     editData={editData}
@@ -536,27 +540,28 @@ export default function CleaningsTable({
                             ) : (
                                 renderCleaningDetails(cleaning)
                             )}
+                            {rowMessage?.cleaningId === cleaning.id && (
+                                <div className={`mt-2 text-xs p-2 rounded ${rowMessage.type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                                    {rowMessage.text}
+                                </div>
+                            )}
                         </div>
                     ))
                 )}
             </div>
 
-            {/* ... renderizado desktop ... */}
+            {/* TABLA DESKTOP */}
             <div className="hidden md:block overflow-x-auto">
-                {/* ... tu tabla original ... */}
                 <table className="min-w-full divide-y divide-gray-200">
-                    {/* ... thead, tbody, etc ... */}
                     <thead className="bg-gray-50">
                     <tr>
-                        {/* Columna Fecha con Ordenamiento */}
                         <th
                             scope="col"
-                            onClick={() => !isPending && handleSort('scheduled_date')} // Evita clic si está cargando
+                            onClick={() => !isPending && handleSort('scheduled_date')}
                             className={`px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider transition-colors group select-none ${isPending ? 'opacity-50 cursor-wait' : 'cursor-pointer hover:bg-gray-100'}`}
                         >
                             <div className="flex items-center gap-2">
                                 <span>Fecha</span>
-                                {/* Lógica visual de las flechas */}
                                 {searchParams.get('sortBy') === 'scheduled_date' ? (
                                     searchParams.get('sortOrder') === 'asc' ? (
                                         <ChevronUp className="w-4 h-4 text-purple-600" />
@@ -564,42 +569,25 @@ export default function CleaningsTable({
                                         <ChevronDown className="w-4 h-4 text-purple-600" />
                                     )
                                 ) : (
-                                    // Flecha neutra que se oscurece al pasar el mouse
                                     <ArrowUpDown className="w-4 h-4 text-gray-400 group-hover:text-gray-600" />
                                 )}
                             </div>
                         </th>
-
-                        {/* Resto de columnas (sin cambios en su lógica) */}
-                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Dirección
-                        </th>
-                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Cliente
-                        </th>
-                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Estado
-                        </th>
-                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Progreso
-                        </th>
-                        <th scope="col" className="relative px-6 py-3">
-                            <span className="sr-only">Acciones</span>
-                        </th>
+                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dirección</th>
+                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cliente</th>
+                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Progreso</th>
+                        <th scope="col" className="relative px-6 py-3"><span className="sr-only">Acciones</span></th>
                     </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                    {/* ... mapeo de cleanings ... */}
                     {cleanings.map((cleaning) => (
                         <Fragment key={cleaning.id}>
-                            {/* ... tu fila de tabla ... */}
                             <tr className="hover:bg-gray-50 transition-colors">
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                     <div className="font-medium">{new Date(cleaning.scheduled_date + 'T00:00:00').toLocaleDateString('es-CL')}</div>
                                     <div className="text-xs text-gray-500">{formatTime(cleaning.start_time)} - {formatTime(cleaning.end_time)}</div>
                                 </td>
-                                {/* ... resto de celdas ... */}
-                                {/* Asegúrate de no borrar ninguna columna */}
                                 <td className="px-6 py-4 text-sm text-gray-900">{cleaning.address}</td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                     <div>{cleaning.client_name}</div>
@@ -618,12 +606,10 @@ export default function CleaningsTable({
                                     </button>
                                 </td>
                             </tr>
-                            {/* ... fila expandida ... */}
                             {expandedRow === cleaning.id && (
                                 <tr>
-                                    {/* ... contenido expandido ... */}
                                     <td colSpan={6} className="px-6 py-4 bg-gray-50 border-t border-gray-100">
-                                        {/* ... lógica de edición o vista ... */}
+                                        {/* ... Contenido expandido (Edit Form o Details) ... */}
                                         {editingCleaning === cleaning.id ? (
                                             <div className="max-w-3xl">
                                                 <CleaningEditForm
@@ -637,9 +623,7 @@ export default function CleaningsTable({
                                                 />
                                             </div>
                                         ) : (
-                                            // ... vista detalles ...
                                             <div className="flex justify-between items-start">
-                                                {/* ... */}
                                                 <div className="space-y-2">
                                                     {cleaning.assigned_cleaners.length > 0 && (
                                                         <div>
@@ -676,7 +660,7 @@ export default function CleaningsTable({
                 </table>
             </div>
 
-            {/* ... paginación ... */}
+            {/* PAGINACIÓN */}
             {totalPages > 1 && (
                 <div className="px-4 py-3 border-t border-gray-200 flex items-center justify-between sm:px-6">
                     <button

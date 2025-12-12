@@ -1,44 +1,24 @@
 // app/dashboard/client/page.tsx
-import {createClient} from '@/utils/supabase/server'
-import {redirect} from 'next/navigation'
-import ClientDashboardClient from '@/components/dashboard/ClientDashboardClient'
-import {Metadata} from "next";
 import { requireProfile } from '@/utils/supabase/cached-queries'
-
+import ClientDashboardClient from '@/components/dashboard/ClientDashboardClient'
+import { Metadata } from "next"
 
 export const metadata: Metadata = {
-    title: 'Mi Dashboard - CleanerClub',
-    description: 'Mis limpiezas y servicios'
+    title: 'Mi Panel - CleanerClub',
+    description: 'Gestiona tus servicios contratados'
 }
 
-export default async function ClientDashboard() {
-
+export default async function ClientDashboardPage() {
     const { user, profile, supabase } = await requireProfile(['client'])
 
+    // Obtenemos los datos iniciales en el servidor para que la carga sea instantánea
+    // Usamos la tabla cleanings (con select anidado) o la vista si tienes acceso
+    // Para asegurar que funciona con el componente ClientDashboardClient, traemos todo:
     const { data: cleanings } = await supabase
-        .from('cleanings')
-        .select(`
-            *,
-            client:profiles!cleanings_client_id_fkey(
-                id,
-                full_name,
-                email,
-                phone
-            ),
-            assigned_cleaners:cleaning_cleaners(
-                cleaner:profiles!cleaning_cleaners_cleaner_id_fkey(
-                    id,
-                    full_name,
-                    email,
-                    phone
-                ),
-                assigned_at
-            )
-        `)
+        .from('cleanings_with_details') // O 'cleanings' si la vista tiene RLS
+        .select('*')
         .eq('client_id', user.id)
-        .order('scheduled_date', { ascending: false })
-
-
+        .order('scheduled_date', { ascending: true })
 
     return (
         <ClientDashboardClient

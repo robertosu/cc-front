@@ -1,68 +1,53 @@
 'use client'
 
-import { useEffect, useTransition } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
-import { Briefcase, CheckCircle, Clock, CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react'
+import { useCleaningsRealtime } from '@/hooks/useCleaningsRealtime' // ✅ Usamos el hook
+import { Briefcase, CheckCircle, Clock, CalendarDays } from 'lucide-react'
+import { useState } from 'react'
 import CleanerCleaningCard from '@/components/dashboard/CleanerCleaningCard'
-import { createClient } from '@/utils/supabase/client'
 import type { Cleaning, Profile } from '@/types'
-
-interface CleanerStats {
-    pending: number
-    in_progress: number
-    completed: number
-}
 
 interface CleanerDashboardClientProps {
     profile: Profile
-    cleanings: Cleaning[]
-    stats: CleanerStats
-    totalPages: number
-    currentPage: number
+    cleanings: Cleaning[] // Data inicial del servidor
+    // Quitamos las stats y totalPages fijos porque ahora son dinámicos con el hook
 }
 
 export default function CleanerDashboardClient({
                                                    profile,
-                                                   cleanings,
-                                                   stats,
-                                                   totalPages,
-                                                   currentPage
+                                                   cleanings: initialCleanings,
                                                }: CleanerDashboardClientProps) {
-    const router = useRouter()
-    const searchParams = useSearchParams()
-    const [isPending, startTransition] = useTransition()
-    const supabase = createClient()
 
-    const currentStatus = searchParams.get('status') || 'pending'
+    // 1. Usamos el hook con la data inicial
+    const { cleanings } = useCleaningsRealtime({
+        userId: profile.id,
+        role: 'cleaner',
+        initialData: initialCleanings
+    })
 
-    // 🔥 PATRÓN REFRESH: Solo escuchamos cambios, NO traemos datos nosotros mismos
-    useEffect(() => {
-        const channel = supabase
-            .channel('cleaner-dashboard')
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'cleanings' }, () => {
-                router.refresh() // Recarga los datos del servidor sin perder el estado
-            })
-            .subscribe()
+    const [currentStatus, setCurrentStatus] = useState('pending')
 
-        return () => { supabase.removeChannel(channel) }
-    }, [supabase, router])
+    // 2. Filtros dinámicos (calculados en el cliente)
+    // Esto es rápido para <1000 items y permite transiciones instantáneas
+    const activeCleanings = cleanings.filter(c => c.status === 'in_progress')
+    const upcomingCleanings = cleanings.filter(c => c.status === 'pending')
+    const completedCleanings = cleanings.filter(c => c.status === 'completed')
 
-    const updateUrl = (newParams: Record<string, string>) => {
-        const params = new URLSearchParams(searchParams.toString())
-        Object.entries(newParams).forEach(([key, value]) => {
-            if (value) params.set(key, value)
-            else params.delete(key)
-        })
-        startTransition(() => {
-            router.push(`?${params.toString()}`)
-        })
+    // Diccionario para fácil acceso en el render
+    const filteredCleanings = {
+        'in_progress': activeCleanings,
+        'pending': upcomingCleanings,
+        'completed': completedCleanings
+    }[currentStatus] || []
+
+    const stats = {
+        in_progress: activeCleanings.length,
+        pending: upcomingCleanings.length,
+        completed: completedCleanings.length
     }
-
-    const handleTabChange = (status: string) => updateUrl({ status, page: '1' })
-    const handlePageChange = (page: number) => updateUrl({ page: page.toString() })
 
     return (
         <div className="space-y-6">
+            {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                     <h1 className="text-2xl font-bold text-gray-900">Hola, {profile.full_name}</h1>
@@ -70,7 +55,7 @@ export default function CleanerDashboardClient({
                 </div>
             </div>
 
-            {/* Estadísticas / Tabs */}
+            {/* Stats Cards (ahora funcionan como tabs) */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <StatCard
                     title="En Progreso"
@@ -78,7 +63,7 @@ export default function CleanerDashboardClient({
                     icon={<Briefcase className="w-5 h-5 text-white" />}
                     color="bg-ocean-500"
                     active={currentStatus === 'in_progress'}
-                    onClick={() => handleTabChange('in_progress')}
+                    onClick={() => setCurrentStatus('in_progress')}
                 />
                 <StatCard
                     title="Pendientes"
@@ -86,7 +71,7 @@ export default function CleanerDashboardClient({
                     icon={<Clock className="w-5 h-5 text-white" />}
                     color="bg-yellow-500"
                     active={currentStatus === 'pending'}
-                    onClick={() => handleTabChange('pending')}
+                    onClick={() => setCurrentStatus('pending')}
                 />
                 <StatCard
                     title="Completadas"
@@ -94,79 +79,65 @@ export default function CleanerDashboardClient({
                     icon={<CheckCircle className="w-5 h-5 text-white" />}
                     color="bg-green-500"
                     active={currentStatus === 'completed'}
-                    onClick={() => handleTabChange('completed')}
+                    onClick={() => setCurrentStatus('completed')}
                 />
             </div>
 
+            {/* Navegación Tabs */}
             <div className="border-b border-gray-200">
                 <nav className="-mb-px flex space-x-8">
                     {['pending', 'in_progress', 'completed'].map((status) => (
                         <button
                             key={status}
-                            onClick={() => handleTabChange(status)}
-                            className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm capitalize flex items-center gap-2 ${
-                                currentStatus === status
-                                    ? 'border-ocean-500 text-ocean-600'
-                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                            }`}
+                            onClick={() => setCurrentStatus(status)}
+                            className={`
+                                whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm capitalize flex items-center gap-2
+                                ${currentStatus === status
+                                ? 'border-ocean-500 text-ocean-600'
+                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}
+                            `}
                         >
                             {status === 'in_progress' ? 'En Progreso' : status === 'pending' ? 'Pendientes' : 'Completadas'}
                             <span className={`py-0.5 px-2.5 rounded-full text-xs font-medium ${
                                 currentStatus === status ? 'bg-ocean-100 text-ocean-600' : 'bg-gray-100 text-gray-900'
                             }`}>
-                                {stats[status as keyof CleanerStats]}
+                                {stats[status as keyof typeof stats]}
                             </span>
                         </button>
                     ))}
                 </nav>
             </div>
 
-            {/* Lista de Limpiezas */}
-            <div className={`space-y-6 ${isPending ? 'opacity-50 pointer-events-none' : ''}`}>
-                {cleanings.length === 0 ? (
+            {/* Lista de Cards */}
+            <div className="space-y-6">
+                {filteredCleanings.length === 0 ? (
                     <div className="text-center py-12 bg-white rounded-lg border border-dashed border-gray-300">
                         <CalendarDays className="mx-auto h-12 w-12 text-gray-400" />
                         <h3 className="mt-2 text-sm font-medium text-gray-900">No hay limpiezas</h3>
                         <p className="mt-1 text-sm text-gray-500">
-                            No se encontraron tareas en esta categoría.
+                            No tienes tareas en esta categoría.
                         </p>
                     </div>
                 ) : (
-                    cleanings.map((cleaning) => (
+                    filteredCleanings.map((cleaning) => (
                         <CleanerCleaningCard key={cleaning.id} cleaning={cleaning} />
                     ))
                 )}
             </div>
-
-            {/* Paginación */}
-            {totalPages > 1 && (
-                <div className="flex items-center justify-between border-t border-gray-200 pt-4">
-                    <button
-                        onClick={() => handlePageChange(currentPage - 1)}
-                        disabled={currentPage === 1}
-                        className="flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50"
-                    >
-                        <ChevronLeft className="w-4 h-4 mr-2" /> Anterior
-                    </button>
-                    <span className="text-sm text-gray-700">Página {currentPage} de {totalPages}</span>
-                    <button
-                        onClick={() => handlePageChange(currentPage + 1)}
-                        disabled={currentPage === totalPages}
-                        className="flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50"
-                    >
-                        Siguiente <ChevronRight className="w-4 h-4 ml-2" />
-                    </button>
-                </div>
-            )}
         </div>
     )
 }
 
 function StatCard({ title, value, icon, color, active, onClick }: any) {
     return (
-        <button onClick={onClick} className={`bg-white overflow-hidden shadow rounded-lg p-5 text-left transition-all ring-2 ${active ? 'ring-ocean-500 ring-offset-2' : 'ring-transparent hover:shadow-md'}`}>
+        <button
+            onClick={onClick}
+            className={`w-full bg-white overflow-hidden shadow rounded-lg p-5 text-left transition-all ring-2 ${active ? 'ring-ocean-500 ring-offset-2' : 'ring-transparent hover:shadow-md'}`}
+        >
             <div className="flex items-center">
-                <div className={`flex-shrink-0 rounded-md ${color} p-3`}>{icon}</div>
+                <div className={`flex-shrink-0 rounded-md ${color} p-3`}>
+                    {icon}
+                </div>
                 <div className="ml-5 w-0 flex-1">
                     <dl>
                         <dt className="text-sm font-medium text-gray-500 truncate">{title}</dt>
