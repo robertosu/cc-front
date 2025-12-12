@@ -3,35 +3,34 @@
 import { useCleaningsRealtime } from '@/hooks/useCleaningsRealtime'
 import { Briefcase, CheckCircle, Clock, CalendarDays } from 'lucide-react'
 import { useState } from 'react'
-// Asegúrate de tener este componente, o usa el que tenías antes
 import CleanerCleaningCard from '@/components/dashboard/CleanerCleaningCard'
 import type { Cleaning, Profile } from '@/types'
 
+// 1. CAMBIAR EL NOMBRE EN LA INTERFACE
 interface CleanerDashboardClientProps {
     profile: Profile
-    cleanings: Cleaning[]
+    initialCleanings: Cleaning[] // <--- CORREGIDO: Antes era 'cleanings'
 }
 
 export default function CleanerDashboardClient({
                                                    profile,
-                                                   cleanings: initialCleanings,
+                                                   initialCleanings, // <--- CORREGIDO: Recibimos el nombre correcto directamente
                                                }: CleanerDashboardClientProps) {
 
-    // 1. Hook Realtime con hidratación instantánea
+    // 2. Hook Realtime
     const { cleanings } = useCleaningsRealtime({
         userId: profile.id,
         role: 'cleaner',
-        initialData: initialCleanings
+        initialData: initialCleanings // Ahora sí tiene datos en el primer render
     })
 
-    const [currentStatus, setCurrentStatus] = useState('in_progress') // Empezar en 'En Progreso' suele ser más útil
+    const [currentStatus, setCurrentStatus] = useState('in_progress')
 
-    // 2. Filtros Client-Side (Rápido y fluido)
+    // ... (El resto del código sigue igual)
     const activeCleanings = cleanings.filter(c => c.status === 'in_progress')
     const upcomingCleanings = cleanings.filter(c => c.status === 'pending')
     const completedCleanings = cleanings.filter(c => ['completed', 'cancelled'].includes(c.status))
 
-    // Selector de lista a mostrar
     const filteredCleanings = {
         'in_progress': activeCleanings,
         'pending': upcomingCleanings,
@@ -54,7 +53,7 @@ export default function CleanerDashboardClient({
                 </div>
             </div>
 
-            {/* Stats Cards (Tu diseño original) */}
+            {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <StatCard
                     title="En Progreso"
@@ -73,7 +72,7 @@ export default function CleanerDashboardClient({
                     onClick={() => setCurrentStatus('pending')}
                 />
                 <StatCard
-                    title="Historial" // Renombrado a historial para incluir canceladas si quieres
+                    title="Historial"
                     value={stats.completed}
                     icon={<CheckCircle className="w-5 h-5 text-white" />}
                     color="bg-green-500"
@@ -82,7 +81,7 @@ export default function CleanerDashboardClient({
                 />
             </div>
 
-            {/* Navegación Tabs (Tu diseño original) */}
+            {/* Navegación Tabs */}
             <div className="border-b border-gray-200">
                 <nav className="-mb-px flex space-x-8 overflow-x-auto">
                     {['in_progress', 'pending', 'completed'].map((status) => (
@@ -119,7 +118,6 @@ export default function CleanerDashboardClient({
                     </div>
                 ) : (
                     filteredCleanings.map((cleaning) => (
-                        // Asumiendo que este componente ya lo tienes y funciona
                         <CleanerCleaningCard key={cleaning.id} cleaning={cleaning} />
                     ))
                 )}
@@ -128,7 +126,6 @@ export default function CleanerDashboardClient({
     )
 }
 
-// Subcomponente StatCard (Tu diseño original)
 function StatCard({ title, value, icon, color, active, onClick }: any) {
     return (
         <button
