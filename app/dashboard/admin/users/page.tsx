@@ -1,81 +1,97 @@
 // app/dashboard/admin/users/page.tsx
-import {createClient} from '@/utils/supabase/server'
-import {redirect} from 'next/navigation'
-import {Briefcase, Shield, Users as UsersIcon} from 'lucide-react'
-import UsersList from '@/components/admin/UsersList'
-import {Metadata} from "next";
-import {Profile} from "@/types";
-
-type User = {
-    id: string
-    role: 'admin' | 'cleaner' | 'client'
-    full_name?: string
-    email?: string
-    phone?: string
-    created_at?: string
-    client_cleanings_count?: number
-    cleaner_cleanings_count?: number
-}
+import { requireProfile } from '@/utils/supabase/cached-queries'
+import { Briefcase, Shield, Users as UsersIcon } from 'lucide-react'
+import UsersTable from '@/components/admin/UsersTable'
+import { Metadata } from "next"
 
 export const metadata: Metadata = {
     title: 'Gestión de Usuarios - Admin',
     description: 'Administrar usuarios y roles'
 }
 
-export default async function AdminUsersPage() {
-    const supabase = await createClient()
+type Props = {
+    searchParams: Promise<{
+        page?: string
+        search?: string
+        role?: string
+        sortBy?: string
+        sortOrder?: string
+    }>
+}
 
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) redirect('/login')
+export default async function AdminUsersPage({ searchParams }: Props) {
+    // 1. Verificación de Seguridad y Cliente Supabase
+    const { supabase } = await requireProfile(['admin'])
 
-    // Verificar rol admin
-    const { data: profile } = await supabase
+    // 2. Obtener parámetros de URL
+    const params = await searchParams
+    const page = parseInt(params.page || '1')
+    const pageSize = 10
+    const search = params.search || ''
+    const role = params.role || ''
+    const sortBy = params.sortBy || 'created_at'
+    const sortOrder = (params.sortOrder || 'desc') as 'asc' | 'desc'
+
+    // 3. Query Principal (Perfiles)
+    let query = supabase
         .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single()
+        .select('*', { count: 'exact' })
 
-    if (!profile || profile.role !== 'admin') {
-        redirect('/dashboard')
+    // Filtros
+    if (search) {
+        query = query.or(`full_name.ilike.%${search}%,email.ilike.%${search}%`)
+    }
+    if (role) {
+        query = query.eq('role', role)
     }
 
-    // Obtener usuarios
-    const { data: profiles, error: profilesError } = await supabase
-        .from('profiles')
-        .select('*')
-        .order('created_at', { ascending: false })
+    // Ordenamiento
+    query = query.order(sortBy, { ascending: sortOrder === 'asc' })
 
-    let users: Profile[] = []
+    // Paginación
+    const from = (page - 1) * pageSize
+    const to = from + pageSize - 1
+    query = query.range(from, to)
 
-    if (profiles && !profilesError) {
-        users = await Promise.all(
-            profiles.map(async (profile) => {
-                // Contar limpiezas como cliente
-                const { count: clientCleaningsCount } = await supabase
-                    .from('cleanings')
-                    .select('*', { count: 'exact', head: true })
-                    .eq('client_id', profile.id)
+    // Ejecutar Query
+    const { data: profiles, count, error } = await query
 
-                // Contar asignaciones como cleaner
-                const { count: cleanerCleaningsCount } = await supabase
-                    .from('cleaning_cleaners')
-                    .select('*', { count: 'exact', head: true })
-                    .eq('cleaner_id', profile.id)
-
-                return {
-                    ...profile,
-                    full_name: profile.full_name || 'Sin Nombre',   // ✅ obligatorio
-                    created_at: profile.created_at || new Date().toISOString(), // ✅ obligatorio
-                    client_cleanings_count: clientCleaningsCount || 0,
-                    cleaner_cleanings_count: cleanerCleaningsCount || 0
-                } as Profile
-            })
-        )
+    if (error) {
+        console.error('Error fetching users:', error)
     }
 
-    const clients = users.filter((u: User) => u.role === 'client')
-    const cleaners = users.filter((u: User) => u.role === 'cleaner')
-    const admins = users.filter((u: User) => u.role === 'admin')
+    const totalPages = count ? Math.ceil(count / pageSize) : 0
+
+    // 4. Enriquecer los usuarios con estadísticas (SOLO para la página actual)
+    // Esto es mucho más eficiente que fetchear todos los contadores de todos los usuarios
+    let usersWithStats = []
+    if (profiles) {
+        usersWithStats = await Promise.all(profiles.map(async (profile) => {
+            // Fetch paralelo de contadores para este usuario
+            const [clientCleanings, cleanerCleanings] = await Promise.all([
+                supabase.from('cleanings').select('id', { count: 'exact', head: true }).eq('client_id', profile.id),
+                supabase.from('cleaning_cleaners').select('cleaning_id', { count: 'exact', head: true }).eq('cleaner_id', profile.id)
+            ])
+
+            return {
+                ...profile,
+                client_cleanings_count: clientCleanings.count || 0,
+                cleaner_cleanings_count: cleanerCleanings.count || 0
+            }
+        }))
+    }
+
+    // 5. Estadísticas Globales Rápidas (Counts independientes)
+    // Usamos count: 'exact', head: true para que sea un COUNT(*) ligero sin data
+    const [
+        { count: clientTotal },
+        { count: cleanerTotal },
+        { count: adminTotal }
+    ] = await Promise.all([
+        supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'client'),
+        supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'cleaner'),
+        supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'admin')
+    ])
 
     return (
         <div className="px-4 sm:px-6 lg:px-8">
@@ -83,97 +99,60 @@ export default async function AdminUsersPage() {
             <div className="mb-8">
                 <h1 className="text-2xl font-bold text-gray-900">Gestión de Usuarios</h1>
                 <p className="mt-2 text-sm text-gray-700">
-                    Administra roles y permisos de usuarios
+                    Administra roles, permisos y consulta estadísticas
                 </p>
             </div>
 
-            {/* Estadísticas */}
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 mb-8">
-                <div className="bg-white overflow-hidden shadow rounded-lg">
-                    <div className="p-5">
-                        <div className="flex items-center">
-                            <div className="flex-shrink-0">
-                                <div className="rounded-md bg-green-500 p-3">
-                                    <UsersIcon className="h-6 w-6 text-white" />
-                                </div>
-                            </div>
-                            <div className="ml-5 w-0 flex-1">
-                                <dl>
-                                    <dt className="text-sm font-medium text-gray-500 truncate">Clientes</dt>
-                                    <dd className="text-2xl font-semibold text-gray-900">{clients.length}</dd>
-                                </dl>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="bg-white overflow-hidden shadow rounded-lg">
-                    <div className="p-5">
-                        <div className="flex items-center">
-                            <div className="flex-shrink-0">
-                                <div className="rounded-md bg-ocean-500 p-3">
-                                    <Briefcase className="h-6 w-6 text-white" />
-                                </div>
-                            </div>
-                            <div className="ml-5 w-0 flex-1">
-                                <dl>
-                                    <dt className="text-sm font-medium text-gray-500 truncate">Cleaners</dt>
-                                    <dd className="text-2xl font-semibold text-gray-900">{cleaners.length}</dd>
-                                </dl>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="bg-white overflow-hidden shadow rounded-lg">
-                    <div className="p-5">
-                        <div className="flex items-center">
-                            <div className="flex-shrink-0">
-                                <div className="rounded-md bg-purple-500 p-3">
-                                    <Shield className="h-6 w-6 text-white" />
-                                </div>
-                            </div>
-                            <div className="ml-5 w-0 flex-1">
-                                <dl>
-                                    <dt className="text-sm font-medium text-gray-500 truncate">Administradores</dt>
-                                    <dd className="text-2xl font-semibold text-gray-900">{admins.length}</dd>
-                                </dl>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            {/* Estadísticas Cards */}
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-3 mb-8">
+                <StatCard
+                    title="Clientes"
+                    value={clientTotal || 0}
+                    icon={<UsersIcon className="h-6 w-6 text-white" />}
+                    color="bg-green-500"
+                />
+                <StatCard
+                    title="Cleaners"
+                    value={cleanerTotal || 0}
+                    icon={<Briefcase className="h-6 w-6 text-white" />}
+                    color="bg-ocean-500"
+                />
+                <StatCard
+                    title="Administradores"
+                    value={adminTotal || 0}
+                    icon={<Shield className="h-6 w-6 text-white" />}
+                    color="bg-purple-500"
+                />
             </div>
 
-            {/* Error de carga */}
-            {profilesError && (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-                    <p className="text-red-700 font-semibold">Error al cargar usuarios:</p>
-                    <p className="text-red-600 text-sm">{profilesError.message}</p>
-                </div>
-            )}
+            {/* Componente Tabla Interactivo */}
+            <UsersTable
+                users={usersWithStats}
+                currentPage={page}
+                totalPages={totalPages}
+                totalCount={count || 0}
+            />
+        </div>
+    )
+}
 
-            {/* Lista de usuarios */}
-            <div className="bg-white shadow rounded-lg">
-                <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
-                    <h2 className="text-lg font-medium text-gray-900">
-                        Todos los Usuarios ({users.length})
-                    </h2>
-                    <p className="mt-1 text-sm text-gray-500">
-                        Gestiona roles y permisos de cada usuario
-                    </p>
-                </div>
-
-                {users.length === 0 ? (
-                    <div className="p-12 text-center">
-                        <UsersIcon className="mx-auto h-12 w-12 text-gray-400" />
-                        <h3 className="mt-2 text-sm font-medium text-gray-900">No hay usuarios</h3>
-                        <p className="mt-1 text-sm text-gray-500">
-                            Los nuevos registros aparecerán aquí automáticamente
-                        </p>
+function StatCard({ title, value, icon, color }: { title: string, value: number, icon: React.ReactNode, color: string }) {
+    return (
+        <div className="bg-white overflow-hidden shadow rounded-lg">
+            <div className="p-5">
+                <div className="flex items-center">
+                    <div className="flex-shrink-0">
+                        <div className={`rounded-md ${color} p-3`}>
+                            {icon}
+                        </div>
                     </div>
-                ) : (
-                    <UsersList users={users} />
-                )}
+                    <div className="ml-5 w-0 flex-1">
+                        <dl>
+                            <dt className="text-sm font-medium text-gray-500 truncate">{title}</dt>
+                            <dd className="text-2xl font-semibold text-gray-900">{value}</dd>
+                        </dl>
+                    </div>
+                </div>
             </div>
         </div>
     )

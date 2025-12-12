@@ -1,151 +1,183 @@
+// components/dashboard/CleanerDashboardClient.tsx
 'use client'
 
-import { useCleaningsRealtime } from '@/hooks/useCleaningsRealtime'
-import { Briefcase, CheckCircle, Clock } from 'lucide-react'
-import LogoutButton from '@/components/auth/LogoutButton'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { useTransition } from 'react'
+import { Briefcase, CheckCircle, Clock, CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react'
 import CleanerCleaningCard from '@/components/dashboard/CleanerCleaningCard'
-import type { Profile, Cleaning } from '@/types'
+import type { Cleaning, Profile } from '@/types'
+
+interface CleanerStats {
+    pending: number
+    in_progress: number
+    completed: number
+}
 
 interface CleanerDashboardClientProps {
     profile: Profile
-    initialCleanings: Cleaning[]
+    cleanings: Cleaning[]
+    stats: CleanerStats
+    totalPages: number
+    currentPage: number
 }
 
 export default function CleanerDashboardClient({
                                                    profile,
-                                                   initialCleanings
+                                                   cleanings,
+                                                   stats,
+                                                   totalPages,
+                                                   currentPage
                                                }: CleanerDashboardClientProps) {
-    const { cleanings, isLoading } = useCleaningsRealtime({
-        userId: profile.id,
-        role: 'cleaner',
-        initialData: initialCleanings
-    })
+    const router = useRouter()
+    const searchParams = useSearchParams()
+    const [isPending, startTransition] = useTransition()
 
-    const activeCleanings = cleanings.filter(c => c.status === 'in_progress')
-    const upcomingCleanings = cleanings.filter(c => c.status === 'pending')
-    const completedToday = cleanings.filter(c =>
-        c.status === 'completed' &&
-        c.scheduled_date === new Date().toISOString().split('T')[0]
-    )
+    const currentStatus = searchParams.get('status') || 'pending'
+
+    const updateUrl = (newParams: Record<string, string>) => {
+        const params = new URLSearchParams(searchParams.toString())
+        Object.entries(newParams).forEach(([key, value]) => {
+            if (value) params.set(key, value)
+            else params.delete(key)
+        })
+        startTransition(() => {
+            router.push(`?${params.toString()}`)
+        })
+    }
+
+    const handleTabChange = (status: string) => {
+        updateUrl({ status, page: '1' })
+    }
+
+    const handlePageChange = (page: number) => {
+        updateUrl({ page: page.toString() })
+    }
 
     return (
-        <div className="min-h-screen bg-gray-50">
-            {/* Header */}
-            <header className="bg-gradient-to-r from-ocean-400 to-ocean-700 text-white shadow-lg">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-                    <div className="flex justify-between items-center">
-                        <div>
-                            <h1 className="text-3xl font-bold">
-                                Hola, {profile.full_name}
-                            </h1>
-                            <p className="text-ocean-100 mt-1">
-                                Tus trabajos del día
-                                {isLoading && (
-                                    <span className="ml-2 inline-flex items-center">
-                    <span className="animate-pulse">●</span>
-                    <span className="ml-1 text-xs">actualizando...</span>
-                  </span>
-                                )}
-                            </p>
-                        </div>
-                        <LogoutButton />
-                    </div>
+        <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                    <h1 className="text-2xl font-bold text-gray-900">Hola, {profile.full_name}</h1>
+                    <p className="text-gray-500 text-sm">Resumen de tus tareas asignadas.</p>
                 </div>
-            </header>
+            </div>
 
-            <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                {/* Estadísticas */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                    <div className="bg-white rounded-xl shadow p-6">
-                        <div className="flex items-center gap-4">
-                            <div className="p-3 bg-ocean-100 rounded-lg">
-                                <Briefcase className="w-6 h-6 text-ocean-400" />
-                            </div>
-                            <div>
-                                <p className="text-sm text-gray-600">En Progreso</p>
-                                <p className="text-2xl font-bold text-gray-900">
-                                    {activeCleanings.length}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
+            {/* Cards sin emojis, usando iconos Lucide */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <StatCard
+                    title="En Progreso"
+                    value={stats.in_progress}
+                    icon={<Briefcase className="w-5 h-5 text-white" />}
+                    color="bg-ocean-500"
+                    active={currentStatus === 'in_progress'}
+                    onClick={() => handleTabChange('in_progress')}
+                />
+                <StatCard
+                    title="Pendientes"
+                    value={stats.pending}
+                    icon={<Clock className="w-5 h-5 text-white" />}
+                    color="bg-yellow-500"
+                    active={currentStatus === 'pending'}
+                    onClick={() => handleTabChange('pending')}
+                />
+                <StatCard
+                    title="Completadas"
+                    value={stats.completed}
+                    icon={<CheckCircle className="w-5 h-5 text-white" />}
+                    color="bg-green-500"
+                    active={currentStatus === 'completed'}
+                    onClick={() => handleTabChange('completed')}
+                />
+            </div>
 
-                    <div className="bg-white rounded-xl shadow p-6">
-                        <div className="flex items-center gap-4">
-                            <div className="p-3 bg-yellow-100 rounded-lg">
-                                <Clock className="w-6 h-6 text-yellow-600" />
-                            </div>
-                            <div>
-                                <p className="text-sm text-gray-600">Pendientes</p>
-                                <p className="text-2xl font-bold text-gray-900">
-                                    {upcomingCleanings.length}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
+            {/* Tabs */}
+            <div className="border-b border-gray-200">
+                <nav className="-mb-px flex space-x-8">
+                    {['pending', 'in_progress', 'completed'].map((status) => (
+                        <button
+                            key={status}
+                            onClick={() => handleTabChange(status)}
+                            className={`
+                                whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm capitalize flex items-center gap-2
+                                ${currentStatus === status
+                                ? 'border-ocean-500 text-ocean-600'
+                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}
+                            `}
+                        >
+                            {status === 'in_progress' ? 'En Progreso' : status === 'pending' ? 'Pendientes' : 'Completadas'}
+                            <span className={`py-0.5 px-2.5 rounded-full text-xs font-medium ${
+                                currentStatus === status ? 'bg-ocean-100 text-ocean-600' : 'bg-gray-100 text-gray-900'
+                            }`}>
+                                {stats[status as keyof CleanerStats]}
+                            </span>
+                        </button>
+                    ))}
+                </nav>
+            </div>
 
-                    <div className="bg-white rounded-xl shadow p-6">
-                        <div className="flex items-center gap-4">
-                            <div className="p-3 bg-green-100 rounded-lg">
-                                <CheckCircle className="w-6 h-6 text-green-600" />
-                            </div>
-                            <div>
-                                <p className="text-sm text-gray-600">Completadas Hoy</p>
-                                <p className="text-2xl font-bold text-gray-900">
-                                    {completedToday.length}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Limpiezas en Progreso */}
-                {activeCleanings.length > 0 && (
-                    <section className="mb-8">
-                        <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                            🔄 Trabajos en Progreso
-                        </h2>
-                        <div className="space-y-6">
-                            {activeCleanings.map((cleaning) => (
-                                <CleanerCleaningCard
-                                    key={cleaning.id}
-                                    cleaning={cleaning}
-                                />
-                            ))}
-                        </div>
-                    </section>
-                )}
-
-                {/* Próximas Limpiezas */}
-                {upcomingCleanings.length > 0 && (
-                    <section className="mb-8">
-                        <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                            📅 Próximos Trabajos
-                        </h2>
-                        <div className="space-y-6">
-                            {upcomingCleanings.map((cleaning) => (
-                                <CleanerCleaningCard
-                                    key={cleaning.id}
-                                    cleaning={cleaning}
-                                />
-                            ))}
-                        </div>
-                    </section>
-                )}
-
-                {/* Sin trabajos */}
-                {cleanings.length === 0 && (
-                    <div className="bg-white rounded-xl shadow p-12 text-center">
-                        <Briefcase className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                        <p className="text-gray-600 text-lg mb-2">
-                            No tienes trabajos asignados
-                        </p>
-                        <p className="text-gray-500 text-sm">
-                            Contacta con tu administrador para que te asigne trabajos
+            {/* Empty State sin Emojis */}
+            <div className={`space-y-6 ${isPending ? 'opacity-50 pointer-events-none' : ''}`}>
+                {cleanings.length === 0 ? (
+                    <div className="text-center py-12 bg-white rounded-lg border border-dashed border-gray-300">
+                        <CalendarDays className="mx-auto h-12 w-12 text-gray-400" />
+                        <h3 className="mt-2 text-sm font-medium text-gray-900">No hay limpiezas</h3>
+                        <p className="mt-1 text-sm text-gray-500">
+                            No se encontraron tareas en esta categoría.
                         </p>
                     </div>
+                ) : (
+                    cleanings.map((cleaning) => (
+                        <CleanerCleaningCard key={cleaning.id} cleaning={cleaning} />
+                    ))
                 )}
-            </main>
+            </div>
+
+            {/* Paginación con Texto */}
+            {totalPages > 1 && (
+                <div className="flex items-center justify-between border-t border-gray-200 pt-4">
+                    <button
+                        onClick={() => handlePageChange(currentPage - 1)}
+                        disabled={currentPage === 1}
+                        className="flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50"
+                    >
+                        <ChevronLeft className="w-4 h-4 mr-2" />
+                        Anterior
+                    </button>
+                    <span className="text-sm text-gray-700">
+                        Página {currentPage} de {totalPages}
+                    </span>
+                    <button
+                        onClick={() => handlePageChange(currentPage + 1)}
+                        disabled={currentPage === totalPages}
+                        className="flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50"
+                    >
+                        Siguiente
+                        <ChevronRight className="w-4 h-4 ml-2" />
+                    </button>
+                </div>
+            )}
         </div>
+    )
+}
+
+// Componente auxiliar para Card de Stats
+function StatCard({ title, value, icon, color, active, onClick }: any) {
+    return (
+        <button
+            onClick={onClick}
+            className={`bg-white overflow-hidden shadow rounded-lg p-5 text-left transition-all ring-2 ${active ? 'ring-ocean-500 ring-offset-2' : 'ring-transparent hover:shadow-md'}`}
+        >
+            <div className="flex items-center">
+                <div className={`flex-shrink-0 rounded-md ${color} p-3`}>
+                    {icon}
+                </div>
+                <div className="ml-5 w-0 flex-1">
+                    <dl>
+                        <dt className="text-sm font-medium text-gray-500 truncate">{title}</dt>
+                        <dd className="text-2xl font-semibold text-gray-900">{value}</dd>
+                    </dl>
+                </div>
+            </div>
+        </button>
     )
 }

@@ -313,25 +313,50 @@ export async function PUT(request: Request) {
 
         // Cleaner solo puede actualizar progreso
         if (user.role === 'cleaner') {
+
+            // 1. VALIDACIÓN DE STEPS
             if (current_step !== undefined) {
                 if (current_step < 0 || current_step > currentCleaning.total_steps) {
                     return NextResponse.json(
-                        { error: `El step debe estar entre 0 y ${currentCleaning.total_steps}` },
+                        { error: `El paso debe estar entre 0 y ${currentCleaning.total_steps}` },
                         { status: 400 }
                     )
                 }
                 updateData.current_step = current_step
 
-                // Si completa todos los steps, marcar como completado
+                // Automáticamente marcar como completado si llega al final
                 if (current_step === currentCleaning.total_steps) {
                     updateData.status = 'completed'
-                } else if (current_step > 0 && currentCleaning.status === 'pending') {
+                }
+                // Si estaba completada y baja un paso, volver a in_progress
+                else if (current_step < currentCleaning.total_steps && currentCleaning.status === 'completed') {
+                    updateData.status = 'in_progress'
+                }
+                // Si empieza (paso > 0) y estaba pendiente
+                else if (current_step > 0 && currentCleaning.status === 'pending') {
                     updateData.status = 'in_progress'
                 }
             }
 
-            if (status !== undefined && ['in_progress', 'completed'].includes(status)) {
-                updateData.status = status
+            // 2. VALIDACIÓN DE STATUS MANUAL
+            if (status !== undefined) {
+                // Si el cleaner intenta marcar "completed" manualmente...
+                if (status === 'completed') {
+                    // Verificamos si los pasos están completos (ya sea en la DB o en el update actual)
+                    const stepsToCheck = current_step !== undefined ? current_step : currentCleaning.current_step
+
+                    if (stepsToCheck < currentCleaning.total_steps) {
+                        return NextResponse.json(
+                            { error: 'No puedes completar la limpieza hasta terminar todos los pasos.' },
+                            { status: 400 }
+                        )
+                    }
+                }
+
+                // Permitir cambios válidos
+                if (['in_progress', 'completed'].includes(status)) {
+                    updateData.status = status
+                }
             }
         }
 
