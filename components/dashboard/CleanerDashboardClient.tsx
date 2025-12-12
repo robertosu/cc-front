@@ -1,10 +1,10 @@
-// components/dashboard/CleanerDashboardClient.tsx
 'use client'
 
+import { useEffect, useTransition } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useTransition } from 'react'
 import { Briefcase, CheckCircle, Clock, CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react'
 import CleanerCleaningCard from '@/components/dashboard/CleanerCleaningCard'
+import { createClient } from '@/utils/supabase/client'
 import type { Cleaning, Profile } from '@/types'
 
 interface CleanerStats {
@@ -31,8 +31,21 @@ export default function CleanerDashboardClient({
     const router = useRouter()
     const searchParams = useSearchParams()
     const [isPending, startTransition] = useTransition()
+    const supabase = createClient()
 
     const currentStatus = searchParams.get('status') || 'pending'
+
+    // 🔥 PATRÓN REFRESH: Solo escuchamos cambios, NO traemos datos nosotros mismos
+    useEffect(() => {
+        const channel = supabase
+            .channel('cleaner-dashboard')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'cleanings' }, () => {
+                router.refresh() // Recarga los datos del servidor sin perder el estado
+            })
+            .subscribe()
+
+        return () => { supabase.removeChannel(channel) }
+    }, [supabase, router])
 
     const updateUrl = (newParams: Record<string, string>) => {
         const params = new URLSearchParams(searchParams.toString())
@@ -45,13 +58,8 @@ export default function CleanerDashboardClient({
         })
     }
 
-    const handleTabChange = (status: string) => {
-        updateUrl({ status, page: '1' })
-    }
-
-    const handlePageChange = (page: number) => {
-        updateUrl({ page: page.toString() })
-    }
+    const handleTabChange = (status: string) => updateUrl({ status, page: '1' })
+    const handlePageChange = (page: number) => updateUrl({ page: page.toString() })
 
     return (
         <div className="space-y-6">
@@ -62,7 +70,7 @@ export default function CleanerDashboardClient({
                 </div>
             </div>
 
-            {/* Cards sin emojis, usando iconos Lucide */}
+            {/* Estadísticas / Tabs */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <StatCard
                     title="En Progreso"
@@ -90,19 +98,17 @@ export default function CleanerDashboardClient({
                 />
             </div>
 
-            {/* Tabs */}
             <div className="border-b border-gray-200">
                 <nav className="-mb-px flex space-x-8">
                     {['pending', 'in_progress', 'completed'].map((status) => (
                         <button
                             key={status}
                             onClick={() => handleTabChange(status)}
-                            className={`
-                                whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm capitalize flex items-center gap-2
-                                ${currentStatus === status
-                                ? 'border-ocean-500 text-ocean-600'
-                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}
-                            `}
+                            className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm capitalize flex items-center gap-2 ${
+                                currentStatus === status
+                                    ? 'border-ocean-500 text-ocean-600'
+                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                            }`}
                         >
                             {status === 'in_progress' ? 'En Progreso' : status === 'pending' ? 'Pendientes' : 'Completadas'}
                             <span className={`py-0.5 px-2.5 rounded-full text-xs font-medium ${
@@ -115,7 +121,7 @@ export default function CleanerDashboardClient({
                 </nav>
             </div>
 
-            {/* Empty State sin Emojis */}
+            {/* Lista de Limpiezas */}
             <div className={`space-y-6 ${isPending ? 'opacity-50 pointer-events-none' : ''}`}>
                 {cleanings.length === 0 ? (
                     <div className="text-center py-12 bg-white rounded-lg border border-dashed border-gray-300">
@@ -132,7 +138,7 @@ export default function CleanerDashboardClient({
                 )}
             </div>
 
-            {/* Paginación con Texto */}
+            {/* Paginación */}
             {totalPages > 1 && (
                 <div className="flex items-center justify-between border-t border-gray-200 pt-4">
                     <button
@@ -140,19 +146,15 @@ export default function CleanerDashboardClient({
                         disabled={currentPage === 1}
                         className="flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50"
                     >
-                        <ChevronLeft className="w-4 h-4 mr-2" />
-                        Anterior
+                        <ChevronLeft className="w-4 h-4 mr-2" /> Anterior
                     </button>
-                    <span className="text-sm text-gray-700">
-                        Página {currentPage} de {totalPages}
-                    </span>
+                    <span className="text-sm text-gray-700">Página {currentPage} de {totalPages}</span>
                     <button
                         onClick={() => handlePageChange(currentPage + 1)}
                         disabled={currentPage === totalPages}
                         className="flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50"
                     >
-                        Siguiente
-                        <ChevronRight className="w-4 h-4 ml-2" />
+                        Siguiente <ChevronRight className="w-4 h-4 ml-2" />
                     </button>
                 </div>
             )}
@@ -160,17 +162,11 @@ export default function CleanerDashboardClient({
     )
 }
 
-// Componente auxiliar para Card de Stats
 function StatCard({ title, value, icon, color, active, onClick }: any) {
     return (
-        <button
-            onClick={onClick}
-            className={`bg-white overflow-hidden shadow rounded-lg p-5 text-left transition-all ring-2 ${active ? 'ring-ocean-500 ring-offset-2' : 'ring-transparent hover:shadow-md'}`}
-        >
+        <button onClick={onClick} className={`bg-white overflow-hidden shadow rounded-lg p-5 text-left transition-all ring-2 ${active ? 'ring-ocean-500 ring-offset-2' : 'ring-transparent hover:shadow-md'}`}>
             <div className="flex items-center">
-                <div className={`flex-shrink-0 rounded-md ${color} p-3`}>
-                    {icon}
-                </div>
+                <div className={`flex-shrink-0 rounded-md ${color} p-3`}>{icon}</div>
                 <div className="ml-5 w-0 flex-1">
                     <dl>
                         <dt className="text-sm font-medium text-gray-500 truncate">{title}</dt>
