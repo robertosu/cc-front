@@ -53,13 +53,19 @@ export default async function proxy(request: NextRequest) {
         return supabaseResponse
     }
 
-    // CASO B: Ruta Protegida (Todo lo demás)
+    // CASO B: Ruta Protegida
     if (!user) {
-        // Si no hay usuario, guardar la ruta intento y mandar a Login
         const redirectUrl = new URL('/login', request.url)
-        redirectUrl.searchParams.set('redirectedFrom', path)
+
+        // ✅ AGREGAR ESTA VALIDACIÓN
+        const isValidPath = path.startsWith('/') && !path.startsWith('//')
+        if (isValidPath) {
+            redirectUrl.searchParams.set('redirectedFrom', path)
+        }
+
         return NextResponse.redirect(redirectUrl)
     }
+
 
     // ¡LISTO! No hacemos nada más.
     // La validación de si es 'admin', 'client' o 'cleaner'

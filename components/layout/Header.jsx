@@ -34,7 +34,7 @@ export default function Header() {
                         <Link href="/">
                             <Image
                                 src="/logo3.png"
-                                alt="CleanerClub Logo"
+                                alt="Cleaner Club Logo"
                                 width={256}
                                 height={256}
                                 className="rounded cursor-pointer"

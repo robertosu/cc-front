@@ -44,7 +44,7 @@ export default function MobileHeader({ user }: MobileHeaderProps) {
                         {/* Logo */}
                         <Link href="/" className="flex items-center space-x-2">
                             <Sparkles className="w-6 h-6 text-ocean-400" />
-                            <span className="text-xl font-bold text-gray-900">CleanerClub</span>
+                            <span className="text-xl font-bold text-gray-900">Cleaner Club</span>
                         </Link>
 
                         {/* Mobile Menu Button */}

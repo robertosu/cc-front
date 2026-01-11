@@ -4,7 +4,7 @@ import { Star, ExternalLink, User } from 'lucide-react';
 
 export default function LocationSection() {
     // URL provista para ver las reseñas en Google
-    const googleReviewsUrl = "https://www.google.com/search?q=cleanerclub&rlz=1C1ONGR_enCL1174CL1174&oq=cleanerclub+&gs_lcrp=EgZjaHJvbWUqBggAEEUYOzIGCAAQRRg7MgoIARAAGAoYDRgeMgoIAhAAGAgYDRgeMgYIAxBFGDwyBggEEEUYPDIGCAUQRRg8MgYIBhBFGD0yBggHEEUYPdIBCDEzNzFqMGo3qAIAsAIA&sourceid=chrome&ie=UTF-8#lrd=0xad4a8dff4cf7d2eb:0x8ecad36edbbece03,1,,,,";
+    const googleReviewsUrl = "https://www.google.com/search?q=Cleaner Club&rlz=1C1ONGR_enCL1174CL1174&oq=Cleaner Club+&gs_lcrp=EgZjaHJvbWUqBggAEEUYOzIGCAAQRRg7MgoIARAAGAoYDRgeMgoIAhAAGAgYDRgeMgYIAxBFGDwyBggEEEUYPDIGCAUQRRg8MgYIBhBFGD0yBggHEEUYPdIBCDEzNzFqMGo3qAIAsAIA&sourceid=chrome&ie=UTF-8#lrd=0xad4a8dff4cf7d2eb:0x8ecad36edbbece03,1,,,,";
 
     // Datos simulados para la vista previa (puedes editarlos con textos reales)
     const reviews = [

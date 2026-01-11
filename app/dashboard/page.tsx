@@ -3,7 +3,7 @@ import { requireProfile } from '@/utils/supabase/cached-queries'
 import { redirect } from 'next/navigation'
 import {Metadata} from "next";
 
-export const metadata:Metadata = { title: 'Dashboard - CleanerClub', description: 'Panel de control' }
+export const metadata:Metadata = { title: 'Dashboard - Cleaner Club', description: 'Panel de control' }
 
 export default async function DashboardPage() {
     // Esta llamada es rápida y se cachea

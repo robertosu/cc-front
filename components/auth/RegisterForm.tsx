@@ -136,7 +136,7 @@ export default function RegisterForm() {
 
                 <div className="text-center mb-6">
                     <h2 className="text-3xl font-bold text-gray-900">Crear Cuenta</h2>
-                    <p className="text-gray-600 mt-2">Únete a CleanerClub</p>
+                    <p className="text-gray-600 mt-2">Únete a Cleaner Club</p>
                 </div>
 
                 {/* Mensaje de error general */}

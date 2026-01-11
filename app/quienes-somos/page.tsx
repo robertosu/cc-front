@@ -4,7 +4,7 @@ import { Metadata } from "next";
 import Header from "@/components/layout/Header";
 
 export const metadata: Metadata = {
-    title: 'Quiénes Somos - CleanerClub',
+    title: 'Quiénes Somos - Cleaner Club',
     description: 'Conoce al equipo y los valores detrás de Cleaner Club.',
 }
 

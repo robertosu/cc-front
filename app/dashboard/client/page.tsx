@@ -4,7 +4,7 @@ import ClientDashboardClient from '@/components/dashboard/ClientDashboardClient'
 import { Metadata } from "next"
 
 export const metadata: Metadata = {
-    title: 'Mi Panel - CleanerClub',
+    title: 'Mi Panel - Cleaner Club',
     description: 'Gestiona tus servicios contratados'
 }
 

@@ -5,7 +5,7 @@ import {Metadata} from "next";
 import {requireProfile} from "@/utils/supabase/cached-queries";
 
 export const metadata: Metadata = {
-    title: 'Admin Dashboard - CleanerClub',
+    title: 'Admin Dashboard - Cleaner Club',
     description: 'Panel de administración'
 }
 

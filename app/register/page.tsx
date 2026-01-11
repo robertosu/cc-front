@@ -5,8 +5,8 @@ import {Metadata} from "next";
 import Header from "@/components/layout/Header";
 
 export const metadata: Metadata = {
-    title: 'Registro - CleanerClub',
-    description: 'Crea tu cuenta en CleanerClub'
+    title: 'Registro - Cleaner Club',
+    description: 'Crea tu cuenta en Cleaner Club'
 }
 
 export default function RegisterPage() {

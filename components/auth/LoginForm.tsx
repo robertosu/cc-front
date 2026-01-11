@@ -49,11 +49,11 @@ export default function LoginForm() {
         }
     }
 
+    // LoginForm.tsx
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
 
         if (!validateForm()) return
-
         setIsLoading(true)
 
         try {
@@ -70,10 +70,21 @@ export default function LoginForm() {
                 return
             }
 
+            // Obtener el parámetro redirectedFrom de la URL
             const urlParams = new URLSearchParams(window.location.search)
             const redirectTo = urlParams.get('redirectedFrom') || '/dashboard'
 
-            router.push(redirectTo)
+            // ✅ Validar que sea una ruta interna
+            // Protege contra:
+            // - //evil.com (protocol-relative)
+            // - https://evil.com (URL absoluta)
+            // - javascript:alert(1) (código malicioso)
+            const isValidRedirect = redirectTo.startsWith('/') && !redirectTo.startsWith('//')
+
+            // Si no es válido, usar ruta por defecto
+            const safeRedirect = isValidRedirect ? redirectTo : '/dashboard'
+
+            router.push(safeRedirect)
             router.refresh()
 
         } catch {
@@ -88,7 +99,7 @@ export default function LoginForm() {
             <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-lg p-8 space-y-6">
                 <div className="text-center mb-6">
                     <h2 className="text-3xl font-bold text-gray-900">Iniciar Sesión</h2>
-                    <p className="text-gray-600 mt-2">Accede a tu cuenta de CleanerClub</p>
+                    <p className="text-gray-600 mt-2">Accede a tu cuenta de Cleaner Club</p>
                 </div>
 
                 {errors.general && (

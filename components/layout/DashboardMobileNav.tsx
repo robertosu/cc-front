@@ -62,7 +62,7 @@ export default function DashboardMobileNav({ role }: Props) {
         <div className="md:hidden bg-gray-900 text-white">
             <div className="flex items-center justify-between px-4 h-16 border-b border-gray-800">
                 <div className="flex items-center gap-2">
-                    <span className="font-bold text-lg tracking-tight">CleanerClub</span>
+                    <span className="font-bold text-lg tracking-tight">Cleaner Club</span>
                     <span className={`text-[10px] px-1.5 py-0.5 rounded border border-gray-700 bg-gray-800 ${themeClass.replace('text-', 'text-gray-300 ')}`}>
                         {role === 'client' ? 'CLIENTE' : role.toUpperCase()}
                     </span>

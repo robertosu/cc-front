@@ -48,7 +48,7 @@ export default function ClientSidebar() {
                     {/* Ajusta src="/logoprincipal.png" a tu archivo de logo real */}
                     <Image
                         src="/logoprincipal.png"
-                        alt="CleanerClub Logo"
+                        alt="Cleaner Club Logo"
                         fill
                         className="object-contain object-left"
                         priority

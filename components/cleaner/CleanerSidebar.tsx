@@ -24,7 +24,7 @@ export default function CleanerSidebar() {
     return (
         <div className="flex flex-col h-full bg-gray-900 text-white w-64 flex-shrink-0">
             <div className="flex items-center h-16 px-6 bg-gray-950">
-                <span className="text-xl font-bold text-white">CleanerClub</span>
+                <span className="text-xl font-bold text-white">Cleaner Club</span>
                 <span className="ml-2 text-xs text-ocean-400 border border-ocean-700 rounded px-1">CLEANER</span>
             </div>
 

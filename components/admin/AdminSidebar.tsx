@@ -33,7 +33,7 @@ export default function AdminSidebar() {
             {/* Logo Area */}
             <div className="flex items-center h-16 px-6 bg-gray-950">
                 <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-600">
-                    CleanerClub
+                    Cleaner Club
                 </span>
                 <span className="ml-2 text-xs text-gray-400 border border-gray-700 rounded px-1">ADMIN</span>
             </div>

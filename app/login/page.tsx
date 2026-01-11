@@ -5,8 +5,8 @@ import {Metadata} from "next";
 import Header from "@/components/layout/Header";
 
 export const metadata: Metadata= {
-    title: 'Iniciar Sesión - CleanerClub',
-    description: 'Accede a tu cuenta de CleanerClub'
+    title: 'Iniciar Sesión - Cleaner Club',
+    description: 'Accede a tu cuenta de Cleaner Club'
 }
 
 export default function LoginPage() {

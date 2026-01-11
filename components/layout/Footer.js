@@ -32,7 +32,7 @@ export default function Footer() {
                         <div className="flex items-center space-x-2 mb-4">
                             <Image
                                 src="/logo3.png"
-                                alt="CleanerClub Logo"
+                                alt="Cleaner Club Logo"
                                 width={256}
                                 height={256}
                                 className="rounded cursor-pointer"
@@ -55,7 +55,7 @@ export default function Footer() {
                                 <Facebook size={20} />
                             </a>
                             <a
-                                href="https://www.instagram.com/cleanerclubcl"
+                                href="https://www.instagram.com/Cleaner Clubcl"
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="bg-gray-800 p-2 rounded-full hover:bg-[#E4405F] transition-colors"
@@ -64,7 +64,7 @@ export default function Footer() {
                                 <Instagram size={20} />
                             </a>
                             <a
-                                href="https://www.linkedin.com/company/cleanerclub/"
+                                href="https://www.linkedin.com/company/Cleaner Club/"
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="bg-gray-800 p-2 rounded-full hover:bg-[#0077B5] transition-colors"
@@ -103,7 +103,7 @@ export default function Footer() {
                                 <div>
                                     <p className="text-sm text-gray-500">E-mail</p>
                                     <p className="font-medium hover:text-ocean-400 transition-colors">
-                                        <a href="mailto:Contacto@cleanerclub.cl">Contacto@cleanerclub.cl</a>
+                                        <a href="mailto:contacto@cleanerclub.cl">contacto@cleanerclub.cl</a>
                                     </p>
                                 </div>
                             </div>
@@ -138,7 +138,7 @@ export default function Footer() {
 
                 {/* Línea divisoria */}
                 <div className="border-t border-gray-800 mt-12 pt-8 text-center text-gray-500 text-sm">
-                    <p>&copy; {new Date().getFullYear()} CleanerClub. Todos los derechos reservados.</p>
+                    <p>&copy; {new Date().getFullYear()} Cleaner Club. Todos los derechos reservados.</p>
                 </div>
             </div>
         </footer>

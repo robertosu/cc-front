@@ -3,7 +3,7 @@ import CleanerDashboardClient from '@/components/dashboard/CleanerDashboardClien
 import { Metadata } from "next"
 
 export const metadata: Metadata = {
-    title: 'Panel de Cleaner - CleanerClub',
+    title: 'Panel de Cleaner - Cleaner Club',
     description: 'Gestiona tus trabajos asignados'
 }
 
