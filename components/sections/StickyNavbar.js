@@ -3,8 +3,9 @@
 import { useEffect, useRef, useState } from 'react'
 import { Users, Star, Home } from 'lucide-react'
 import Link from 'next/link'
-import {WhatsAppIcon} from "@/components/sections/ServicesSection";
-import {WHATSAPP_LINKS} from "@/data/Services"; // 1. Importamos Link
+import { WhatsAppIcon } from "@/components/sections/ServicesSection";
+import { WHATSAPP_LINKS } from "@/data/Services";
+import LiveProgressBanner from "@/components/sections/LiveProgressBanner"; // <--- IMPORTANTE: Importar el banner
 
 // 🔢 Componente contador (Animación suave)
 function AnimatedCounter({ end, duration = 2000 }) {
@@ -50,8 +51,6 @@ export default function StickyNavbar() {
     const [isVisible, setIsVisible] = useState(false)
     const sectionRef = useRef(null)
 
-
-
     useEffect(() => {
         const handleScroll = () => {
             if (sectionRef.current) {
@@ -68,7 +67,7 @@ export default function StickyNavbar() {
         <>
             <section
                 ref={sectionRef}
-                className="relative text-white min-h-[90vh] flex flex-col justify-center overflow-hidden pt-20 pb-12"
+                className="relative text-white min-h-[90vh] flex flex-col justify-center overflow-hidden pt-24 pb-12 lg:pt-32"
             >
 
                 {/* Capa 1: Imagen Fondo */}
@@ -81,44 +80,59 @@ export default function StickyNavbar() {
                 <div className="absolute inset-0 z-0 bg-gradient-to-b from-ocean-900/80 via-ocean-900/70 to-ocean-900/90"></div>
 
                 {/* Capa 3: Contenido Principal */}
-                <div className="relative z-10 max-w-7xl mx-auto px-4 text-center flex-grow flex flex-col justify-center">
+                <div className="relative z-10 max-w-7xl mx-auto px-4 w-full flex-grow flex flex-col justify-center">
 
-                    {/* Texto Hero */}
-                    <div className="mb-12">
-                        <h2 className="text-4xl md:text-6xl font-bold mb-6 tracking-tight leading-tight drop-shadow-lg">
-                            Limpieza Profesional <br className="hidden md:block"/> a tu Alcance
-                        </h2>
-                        <p className="text-lg md:text-xl mb-10 max-w-2xl mx-auto text-ocean-50 font-light drop-shadow-md">
-                            Servicios de limpieza a domicilio en La Serena, Coquimbo y alrededores.
-                            Limpieza profesional para hogares o negocios.
-                        </p>
+                    {/* GRID LAYOUT: Texto a la izquierda, Banner a la derecha en Desktop */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-16">
 
-                        {/* Botones de Acción HERO */}
-                        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                            {/* Botón Ver Servicios */}
-                            <Link
-                                href="#services"
-                                className="bg-white text-ocean-600 px-8 py-3 rounded-xl font-bold hover:bg-ocean-50 transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 inline-block"
-                            >
-                                Ver Servicios
-                            </Link>
+                        {/* COLUMNA IZQUIERDA: Texto y Botones */}
+                        <div className="text-center lg:text-left">
+                            <h2 className="text-4xl md:text-6xl font-bold mb-6 tracking-tight leading-tight drop-shadow-lg">
+                                Limpieza Profesional <br className="hidden md:block"/> a tu Alcance
+                            </h2>
+                            <p className="text-lg md:text-xl mb-8 max-w-2xl mx-auto lg:mx-0 text-ocean-50 font-light drop-shadow-md">
+                                Servicios de limpieza a domicilio en La Serena, Coquimbo y alrededores.
+                                Limpieza profesional para hogares o negocios.
+                            </p>
 
-                            {/* Botón WhatsApp */}
-                            <a
-                                href={WHATSAPP_LINKS.empresas}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="border-2 border-white text-white px-8 py-0.5 rounded-xl font-bold hover:bg-white/10 transition-all backdrop-blur-sm hover:-translate-y-0.5 inline-flex items-center gap-2"
-                            >
-                                <WhatsAppIcon className="w-10 h-10 fill-current" />
-                                <span>Solicitar Presupuesto</span>
-                            </a>
+                            {/* Botones de Acción HERO */}
+                            <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start items-center">
+                                {/* Botón Ver Servicios */}
+                                <Link
+                                    href="#services"
+                                    className="bg-white text-ocean-600 px-8 py-3 rounded-xl font-bold hover:bg-ocean-50 transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 inline-block"
+                                >
+                                    Ver Servicios
+                                </Link>
+
+                                {/* Botón WhatsApp */}
+                                <a
+                                    href={WHATSAPP_LINKS.empresas}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="border-2 border-white text-white px-8 py-0.5 rounded-xl font-bold hover:bg-white/10 transition-all backdrop-blur-sm hover:-translate-y-0.5 inline-flex items-center gap-2"
+                                >
+                                    <WhatsAppIcon className="w-10 h-10 fill-current" />
+                                    <span>Solicitar Presupuesto</span>
+                                </a>
+                            </div>
                         </div>
+
+                        {/* COLUMNA DERECHA: Banner Animado */}
+                        <div className="flex justify-center lg:justify-end relative">
+                            {/* Efecto de luz detrás del banner */}
+                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3/4 h-3/4 bg-ocean-400/30 blur-3xl rounded-full -z-10"></div>
+
+                            <div className="relative z-10 w-full max-w-sm">
+                                <LiveProgressBanner />
+                            </div>
+                        </div>
+
                     </div>
 
-                    {/* 📊 STATS FUSIONADOS */}
-                    <div className="mt-8 pt-10 border-t border-white/20">
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+                    {/* 📊 STATS FUSIONADOS (Ocupan todo el ancho abajo) */}
+                    <div className="mt-auto pt-10 border-t border-white/20 w-full">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto text-center">
                             <div className="flex flex-col items-center group">
                                 <Users className="w-8 h-8 text-ocean-200 mb-2 group-hover:text-white transition-colors" />
                                 <div className="text-4xl font-bold mb-1 tracking-tight">
