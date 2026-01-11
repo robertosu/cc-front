@@ -61,7 +61,7 @@ export const metadata: Metadata = {
         card: 'summary_large_image',
         title: 'Cleaner Club - Limpieza a domicilio en La Serena',
         description: 'Agenda online tu servicio de limpieza a domicilio con nuestros profesionales.',
-         images: ['/logo3.jpg'], // Recomendado: Agrega una imagen en public/ y enlázala aquí
+         images: ['/logo3.png'], // Recomendado: Agrega una imagen en public/ y enlázala aquí
     },
 
     // Iconos (Favicons) - Next.js los busca en /app/favicon.ico automáticamente,
