@@ -10,11 +10,9 @@ export default function LocationSection() {
     const reviews = [
         {
             id: 1,
-            author: "Kamila Bermejo Olivares",
+            author: "Paulina Jaque",
             rating: 5,
-            text: "Siempre un excelente servicio y atención.\n" +
-                "Un agrado cada vez que van 😊\n" +
-                "Recomiendo el servicio de todas maneras.",
+            text: "Excelente servicio, rápido, puntuales y muy eficientes. Totalmente recomendables.",
             date: "Hace 1 año"
         },
         {

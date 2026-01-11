@@ -26,7 +26,7 @@ export default function LiveProgressBanner() {
     }, [progress])
 
     return (
-        <div className="w-full max-w-sm bg-white/30 backdrop-blur-md border border-white/20 shadow-2xl rounded-2xl p-5 transform transition-all hover:scale-105 duration-300 text-left">
+        <div className="w-full max-w-sm bg-white/28 backdrop-blur-md border border-white/35 shadow-2xl rounded-2xl p-5 transform transition-all hover:scale-105 duration-300 text-left">
             <div className="flex items-start justify-between mb-4">
                 <div>
                     <div className="flex items-center gap-2 mb-1">

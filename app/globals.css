@@ -4,17 +4,17 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-    --color-ocean-50:  #eefefd;   /* G: FE → FE (límite) */
-    --color-ocean-100: #cffefb;   /* cd → d0 */
-    --color-ocean-200: #a4fef1;   /* 9f → a4 */
-    --color-ocean-300: #69f0e8;   /* 63 → 69 */
-    --color-ocean-400: #2cddd8;   /* 28 → 2c */
-    --color-ocean-500: #0fbebe;   /* 0d → 0f */
-    --color-ocean-600: #0d9c9e;   /* 0b → 0d */
-    --color-ocean-700: #0f7e80;   /* 0e → 0f */
-    --color-ocean-800: #146768;   /* 13 → 14 */
-    --color-ocean-900: #16585a;   /* 15 → 16 */
-    --color-ocean-950: #06343a;   /* 31 → 34 */
+    --color-ocean-50:  #eefafd;   /* FF → FA */
+    --color-ocean-100: #cffafb;   /* FF → FA */
+    --color-ocean-200: #a4faf1;   /* FF → FA */
+    --color-ocean-300: #69f1e8;   /* F6 → F1 */
+    --color-ocean-400: #2cded8;   /* E3 → DE */
+    --color-ocean-500: #0fbfbe;   /* C4 → BF */
+    --color-ocean-600: #0d9d9e;   /* A2 → 9D */
+    --color-ocean-700: #0f7f80;   /* 84 → 7F */
+    --color-ocean-800: #146868;   /* 6D → 68 */
+    --color-ocean-900: #16595a;   /* 5E → 59 */
+    --color-ocean-950: #06353a;   /* 3A → 35 */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);

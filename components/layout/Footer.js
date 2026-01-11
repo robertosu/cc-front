@@ -132,6 +132,11 @@ export default function Footer() {
                                     Solicitar Presupuesto
                                 </a>
                             </li>
+                            <li>
+                                <a href="/quienes-somos" className="text-gray-400 hover:text-white transition-colors">
+                                    Quienes somos
+                                </a>
+                            </li>
                         </ul>
                     </div>
                 </div>
