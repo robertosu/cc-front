@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
     display: 'swap',
 })
 
-const baseUrl = 'https://cc-front-neon.vercel.app/'
+const baseUrl = 'https://cleanerclub.cl/'
 
 
 export const metadata: Metadata = {
